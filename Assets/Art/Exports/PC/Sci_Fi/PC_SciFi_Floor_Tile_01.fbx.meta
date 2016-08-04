@@ -7,8 +7,10 @@ ModelImporter:
   fileIDToRecycleName:
     100000: //RootNode
     100002: PC_SciFi_Floor_Tile_01
+    100004: pasted__group
     400000: //RootNode
     400002: PC_SciFi_Floor_Tile_01
+    400004: pasted__group
     2300000: //RootNode
     2300002: PC_SciFi_Floor_Tile_01
     3300000: //RootNode
