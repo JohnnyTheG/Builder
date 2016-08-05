@@ -7,14 +7,7 @@ public class BlockInfo : MonoBehaviour
 
 	public string Name = "";
 
-	public enum Types
-	{
-		Wall,
-		Floor,
-		Prop,
-	}
-
-	public Types Type;
+	public BlockManager.Types Type;
 
 	public float Height = 1.0f;
 	public float Width = 1.0f;
