@@ -123,7 +123,7 @@ public class Application : Singleton<Application>
 	void OnGUI()
 	{
 		GUI.Label(new Rect(0.0f, 0.0f, 300.0f, 20.0f), "Mode: " + m_eMode.ToString());
-		GUI.Label(new Rect(0.0f, 20.0f, 300.0f, 20.0f), "SelectedBlock: " + (SelectedBlock != null ? SelectedBlock.name : "None"));
+		GUI.Label(new Rect(0.0f, 20.0f, 600.0f, 20.0f), "SelectedBlock: " + (SelectedBlock != null ? SelectedBlock.name : "None"));
 	}
 
 	public GameObject BlockBuildType;

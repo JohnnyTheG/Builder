@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-public class BlockManager : MonoBehaviour
+public class BlockManager : Singleton<BlockManager>
 {
 	public enum Types
 	{
@@ -15,8 +15,10 @@ public class BlockManager : MonoBehaviour
 
 	Types[] m_aeTypes;
 
-	public void Awake()
+	new void Awake()
 	{
+		base.Awake();
+
 		// Get the types of blocks.
 		m_aeTypes = (Types[])Enum.GetValues(typeof(Types));
 
@@ -42,4 +44,14 @@ public class BlockManager : MonoBehaviour
 			}
 		}
     }
+
+	public BlockInfo GetBlockInfo(BlockManager.Types eType, ref int nIndex, int nIncrement)
+	{
+		if (m_dictBlocks.ContainsKey(eType))
+		{
+			return Utils.GetArrayEntry<BlockInfo>(m_dictBlocks[eType].ToArray(), ref nIndex, nIncrement);
+		}
+
+		return null;
+	}
 }

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 public class BlockSet : MonoBehaviour
@@ -33,5 +34,16 @@ public class BlockSet : MonoBehaviour
 				m_dictBlockSet[cBlockInfo.Type].Add(cBlockInfo);
 			}
 		}
+	}
+
+	IEnumerator Start()
+	{
+		while (BlockManager.Instance == null)
+		{
+			yield return new WaitForEndOfFrame();
+		}
+
+		// Register with the block manager.
+		BlockManager.Instance.RegisterBlockSet(this);
 	}
 }

@@ -7,36 +7,30 @@ public class BuildMenuController : Singleton<BuildMenuController>
 
 	public BuildMenuBlockInfo BuildMenuBlockInfo;
 
-	BlockSet m_cBlockSet;
-
 	int m_nBlockSetIndex = 0;
 
-	void Awake()
-	{
-		//m_cBlockSet = BlockSet.Instance;
-	}
+	BlockManager.Types m_eCurrentType = BlockManager.Types.Wall;
 
 	public void Initialise()
 	{
-		/*if (m_cBlockSet.WallBlocks[m_nBlockSetIndex] != null)
-		{
-			BuildMenuBlockInfo.SetBlockInfo(m_cBlockSet.WallBlocks[m_nBlockSetIndex]);
-		}*/
+		m_nBlockSetIndex = 0;
+
+		BuildMenuBlockInfo.SetBlockInfo(BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, 0));
 	}
 
 	public void NextBlock()
 	{
-		//BuildMenuBlockInfo.SetBlockInfo(m_cBlockSet.GetBlockInfo(m_cBlockSet.WallBlocks, ref m_nBlockSetIndex, 1));
+		BuildMenuBlockInfo.SetBlockInfo(BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, 1));
 	}
 
 	public void PreviousBlock()
 	{
-		//BuildMenuBlockInfo.SetBlockInfo(m_cBlockSet.GetBlockInfo(m_cBlockSet.WallBlocks, ref m_nBlockSetIndex, -1));
-    }
+		BuildMenuBlockInfo.SetBlockInfo(BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, -1));
+	}
 
 	public void SetBlockBuildType()
 	{
-		/*Application.Instance.BlockBuildType = m_cBlockSet.WallBlocks[m_nBlockSetIndex].gameObject;
-		Application.Instance.TrySetMode(Application.Mode.Build);*/
+		Application.Instance.BlockBuildType = BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, 0).gameObject;
+		Application.Instance.TrySetMode(Application.Mode.Build);
 	}
 }
