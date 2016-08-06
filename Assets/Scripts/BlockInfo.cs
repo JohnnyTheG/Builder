@@ -7,14 +7,7 @@ public class BlockInfo : MonoBehaviour
 
 	public string Name = "";
 
-	public enum Types
-	{
-		Wall,
-		Floor,
-		Prop,
-	}
-
-	public Types Type;
+	public BlockManager.Types Type;
 
 	public float Height = 1.0f;
 	public float Width = 1.0f;
@@ -33,7 +26,9 @@ public class BlockInfo : MonoBehaviour
 		m_cGridInfo = cGridInfo;
 		m_cGridInfo.Occupied = true;
 
-		transform.position = m_cGridInfo.transform.position + new Vector3(0.0f, (Height * 0.5f) + (cGridInfo.Height * 0.5f), 0.0f);
+		// Y is half height of the block plus half height of the floor.
+		// If pivot is set correctly at base of the mesh, then the half height isnt needed.
+		transform.position = m_cGridInfo.transform.position + new Vector3(0.0f, /*(Height * 0.5f) +*/ (cGridInfo.Height * 0.5f), 0.0f);
 	}
 
 	public void Rotate(Vector3 vecAngle)

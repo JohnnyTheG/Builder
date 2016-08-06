@@ -31,9 +31,11 @@ public class BuildMenuMode : BaseMode
 
 	void Start()
 	{
+		// Show the menu.
 		m_cBuildMenuController.CanvasGroupAnimator.Show();
 		m_cBuildMenuController.CanvasGroupAnimator.FadeIn();
 
+		// Set up the menu.
 		m_cBuildMenuController.Initialise();
 	}
 

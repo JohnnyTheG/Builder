@@ -60,7 +60,7 @@ public class BuildMode : BaseMode
 
 								BlockInfo cBlockInfo = cBlock.GetComponent<BlockInfo>();
 
-								if (cBlockInfo)
+								if (cBlockInfo != null)
 								{
 									cBlockInfo.Move(cGridInfo);
 								}

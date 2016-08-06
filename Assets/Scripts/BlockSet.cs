@@ -1,22 +1,23 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 public class BlockSet : MonoBehaviour
 {
-	public Dictionary<BlockInfo.Types, List<BlockInfo>> m_dictBlocks = new Dictionary<BlockInfo.Types, List<BlockInfo>>();
+	public Dictionary<BlockManager.Types, List<BlockInfo>> m_dictBlockSet = new Dictionary<BlockManager.Types, List<BlockInfo>>();
 
 	void Awake()
 	{
 		// Get the types of blocks.
-		BlockInfo.Types[] aeBlockInfoTypes = (BlockInfo.Types[])Enum.GetValues(typeof(BlockInfo.Types));
+		BlockManager.Types[] aeBlockInfoTypes = (BlockManager.Types[])Enum.GetValues(typeof(BlockManager.Types));
 
 		// Add all the types to the dictionary.
 		for (int nType = 0; nType < aeBlockInfoTypes.Length; nType++)
 		{
-			if (!m_dictBlocks.ContainsKey(aeBlockInfoTypes[nType]))
+			if (!m_dictBlockSet.ContainsKey(aeBlockInfoTypes[nType]))
 			{
-				m_dictBlocks.Add(aeBlockInfoTypes[nType], new List<BlockInfo>());
+				m_dictBlockSet.Add(aeBlockInfoTypes[nType], new List<BlockInfo>());
 			}
 		}
 
@@ -28,10 +29,21 @@ public class BlockSet : MonoBehaviour
 		{
 			BlockInfo cBlockInfo = acBlockSetEntries[nBlockSetEntry].BlockInfo;
 
-            if (m_dictBlocks.ContainsKey(cBlockInfo.Type))
+            if (m_dictBlockSet.ContainsKey(cBlockInfo.Type))
 			{
-				m_dictBlocks[cBlockInfo.Type].Add(cBlockInfo);
+				m_dictBlockSet[cBlockInfo.Type].Add(cBlockInfo);
 			}
 		}
+	}
+
+	IEnumerator Start()
+	{
+		while (BlockManager.Instance == null)
+		{
+			yield return new WaitForEndOfFrame();
+		}
+
+		// Register with the block manager.
+		BlockManager.Instance.RegisterBlockSet(this);
 	}
 }
