@@ -63,6 +63,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="Builder.CSharp.Plugins.csproj">
+      <Project>{0F662BFB-51D5-CB4F-410C-80A09DF5EB37}</Project>
+      <Name>Builder.CSharp.Plugins</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Assets\Scripts\Application.cs" />
     <Compile Include="Assets\Scripts\BlockInfo.cs" />
     <Compile Include="Assets\Scripts\BlockManager.cs" />
@@ -85,12 +91,39 @@
     <Compile Include="Assets\Scripts\UI\BuildMenuBlockInfo.cs" />
     <Compile Include="Assets\Scripts\UI\BuildMenuController.cs" />
     <Compile Include="Assets\Scripts\Utils.cs" />
+    <Compile Include="Assets\TemporalAA\Scripts\EffectBase.cs" />
+    <Compile Include="Assets\TemporalAA\Scripts\Extensions.cs" />
+    <Compile Include="Assets\TemporalAA\Scripts\FrustumJitter.cs" />
+    <Compile Include="Assets\TemporalAA\Scripts\TemporalReprojection.cs" />
+    <Compile Include="Assets\TemporalAA\Scripts\VelocityBuffer.cs" />
+    <Compile Include="Assets\TemporalAA\Scripts\VelocityBufferTag.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Art\Exports\Mobile\Temp.txt" />
     <None Include="Assets\Materials\Mobile\Sci_Fi\Temp.txt" />
     <None Include="Assets\Prefabs\Mobile\Sci_Fi\Temp.txt" />
     <None Include="Assets\Shaders\Ghost.shader" />
+    <None Include="Assets\Standard Assets\Effects\AmbientOcclusion\Resources\AmbientOcclusion.cginc" />
+    <None Include="Assets\Standard Assets\Effects\AmbientOcclusion\Resources\AmbientOcclusion.shader" />
+    <None Include="Assets\Standard Assets\Effects\AntiAliasing\FXAA\Resources\FXAA.shader" />
+    <None Include="Assets\Standard Assets\Effects\AntiAliasing\FXAA\Resources\FXAA3.cginc" />
+    <None Include="Assets\Standard Assets\Effects\AntiAliasing\SMAA\Resources\SMAA.cginc" />
+    <None Include="Assets\Standard Assets\Effects\AntiAliasing\SMAA\Resources\SMAA.shader" />
+    <None Include="Assets\Standard Assets\Effects\Bloom\Resources\Bloom.cginc" />
+    <None Include="Assets\Standard Assets\Effects\Bloom\Resources\Bloom.shader" />
+    <None Include="Assets\Standard Assets\Effects\DepthOfField\Resources\BokehSplatting.shader" />
+    <None Include="Assets\Standard Assets\Effects\DepthOfField\Resources\DepthOfField.shader" />
+    <None Include="Assets\Standard Assets\Effects\DepthOfField\Resources\MedianFilter.shader" />
+    <None Include="Assets\Standard Assets\Effects\LensAberrations\Resources\LensAberrations.shader" />
+    <None Include="Assets\Standard Assets\Effects\ScreenSpaceReflection\Resources\ScreenSpaceRaytrace.cginc" />
+    <None Include="Assets\Standard Assets\Effects\ScreenSpaceReflection\Resources\ScreenSpaceReflection.shader" />
+    <None Include="Assets\Standard Assets\Effects\TonemappingColorGrading\Resources\HistogramCompute.compute" />
+    <None Include="Assets\Standard Assets\Effects\TonemappingColorGrading\Resources\HistogramRender.shader" />
+    <None Include="Assets\Standard Assets\Effects\TonemappingColorGrading\Resources\TonemappingColorGrading.cginc" />
+    <None Include="Assets\Standard Assets\Effects\TonemappingColorGrading\Resources\TonemappingColorGrading.shader" />
+    <None Include="Assets\TemporalAA\Shaders\Noise.cginc" />
+    <None Include="Assets\TemporalAA\Shaders\TemporalReprojection.shader" />
+    <None Include="Assets\TemporalAA\Shaders\VelocityBuffer.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

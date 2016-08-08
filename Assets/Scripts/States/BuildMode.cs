@@ -12,6 +12,8 @@ public class BuildMode : BaseMode
 		InvokeOnShutdownComplete();
 	}
 
+	Quaternion m_quatBuildDirection = Quaternion.Euler(Vector3.zero);
+
 	void Start()
 	{
 		// Enter.
@@ -56,9 +58,12 @@ public class BuildMode : BaseMode
 
 							if (cGridInfo.CanBeOccupied)
 							{
+								//if(CurrencyManager.Instance.CurrencyAvailable(
 								GameObject cBlock = Instantiate(GetBlockBuildType());
 
 								BlockInfo cBlockInfo = cBlock.GetComponent<BlockInfo>();
+
+								cBlock.transform.rotation = m_quatBuildDirection;
 
 								if (cBlockInfo != null)
 								{
@@ -116,6 +121,7 @@ public class BuildMode : BaseMode
 				if (KeyboardInput.Instance.KeyDown(KeyCode.R))
 				{
 					GetSelectedBlock().Rotate(new Vector3(0.0f, 90.0f, 0.0f));
+					m_quatBuildDirection = GetSelectedBlock().transform.rotation;
 				}
 			}
 

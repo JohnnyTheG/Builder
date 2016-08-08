@@ -31,16 +31,16 @@ public abstract class BaseMode : MonoBehaviour
 
 	protected BlockInfo GetSelectedBlock()
 	{
-		return Application.Instance.GetSelectedBlock();
+		return BlockManager.Instance.GetSelectedBlock();
 	}
 
 	protected void SetSelectedBlock(BlockInfo cBlockInfo)
 	{
-		Application.Instance.SetSelectedBlock(cBlockInfo);
+		BlockManager.Instance.SetSelectedBlock(cBlockInfo);
 	}
 
 	protected GameObject GetBlockBuildType()
 	{
-		return Application.Instance.BlockBuildType;
+		return BlockManager.Instance.BlockBuildType;
 	}
 }

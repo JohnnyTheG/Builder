@@ -123,36 +123,6 @@ public class Application : Singleton<Application>
 	void OnGUI()
 	{
 		GUI.Label(new Rect(0.0f, 0.0f, 300.0f, 20.0f), "Mode: " + m_eMode.ToString());
-		GUI.Label(new Rect(0.0f, 20.0f, 600.0f, 20.0f), "SelectedBlock: " + (SelectedBlock != null ? SelectedBlock.name : "None"));
-	}
-
-	public GameObject BlockBuildType;
-
-	BlockInfo SelectedBlock
-	{
-		get;
-
-		set;
-	}
-
-
-	public BlockInfo GetSelectedBlock()
-	{
-		return SelectedBlock;
-	}
-
-	public void SetSelectedBlock(BlockInfo cBlockInfo)
-	{
-		if (SelectedBlock != null)
-		{
-			SelectedBlock.Deselected();
-		}
-
-		SelectedBlock = cBlockInfo;
-
-		if (SelectedBlock != null)
-		{
-			SelectedBlock.Selected();
-		}
+		GUI.Label(new Rect(0.0f, 20.0f, 600.0f, 20.0f), "SelectedBlock: " + (BlockManager.Instance.GetSelectedBlock() != null ? BlockManager.Instance.GetSelectedBlock().name : "None"));
 	}
 }

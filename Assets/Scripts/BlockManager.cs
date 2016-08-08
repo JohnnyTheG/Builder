@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 public class BlockManager : Singleton<BlockManager>
@@ -8,12 +9,19 @@ public class BlockManager : Singleton<BlockManager>
 	{
 		Wall,
 		Floor,
-		Prop,
+		Door,
 	}
 
 	public Dictionary<Types, List<BlockInfo>> m_dictBlocks = new Dictionary<Types, List<BlockInfo>>();
 
 	Types[] m_aeTypes;
+
+	public bool Initialised
+	{
+		get;
+
+		private set;
+	}
 
 	new void Awake()
 	{
@@ -32,6 +40,18 @@ public class BlockManager : Singleton<BlockManager>
 		}
 	}
 
+	IEnumerator Start()
+	{
+		while (BlockBuildType == null)
+		{
+			SetInitialBlock();
+
+			yield return new WaitForEndOfFrame();
+		}
+
+		Initialised = true;
+	}
+
 	public void RegisterBlockSet(BlockSet cBlockSet)
 	{
 		for (int nType = 0; nType < m_aeTypes.Length; nType++)
@@ -45,6 +65,26 @@ public class BlockManager : Singleton<BlockManager>
 		}
     }
 
+	public void SetInitialBlock()
+	{
+		// Add all the types to the dictionary.
+		for (int nType = 0; nType < m_aeTypes.Length; nType++)
+		{
+			if (m_dictBlocks.ContainsKey(m_aeTypes[nType]))
+			{
+				for (int nBlock = 0; nBlock < m_dictBlocks[m_aeTypes[nType]].Count; nBlock++)
+				{
+					if (m_dictBlocks[m_aeTypes[nType]][nBlock] != null)
+					{
+						BlockBuildType = m_dictBlocks[m_aeTypes[nType]][nBlock].gameObject;
+
+						return;
+					}
+				}
+			}
+		}
+	}
+
 	public BlockInfo GetBlockInfo(BlockManager.Types eType, ref int nIndex, int nIncrement)
 	{
 		if (m_dictBlocks.ContainsKey(eType))
@@ -53,5 +93,34 @@ public class BlockManager : Singleton<BlockManager>
 		}
 
 		return null;
+	}
+
+	public GameObject BlockBuildType = null;
+
+	BlockInfo SelectedBlock
+	{
+		get;
+
+		set;
+	}
+
+	public BlockInfo GetSelectedBlock()
+	{
+		return SelectedBlock;
+	}
+
+	public void SetSelectedBlock(BlockInfo cBlockInfo)
+	{
+		if (SelectedBlock != null)
+		{
+			SelectedBlock.Deselected();
+		}
+
+		SelectedBlock = cBlockInfo;
+
+		if (SelectedBlock != null)
+		{
+			SelectedBlock.Selected();
+		}
 	}
 }

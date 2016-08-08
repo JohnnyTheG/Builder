@@ -13,8 +13,6 @@ public class BuildMenuController : Singleton<BuildMenuController>
 
 	public void Initialise()
 	{
-		m_nBlockSetIndex = 0;
-
 		BuildMenuBlockInfo.SetBlockInfo(BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, 0));
 	}
 
@@ -30,7 +28,7 @@ public class BuildMenuController : Singleton<BuildMenuController>
 
 	public void SetBlockBuildType()
 	{
-		Application.Instance.BlockBuildType = BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, 0).gameObject;
+		BlockManager.Instance.BlockBuildType = BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, 0).gameObject;
 		Application.Instance.TrySetMode(Application.Mode.Build);
 	}
 }
