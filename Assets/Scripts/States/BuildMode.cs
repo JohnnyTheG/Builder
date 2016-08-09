@@ -61,7 +61,7 @@ public class BuildMode : BaseMode
 							if (cGridInfo.CanBeOccupied)
 							{
 								CreateBlock(cGridInfo);
-                            }
+							}
 						}
 						else
 						{
@@ -108,14 +108,23 @@ public class BuildMode : BaseMode
 				}
 			}
 
-			if (GetSelectedBlock() != null)
+			if (KeyboardInput.Instance.KeyDown(KeyCode.R))
+			{
+				Vector3 vecEuler = m_quatBuildDirection.eulerAngles;
+
+				vecEuler += new Vector3(0.0f, 90.0f, 0.0f);
+
+				m_quatBuildDirection = Quaternion.Euler(vecEuler);
+			}
+
+			/*if (GetSelectedBlock() != null)
 			{
 				if (KeyboardInput.Instance.KeyDown(KeyCode.R))
 				{
 					GetSelectedBlock().Rotate(new Vector3(0.0f, 90.0f, 0.0f));
 					m_quatBuildDirection = GetSelectedBlock().transform.rotation;
 				}
-			}
+			}*/
 
 			if (KeyboardInput.Instance.KeyDown(KeyCode.F))
 			{
@@ -130,25 +139,32 @@ public class BuildMode : BaseMode
 	void OnDestroy()
 	{
 		// Exit.
+		DestroyBlockBuildHighlight();
 	}
 
 	BlockInfo CreateBlock(GridInfo cGridInfo, bool bIsGhost = false)
 	{
-		//if(CurrencyManager.Instance.CurrencyAvailable(
-		GameObject cBlock = Instantiate(GetBlockBuildType());
+		GameObject cBlockBuildType = GetBlockBuildType();
 
-		BlockInfo cBlockInfo = cBlock.GetComponent<BlockInfo>();
-
-		cBlockInfo.Initialise(bIsGhost);
-
-		cBlock.transform.rotation = m_quatBuildDirection;
-
-		if (cBlockInfo != null)
+		if (cBlockBuildType != null)
 		{
-			cBlockInfo.Move(cGridInfo);
+			GameObject cBlock = Instantiate(cBlockBuildType);
+
+			BlockInfo cBlockInfo = cBlock.GetComponent<BlockInfo>();
+
+			cBlockInfo.Initialise(bIsGhost);
+
+			cBlock.transform.rotation = m_quatBuildDirection;
+
+			if (cBlockInfo != null)
+			{
+				cBlockInfo.Move(cGridInfo);
+			}
+
+			return cBlockInfo;
 		}
 
-		return cBlockInfo;
+		return null;
 	}
 
 	public void UpdateMouseHighlight()
@@ -166,19 +182,29 @@ public class BuildMode : BaseMode
 				m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, true);
 			}
 
-			m_cBlockInfoBuildHighlight.Move(cGridInfo);
+			if (m_cBlockInfoBuildHighlight != null)
+			{
+				m_cBlockInfoBuildHighlight.Move(cGridInfo);
+
+				m_cBlockInfoBuildHighlight.transform.rotation = m_quatBuildDirection;
+			}
 
 			/*MouseHighlight.SetActive(true);
 			MouseHighlight.transform.position = cRaycastHit.collider.transform.position + new Vector3(0.0f, (cGridInfo.Height * 0.5f) + (MouseHighlight.transform.localScale.y * 0.5f), 0.0f);*/
 		}
 		else
 		{
-			if (m_cBlockInfoBuildHighlight != null)
-			{
-				Destroy(m_cBlockInfoBuildHighlight.gameObject);
-			}
+			DestroyBlockBuildHighlight();
 
 			//MouseHighlight.SetActive(false);
+		}
+	}
+
+	void DestroyBlockBuildHighlight()
+	{
+		if (m_cBlockInfoBuildHighlight != null)
+		{
+			Destroy(m_cBlockInfoBuildHighlight.gameObject);
 		}
 	}
 }
