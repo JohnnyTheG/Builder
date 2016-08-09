@@ -14,6 +14,8 @@ public class BuildMode : BaseMode
 
 	Quaternion m_quatBuildDirection = Quaternion.Euler(Vector3.zero);
 
+	BlockInfo m_cBlockInfoBuildHighlight;
+
 	void Start()
 	{
 		// Enter.
@@ -21,7 +23,7 @@ public class BuildMode : BaseMode
 
 	void Update()
 	{
-		Application.Instance.UpdateMouseHighlight();
+		UpdateMouseHighlight();
 
 		if (KeyboardInput.Instance.KeyDown(KeyCode.Escape))
 		{
@@ -58,18 +60,8 @@ public class BuildMode : BaseMode
 
 							if (cGridInfo.CanBeOccupied)
 							{
-								//if(CurrencyManager.Instance.CurrencyAvailable(
-								GameObject cBlock = Instantiate(GetBlockBuildType());
-
-								BlockInfo cBlockInfo = cBlock.GetComponent<BlockInfo>();
-
-								cBlock.transform.rotation = m_quatBuildDirection;
-
-								if (cBlockInfo != null)
-								{
-									cBlockInfo.Move(cGridInfo);
-								}
-							}
+								CreateBlock(cGridInfo);
+                            }
 						}
 						else
 						{
@@ -138,5 +130,55 @@ public class BuildMode : BaseMode
 	void OnDestroy()
 	{
 		// Exit.
+	}
+
+	BlockInfo CreateBlock(GridInfo cGridInfo, bool bIsGhost = false)
+	{
+		//if(CurrencyManager.Instance.CurrencyAvailable(
+		GameObject cBlock = Instantiate(GetBlockBuildType());
+
+		BlockInfo cBlockInfo = cBlock.GetComponent<BlockInfo>();
+
+		cBlockInfo.Initialise(bIsGhost);
+
+		cBlock.transform.rotation = m_quatBuildDirection;
+
+		if (cBlockInfo != null)
+		{
+			cBlockInfo.Move(cGridInfo);
+		}
+
+		return cBlockInfo;
+	}
+
+	public void UpdateMouseHighlight()
+	{
+		RaycastHit cRaycastHit;
+
+		Ray cRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+		if (Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Grid)))
+		{
+			GridInfo cGridInfo = cRaycastHit.collider.GetComponent<GridInfo>();
+
+			if (m_cBlockInfoBuildHighlight == null)
+			{
+				m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, true);
+			}
+
+			m_cBlockInfoBuildHighlight.Move(cGridInfo);
+
+			/*MouseHighlight.SetActive(true);
+			MouseHighlight.transform.position = cRaycastHit.collider.transform.position + new Vector3(0.0f, (cGridInfo.Height * 0.5f) + (MouseHighlight.transform.localScale.y * 0.5f), 0.0f);*/
+		}
+		else
+		{
+			if (m_cBlockInfoBuildHighlight != null)
+			{
+				Destroy(m_cBlockInfoBuildHighlight.gameObject);
+			}
+
+			//MouseHighlight.SetActive(false);
+		}
 	}
 }

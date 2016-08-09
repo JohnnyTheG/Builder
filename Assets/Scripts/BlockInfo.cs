@@ -16,6 +16,19 @@ public class BlockInfo : MonoBehaviour
 	[HideInInspector]
 	public GridInfo m_cGridInfo;
 
+	bool m_bIsGhost = false;
+
+	public void Initialise(bool bIsGhost)
+	{
+		m_bIsGhost = bIsGhost;
+
+		if (m_bIsGhost)
+		{
+			GetComponent<MeshRenderer>().material = GameGlobals.Instance.GhostMaterial;
+			Destroy(GetComponent<Collider>());
+		}
+	}
+
 	public void Move(GridInfo cGridInfo)
 	{
 		if (m_cGridInfo != null)
@@ -24,7 +37,11 @@ public class BlockInfo : MonoBehaviour
 		}
 
 		m_cGridInfo = cGridInfo;
-		m_cGridInfo.Occupied = true;
+
+		if (!m_bIsGhost)
+		{
+			m_cGridInfo.Occupied = true;
+		}
 
 		// Y is half height of the block plus half height of the floor.
 		// If pivot is set correctly at base of the mesh, then the half height isnt needed.

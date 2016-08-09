@@ -101,25 +101,6 @@ public class Application : Singleton<Application>
 		SetMode(Mode.Build);
 	}
 
-	public void UpdateMouseHighlight()
-	{
-		RaycastHit cRaycastHit;
-
-		Ray cRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-		if (Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Grid)))
-		{
-			GridInfo cGridInfo = cRaycastHit.collider.GetComponent<GridInfo>();
-
-			MouseHighlight.SetActive(true);
-			MouseHighlight.transform.position = cRaycastHit.collider.transform.position + new Vector3(0.0f, (cGridInfo.Height * 0.5f) + (MouseHighlight.transform.localScale.y * 0.5f), 0.0f);
-		}
-		else
-		{
-			MouseHighlight.SetActive(false);
-		}
-	}
-
 	void OnGUI()
 	{
 		GUI.Label(new Rect(0.0f, 0.0f, 300.0f, 20.0f), "Mode: " + m_eMode.ToString());
