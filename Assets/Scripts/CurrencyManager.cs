@@ -3,7 +3,7 @@ using System.Collections;
 
 public class CurrencyManager : Singleton<CurrencyManager>
 {
-	int m_nCurrency = 1000;
+	int m_nCurrency = 100000;
 
 	public void SetCurrency(int nCurrency)
 	{
