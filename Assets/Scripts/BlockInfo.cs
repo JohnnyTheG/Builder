@@ -25,7 +25,13 @@ public class BlockInfo : MonoBehaviour
 		if (m_bIsGhost)
 		{
 			GetComponent<MeshRenderer>().material = GameGlobals.Instance.GhostMaterial;
-			Destroy(GetComponent<Collider>());
+
+			Collider[] acColliders = GetComponents<Collider>();
+
+			for (int nCollider = 0; nCollider < acColliders.Length; nCollider++)
+			{
+				Destroy(acColliders[nCollider]);
+			}
 		}
 	}
 

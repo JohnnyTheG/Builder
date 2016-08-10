@@ -23,6 +23,24 @@ public class BlockManager : Singleton<BlockManager>
 		private set;
 	}
 
+	int m_nCurrentBlockSetEntryIndex = 0;
+	Types m_eCurrentBlockSetEntryType = Types.Wall;
+
+	public BlockSetEntry GetNextBlock()
+	{
+		return GetBlockInfo(m_eCurrentBlockSetEntryType, ref m_nCurrentBlockSetEntryIndex, 1);
+	}
+
+	public BlockSetEntry GetPreviousBlock()
+	{
+		return GetBlockInfo(m_eCurrentBlockSetEntryType, ref m_nCurrentBlockSetEntryIndex, -1);
+	}
+
+	public BlockSetEntry GetCurrentBlock()
+	{
+		return GetBlockInfo(m_eCurrentBlockSetEntryType, ref m_nCurrentBlockSetEntryIndex, 0);
+	}
+
 	new void Awake()
 	{
 		base.Awake();

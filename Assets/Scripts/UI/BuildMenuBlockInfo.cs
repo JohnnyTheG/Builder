@@ -6,8 +6,8 @@ public class BuildMenuBlockInfo : MonoBehaviour
 	[SerializeField]
 	Text BlockName;
 
-	public void SetBlockInfo(BlockInfo cBlockInfo)
+	public void SetBlockSetEntryUI(BlockSetEntry cBlockSetEntry)
 	{
-		BlockName.text = cBlockInfo.Name;
+		BlockName.text = cBlockSetEntry.BlockInfo.Name;
 	}
 }

@@ -7,28 +7,24 @@ public class BuildMenuController : Singleton<BuildMenuController>
 
 	public BuildMenuBlockInfo BuildMenuBlockInfo;
 
-	int m_nBlockSetIndex = 0;
-
-	BlockManager.Types m_eCurrentType = BlockManager.Types.Wall;
-
 	public void Initialise()
 	{
-		BuildMenuBlockInfo.SetBlockInfo(BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, 0).BlockInfo);
+		BuildMenuBlockInfo.SetBlockSetEntryUI(BlockManager.Instance.GetCurrentBlock());
 	}
 
 	public void NextBlock()
 	{
-		BuildMenuBlockInfo.SetBlockInfo(BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, 1).BlockInfo);
+		BuildMenuBlockInfo.SetBlockSetEntryUI(BlockManager.Instance.GetNextBlock());
 	}
 
 	public void PreviousBlock()
 	{
-		BuildMenuBlockInfo.SetBlockInfo(BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, -1).BlockInfo);
+		BuildMenuBlockInfo.SetBlockSetEntryUI(BlockManager.Instance.GetPreviousBlock());
 	}
 
 	public void SetBlockBuildType()
 	{
-		BlockManager.Instance.CurrentBlockSetEntry = BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, 0);
+		BlockManager.Instance.CurrentBlockSetEntry = BlockManager.Instance.GetCurrentBlock();
 		Application.Instance.TrySetMode(Application.Mode.Build);
 	}
 }
