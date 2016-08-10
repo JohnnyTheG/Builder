@@ -17,9 +17,6 @@ public class Application : Singleton<Application>
 
 	BaseMode m_cMode = null;
 
-	[SerializeField]
-	GameObject MouseHighlight;
-
 	readonly Dictionary<Mode, Type> m_dictModes = new Dictionary<Mode, Type>()
 	{
 		{Mode.Build, typeof(BuildMode)},

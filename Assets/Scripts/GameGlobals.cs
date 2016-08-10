@@ -3,6 +3,8 @@ using System.Collections;
 
 public class GameGlobals : Singleton<GameGlobals>
 {
+	public GameObject MouseHighlight;
+
 	public BuildMenuController BuildMenuController;
 
 	public Material GhostMaterial;

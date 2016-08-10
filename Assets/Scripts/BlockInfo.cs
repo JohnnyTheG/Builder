@@ -37,9 +37,12 @@ public class BlockInfo : MonoBehaviour
 
 	public void Move(GridInfo cGridInfo)
 	{
-		if (m_cGridInfo != null)
+		if (!m_bIsGhost)
 		{
-			m_cGridInfo.Occupied = false;
+			if (m_cGridInfo != null)
+			{
+				m_cGridInfo.Occupied = false;
+			}
 		}
 
 		m_cGridInfo = cGridInfo;
