@@ -9,22 +9,22 @@ public class BuildMenuController : Singleton<BuildMenuController>
 
 	public void Initialise()
 	{
-		BuildMenuBlockInfo.SetBlockSetEntryUI(BlockManager.Instance.GetCurrentBlock());
+		BuildMenuBlockInfo.SetBlockSetEntryUI(BlockManager.Instance.GetCurrentBlock(false));
 	}
 
 	public void NextBlock()
 	{
-		BuildMenuBlockInfo.SetBlockSetEntryUI(BlockManager.Instance.GetNextBlock());
+		BuildMenuBlockInfo.SetBlockSetEntryUI(BlockManager.Instance.GetNextBlock(false));
 	}
 
 	public void PreviousBlock()
 	{
-		BuildMenuBlockInfo.SetBlockSetEntryUI(BlockManager.Instance.GetPreviousBlock());
+		BuildMenuBlockInfo.SetBlockSetEntryUI(BlockManager.Instance.GetPreviousBlock(false));
 	}
 
-	public void SetBlockBuildType()
+	public void SetCurrentBlockSetEntry()
 	{
-		BlockManager.Instance.CurrentBlockSetEntry = BlockManager.Instance.GetCurrentBlock();
+		BlockManager.Instance.GetCurrentBlock(true);
 		Application.Instance.TrySetMode(Application.Mode.Build);
 	}
 }

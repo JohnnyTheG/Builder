@@ -41,6 +41,6 @@ public abstract class BaseMode : MonoBehaviour
 
 	protected BlockSetEntry GetCurrentBlockSetEntry()
 	{
-		return BlockManager.Instance.CurrentBlockSetEntry;
+		return BlockManager.Instance.GetCurrentBlockSetEntry();
 	}
 }

@@ -131,7 +131,27 @@ public class BuildMode : BaseMode
 					CameraController.Instance.SetFocus(GetSelectedBlock().transform.position);
 				}
 			}
-		}
+
+			if (KeyboardInput.Instance.KeyDown(KeyCode.UpArrow))
+			{
+
+			}
+
+			if (KeyboardInput.Instance.KeyDown(KeyCode.DownArrow))
+			{
+				Debug.Break();
+			}
+
+			if (KeyboardInput.Instance.KeyDown(KeyCode.LeftArrow))
+			{
+				BlockManager.Instance.GetPreviousBlock(true);
+			}
+
+			if (KeyboardInput.Instance.KeyDown(KeyCode.RightArrow))
+			{
+				BlockManager.Instance.GetNextBlock(true);
+			}
+        }
 	}
 
 	void OnDestroy()
@@ -174,6 +194,13 @@ public class BuildMode : BaseMode
 		if (Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Grid)))
 		{
 			GridInfo cGridInfo = cRaycastHit.collider.GetComponent<GridInfo>();
+
+			// If the build type has changed, then get rid of the current highlight. Then further down new one is spawned.
+			if (m_cBlockInfoBuildHighlight != null && (m_cBlockInfoBuildHighlight.Name != BlockManager.Instance.GetCurrentBlockSetEntry().BlockInfo.Name))
+			{
+				DestroyBlockBuildHighlight();
+				m_cBlockInfoBuildHighlight = null;
+			}
 
 			if (m_cBlockInfoBuildHighlight == null)
 			{

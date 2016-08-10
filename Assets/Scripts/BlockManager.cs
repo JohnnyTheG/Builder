@@ -26,19 +26,47 @@ public class BlockManager : Singleton<BlockManager>
 	int m_nCurrentBlockSetEntryIndex = 0;
 	Types m_eCurrentBlockSetEntryType = Types.Wall;
 
-	public BlockSetEntry GetNextBlock()
+	BlockSetEntry CurrentBlockSetEntry = null;
+
+	public BlockSetEntry GetCurrentBlockSetEntry()
 	{
-		return GetBlockInfo(m_eCurrentBlockSetEntryType, ref m_nCurrentBlockSetEntryIndex, 1);
+		return CurrentBlockSetEntry;
 	}
 
-	public BlockSetEntry GetPreviousBlock()
+	public BlockSetEntry GetNextBlock(bool bSetCurrentBlockSetEntry)
 	{
-		return GetBlockInfo(m_eCurrentBlockSetEntryType, ref m_nCurrentBlockSetEntryIndex, -1);
+		BlockSetEntry cBlockSetEntry = GetBlockSetEntry(m_eCurrentBlockSetEntryType, ref m_nCurrentBlockSetEntryIndex, 1);
+
+		if (bSetCurrentBlockSetEntry)
+		{
+			CurrentBlockSetEntry = cBlockSetEntry;
+		}
+
+		return cBlockSetEntry;
 	}
 
-	public BlockSetEntry GetCurrentBlock()
+	public BlockSetEntry GetPreviousBlock(bool bSetCurrentBlockSetEntry)
 	{
-		return GetBlockInfo(m_eCurrentBlockSetEntryType, ref m_nCurrentBlockSetEntryIndex, 0);
+		BlockSetEntry cBlockSetEntry = GetBlockSetEntry(m_eCurrentBlockSetEntryType, ref m_nCurrentBlockSetEntryIndex, -1);
+
+		if (bSetCurrentBlockSetEntry)
+		{
+			CurrentBlockSetEntry = cBlockSetEntry;
+		}
+
+		return cBlockSetEntry;
+	}
+
+	public BlockSetEntry GetCurrentBlock(bool bSetCurrentBlockSetEntry)
+	{
+		BlockSetEntry cBlockSetEntry = GetBlockSetEntry(m_eCurrentBlockSetEntryType, ref m_nCurrentBlockSetEntryIndex, 0);
+
+		if (bSetCurrentBlockSetEntry)
+		{
+			CurrentBlockSetEntry = cBlockSetEntry;
+		}
+
+		return cBlockSetEntry;
 	}
 
 	new void Awake()
@@ -62,7 +90,7 @@ public class BlockManager : Singleton<BlockManager>
 	{
 		while (CurrentBlockSetEntry == null)
 		{
-			SetInitialBlock();
+			SetInitialBlockSetEntry();
 
 			yield return new WaitForEndOfFrame();
 		}
@@ -83,7 +111,7 @@ public class BlockManager : Singleton<BlockManager>
 		}
     }
 
-	public void SetInitialBlock()
+	public void SetInitialBlockSetEntry()
 	{
 		// Add all the types to the dictionary.
 		for (int nType = 0; nType < m_aeTypes.Length; nType++)
@@ -103,7 +131,7 @@ public class BlockManager : Singleton<BlockManager>
 		}
 	}
 
-	public BlockSetEntry GetBlockInfo(BlockManager.Types eType, ref int nIndex, int nIncrement)
+	public BlockSetEntry GetBlockSetEntry(BlockManager.Types eType, ref int nIndex, int nIncrement)
 	{
 		if (m_dictBlocks.ContainsKey(eType))
 		{
@@ -112,8 +140,6 @@ public class BlockManager : Singleton<BlockManager>
 
 		return null;
 	}
-
-	public BlockSetEntry CurrentBlockSetEntry = null;
 
 	BlockInfo SelectedBlock
 	{
