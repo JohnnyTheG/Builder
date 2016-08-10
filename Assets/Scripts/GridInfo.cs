@@ -5,9 +5,14 @@ public class GridInfo : MonoBehaviour
 {
 	public bool Occupiable = true;
 
-	[NonSerialized]
-	[HideInInspector]
-	public bool Occupied = false;
+	bool Occupied = false;
+
+	public BlockInfo Occupier
+	{
+		get;
+
+		private set;
+	}
 
 	public float Height = 0.3f;
 
@@ -17,5 +22,17 @@ public class GridInfo : MonoBehaviour
 		{
 			return Occupiable && !Occupied;
 		}
+	}
+
+	public void SetOccupied(BlockInfo cOccupyingBlockInfo)
+	{
+		Occupied = true;
+		Occupier = cOccupyingBlockInfo;
+	}
+
+	public void SetUnoccupied()
+	{
+		Occupied = false;
+		Occupier = null;
 	}
 }

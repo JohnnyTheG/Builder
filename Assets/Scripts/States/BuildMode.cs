@@ -104,13 +104,25 @@ public class BuildMode : BaseMode
 
 				Ray cRay = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-				if (Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Block)))
+				if (Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Block, PhysicsLayers.Grid)))
 				{
-					BlockInfo cBlockInfo = cRaycastHit.collider.gameObject.GetComponent<BlockInfo>();
-
-					if (cBlockInfo)
+					if (cRaycastHit.collider.gameObject.layer == PhysicsLayers.Block)
 					{
-						cBlockInfo.Destroy();
+						BlockInfo cBlockInfo = cRaycastHit.collider.gameObject.GetComponent<BlockInfo>();
+
+						if (cBlockInfo != null)
+						{
+							cBlockInfo.Destroy();
+						}
+					}
+					else if (cRaycastHit.collider.gameObject.layer == PhysicsLayers.Grid)
+					{
+						GridInfo cGridInfo = cRaycastHit.collider.gameObject.GetComponent<GridInfo>();
+
+						if (cGridInfo != null)
+						{
+							cGridInfo.Occupier.Destroy();
+						}
 					}
 				}
 			}

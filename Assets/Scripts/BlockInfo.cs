@@ -41,7 +41,7 @@ public class BlockInfo : MonoBehaviour
 		{
 			if (m_cGridInfo != null)
 			{
-				m_cGridInfo.Occupied = false;
+				m_cGridInfo.SetUnoccupied();
 			}
 		}
 
@@ -49,7 +49,8 @@ public class BlockInfo : MonoBehaviour
 
 		if (!m_bIsGhost)
 		{
-			m_cGridInfo.Occupied = true;
+			m_cGridInfo.SetOccupied(this);
+			
 		}
 
 		// Y is half height of the block plus half height of the floor.
@@ -70,7 +71,7 @@ public class BlockInfo : MonoBehaviour
 	{
 		if (m_cGridInfo != null)
 		{
-			m_cGridInfo.Occupied = false;
+			m_cGridInfo.SetUnoccupied();
 		}
 
 		Destroy(gameObject);
