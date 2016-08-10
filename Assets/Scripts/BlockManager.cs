@@ -131,11 +131,11 @@ public class BlockManager : Singleton<BlockManager>
 		}
 	}
 
-	public BlockSetEntry GetBlockSetEntry(BlockManager.Types eType, ref int nIndex, int nIncrement)
+	public BlockSetEntry GetBlockSetEntry(Types eType, ref int nIndex, int nIncrement)
 	{
 		if (m_dictBlocks.ContainsKey(eType))
 		{
-			return Utils.GetArrayEntry<BlockSetEntry>(m_dictBlocks[eType].ToArray(), ref nIndex, nIncrement);
+			return Utils.GetArrayEntry(m_dictBlocks[eType].ToArray(), ref nIndex, nIncrement);
 		}
 
 		return null;
