@@ -3,11 +3,16 @@ using System.Collections;
 
 public class CurrencyManager : Singleton<CurrencyManager>
 {
-	int m_nCurrency = 5000;
+	int m_nCurrency = 1000;
 
 	public void SetCurrency(int nCurrency)
 	{
 		m_nCurrency = nCurrency;
+	}
+
+	public int GetCurrency()
+	{
+		return m_nCurrency;
 	}
 
 	public void SpendCurrency(int nSpentCurrency)

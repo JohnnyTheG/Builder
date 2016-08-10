@@ -13,22 +13,22 @@ public class BuildMenuController : Singleton<BuildMenuController>
 
 	public void Initialise()
 	{
-		BuildMenuBlockInfo.SetBlockInfo(BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, 0));
+		BuildMenuBlockInfo.SetBlockInfo(BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, 0).BlockInfo);
 	}
 
 	public void NextBlock()
 	{
-		BuildMenuBlockInfo.SetBlockInfo(BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, 1));
+		BuildMenuBlockInfo.SetBlockInfo(BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, 1).BlockInfo);
 	}
 
 	public void PreviousBlock()
 	{
-		BuildMenuBlockInfo.SetBlockInfo(BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, -1));
+		BuildMenuBlockInfo.SetBlockInfo(BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, -1).BlockInfo);
 	}
 
 	public void SetBlockBuildType()
 	{
-		BlockManager.Instance.BlockBuildType = BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, 0).gameObject;
+		BlockManager.Instance.CurrentBlockSetEntry = BlockManager.Instance.GetBlockInfo(m_eCurrentType, ref m_nBlockSetIndex, 0);
 		Application.Instance.TrySetMode(Application.Mode.Build);
 	}
 }

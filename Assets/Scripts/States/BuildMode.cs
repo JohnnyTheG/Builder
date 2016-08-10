@@ -60,7 +60,14 @@ public class BuildMode : BaseMode
 
 							if (cGridInfo.CanBeOccupied)
 							{
-								CreateBlock(cGridInfo);
+								BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
+
+								// Check that currency is available.
+								if (CurrencyManager.Instance.CurrencyAvailable(cBlockSetEntry.BlockCost))
+								{
+									CurrencyManager.Instance.SpendCurrency(cBlockSetEntry.BlockCost);
+									CreateBlock(cGridInfo);
+								}
 							}
 						}
 						else
@@ -117,15 +124,6 @@ public class BuildMode : BaseMode
 				m_quatBuildDirection = Quaternion.Euler(vecEuler);
 			}
 
-			/*if (GetSelectedBlock() != null)
-			{
-				if (KeyboardInput.Instance.KeyDown(KeyCode.R))
-				{
-					GetSelectedBlock().Rotate(new Vector3(0.0f, 90.0f, 0.0f));
-					m_quatBuildDirection = GetSelectedBlock().transform.rotation;
-				}
-			}*/
-
 			if (KeyboardInput.Instance.KeyDown(KeyCode.F))
 			{
 				if (GetSelectedBlock() != null)
@@ -144,11 +142,11 @@ public class BuildMode : BaseMode
 
 	BlockInfo CreateBlock(GridInfo cGridInfo, bool bIsGhost = false)
 	{
-		GameObject cBlockBuildType = GetBlockBuildType();
+		BlockSetEntry cCurrentBlockSetEntry = GetCurrentBlockSetEntry();
 
-		if (cBlockBuildType != null)
+		if (cCurrentBlockSetEntry != null)
 		{
-			GameObject cBlock = Instantiate(cBlockBuildType);
+			GameObject cBlock = Instantiate(cCurrentBlockSetEntry.BlockInfo.gameObject);
 
 			BlockInfo cBlockInfo = cBlock.GetComponent<BlockInfo>();
 
@@ -187,6 +185,18 @@ public class BuildMode : BaseMode
 				m_cBlockInfoBuildHighlight.Move(cGridInfo);
 
 				m_cBlockInfoBuildHighlight.transform.rotation = m_quatBuildDirection;
+
+				BlockSetEntry cCurrentBlockSetEntry = GetCurrentBlockSetEntry();
+
+				// Set the colour.
+				if (CurrencyManager.Instance.CurrencyAvailable(cCurrentBlockSetEntry.BlockCost))
+				{
+					m_cBlockInfoBuildHighlight.GetComponent<MeshRenderer>().material.color = GameGlobals.Instance.CanBuildColor;
+				}
+				else
+				{
+					m_cBlockInfoBuildHighlight.GetComponent<MeshRenderer>().material.color = GameGlobals.Instance.CannotBuildColor;
+				}
 			}
 
 			/*MouseHighlight.SetActive(true);

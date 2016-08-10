@@ -39,8 +39,8 @@ public abstract class BaseMode : MonoBehaviour
 		BlockManager.Instance.SetSelectedBlock(cBlockInfo);
 	}
 
-	protected GameObject GetBlockBuildType()
+	protected BlockSetEntry GetCurrentBlockSetEntry()
 	{
-		return BlockManager.Instance.BlockBuildType;
+		return BlockManager.Instance.CurrentBlockSetEntry;
 	}
 }

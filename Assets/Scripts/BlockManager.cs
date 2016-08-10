@@ -12,7 +12,7 @@ public class BlockManager : Singleton<BlockManager>
 		Door,
 	}
 
-	public Dictionary<Types, List<BlockInfo>> m_dictBlocks = new Dictionary<Types, List<BlockInfo>>();
+	public Dictionary<Types, List<BlockSetEntry>> m_dictBlocks = new Dictionary<Types, List<BlockSetEntry>>();
 
 	Types[] m_aeTypes;
 
@@ -35,14 +35,14 @@ public class BlockManager : Singleton<BlockManager>
 		{
 			if (!m_dictBlocks.ContainsKey(m_aeTypes[nType]))
 			{
-				m_dictBlocks.Add(m_aeTypes[nType], new List<BlockInfo>());
+				m_dictBlocks.Add(m_aeTypes[nType], new List<BlockSetEntry>());
 			}
 		}
 	}
 
 	IEnumerator Start()
 	{
-		while (BlockBuildType == null)
+		while (CurrentBlockSetEntry == null)
 		{
 			SetInitialBlock();
 
@@ -52,7 +52,7 @@ public class BlockManager : Singleton<BlockManager>
 		Initialised = true;
 	}
 
-	public void RegisterBlockSet(BlockSet cBlockSet)
+	public void RegisterBlockSetEntry(BlockSet cBlockSet)
 	{
 		for (int nType = 0; nType < m_aeTypes.Length; nType++)
 		{
@@ -76,7 +76,7 @@ public class BlockManager : Singleton<BlockManager>
 				{
 					if (m_dictBlocks[m_aeTypes[nType]][nBlock] != null)
 					{
-						BlockBuildType = m_dictBlocks[m_aeTypes[nType]][nBlock].gameObject;
+						CurrentBlockSetEntry = m_dictBlocks[m_aeTypes[nType]][nBlock];
 
 						return;
 					}
@@ -85,17 +85,17 @@ public class BlockManager : Singleton<BlockManager>
 		}
 	}
 
-	public BlockInfo GetBlockInfo(BlockManager.Types eType, ref int nIndex, int nIncrement)
+	public BlockSetEntry GetBlockInfo(BlockManager.Types eType, ref int nIndex, int nIncrement)
 	{
 		if (m_dictBlocks.ContainsKey(eType))
 		{
-			return Utils.GetArrayEntry<BlockInfo>(m_dictBlocks[eType].ToArray(), ref nIndex, nIncrement);
+			return Utils.GetArrayEntry<BlockSetEntry>(m_dictBlocks[eType].ToArray(), ref nIndex, nIncrement);
 		}
 
 		return null;
 	}
 
-	public GameObject BlockBuildType = null;
+	public BlockSetEntry CurrentBlockSetEntry = null;
 
 	BlockInfo SelectedBlock
 	{

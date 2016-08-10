@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class BlockSet : MonoBehaviour
 {
-	public Dictionary<BlockManager.Types, List<BlockInfo>> m_dictBlockSet = new Dictionary<BlockManager.Types, List<BlockInfo>>();
+	public Dictionary<BlockManager.Types, List<BlockSetEntry>> m_dictBlockSet = new Dictionary<BlockManager.Types, List<BlockSetEntry>>();
 
 	void Awake()
 	{
@@ -17,7 +17,7 @@ public class BlockSet : MonoBehaviour
 		{
 			if (!m_dictBlockSet.ContainsKey(aeBlockInfoTypes[nType]))
 			{
-				m_dictBlockSet.Add(aeBlockInfoTypes[nType], new List<BlockInfo>());
+				m_dictBlockSet.Add(aeBlockInfoTypes[nType], new List<BlockSetEntry>());
 			}
 		}
 
@@ -31,7 +31,7 @@ public class BlockSet : MonoBehaviour
 
             if (m_dictBlockSet.ContainsKey(cBlockInfo.Type))
 			{
-				m_dictBlockSet[cBlockInfo.Type].Add(cBlockInfo);
+				m_dictBlockSet[cBlockInfo.Type].Add(acBlockSetEntries[nBlockSetEntry]);
 			}
 		}
 	}
@@ -44,6 +44,6 @@ public class BlockSet : MonoBehaviour
 		}
 
 		// Register with the block manager.
-		BlockManager.Instance.RegisterBlockSet(this);
+		BlockManager.Instance.RegisterBlockSetEntry(this);
 	}
 }
