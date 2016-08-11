@@ -62,7 +62,7 @@ public class BuildMode : BaseMode
 								BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
 								// Check that currency is available.
-								if (CurrencyManager.Instance.CurrencyAvailable(cBlockSetEntry.BlockCost))
+								if (cBlockSetEntry.CanBeBuilt())
 								{
 									CurrencyManager.Instance.SpendCurrency(cBlockSetEntry.BlockCost);
 									CreateBlock(cGridInfo);

@@ -19,4 +19,17 @@ public class BlockSetEntry : MonoBehaviour
 	{
 		return BlockUnlocked;
 	}
+
+	public bool CanBeBuilt()
+	{
+		if (BlockUnlocked)
+		{
+			if (CurrencyManager.Instance.CurrencyAvailable(BlockCost))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 }
