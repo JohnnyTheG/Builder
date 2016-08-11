@@ -32,4 +32,9 @@ public class BlockSetEntry : MonoBehaviour
 
 		return false;
 	}
+
+	public void Build()
+	{
+		CurrencyManager.Instance.SpendCurrency(BlockCost);
+	}
 }

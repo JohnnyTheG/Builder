@@ -61,10 +61,8 @@ public class BuildMode : BaseMode
 							{
 								BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
-								// Check that currency is available.
 								if (cBlockSetEntry.CanBeBuilt())
 								{
-									CurrencyManager.Instance.SpendCurrency(cBlockSetEntry.BlockCost);
 									CreateBlock(cGridInfo);
 								}
 							}
@@ -177,6 +175,8 @@ public class BuildMode : BaseMode
 
 		if (cCurrentBlockSetEntry != null)
 		{
+			cCurrentBlockSetEntry.Build();
+
 			GameObject cBlock = Instantiate(cCurrentBlockSetEntry.BlockInfo.gameObject);
 
 			BlockInfo cBlockInfo = cBlock.GetComponent<BlockInfo>();
