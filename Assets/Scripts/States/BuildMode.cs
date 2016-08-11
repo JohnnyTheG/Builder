@@ -43,7 +43,6 @@ public class BuildMode : BaseMode
 
 		if (!InputActions.Instance.RotateCamera())
 		{
-			// Update.
 			if (InputActions.Instance.Select())
 			{
 				RaycastHit cRaycastHit;
@@ -119,7 +118,7 @@ public class BuildMode : BaseMode
 					{
 						GridInfo cGridInfo = cRaycastHit.collider.gameObject.GetComponent<GridInfo>();
 
-						if (cGridInfo != null)
+						if (cGridInfo != null && cGridInfo.IsOccupied())
 						{
 							cGridInfo.Occupier.Destroy();
 						}

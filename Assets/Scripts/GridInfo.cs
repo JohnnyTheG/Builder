@@ -3,7 +3,7 @@ using System;
 
 public class GridInfo : MonoBehaviour
 {
-	public bool Occupiable = true;
+	bool Occupiable = true;
 
 	bool Occupied = false;
 
@@ -22,6 +22,11 @@ public class GridInfo : MonoBehaviour
 		{
 			return Occupiable && !Occupied;
 		}
+	}
+
+	public bool IsOccupied()
+	{
+		return Occupied;
 	}
 
 	public void SetOccupied(BlockInfo cOccupyingBlockInfo)
