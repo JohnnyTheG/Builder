@@ -9,7 +9,7 @@ public class BuildMenuController : Singleton<BuildMenuController>
 
 	public void Initialise()
 	{
-		BuildMenuBlockInfo.SetBlockSetEntryUI(BlockManager.Instance.GetCurrentBlock(false));
+		BuildMenuBlockInfo.SetBlockSetEntryUI(BlockManager.Instance.GetCurrentBlock());
 	}
 
 	public void NextBlock()
@@ -24,7 +24,7 @@ public class BuildMenuController : Singleton<BuildMenuController>
 
 	public void SetCurrentBlockSetEntry()
 	{
-		BlockManager.Instance.GetCurrentBlock(true);
+		BlockManager.Instance.SetCurrentBlock();
 		Application.Instance.TrySetMode(Application.Mode.Build);
 	}
 }

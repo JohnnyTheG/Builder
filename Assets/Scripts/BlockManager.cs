@@ -57,16 +57,54 @@ public class BlockManager : Singleton<BlockManager>
 		return cBlockSetEntry;
 	}
 
-	public BlockSetEntry GetCurrentBlock(bool bSetCurrentBlockSetEntry)
+	public BlockSetEntry GetCurrentBlock()
 	{
 		BlockSetEntry cBlockSetEntry = GetBlockSetEntry(m_eCurrentBlockSetEntryType, ref m_nCurrentBlockSetEntryIndex, 0);
 
-		if (bSetCurrentBlockSetEntry)
+		return cBlockSetEntry;
+	}
+
+	public void SetCurrentBlock()
+	{
+		CurrentBlockSetEntry = GetBlockSetEntry(m_eCurrentBlockSetEntryType, ref m_nCurrentBlockSetEntryIndex, 0);
+	}
+
+	public Types GetNextBlockSetType(bool bSetCurrentBlockSetEntry)
+	{
+		int nCurrentIndex = (int)m_eCurrentBlockSetEntryType + 1;
+
+		if (nCurrentIndex > m_aeTypes.Length - 1)
 		{
-			CurrentBlockSetEntry = cBlockSetEntry;
+			nCurrentIndex = 0;
 		}
 
-		return cBlockSetEntry;
+		m_eCurrentBlockSetEntryType = (Types)nCurrentIndex;
+
+		if (bSetCurrentBlockSetEntry)
+		{
+			SetCurrentBlock();
+		}
+
+		return m_aeTypes[nCurrentIndex];
+	}
+
+	public Types GetPreviousBlockSetType(bool bSetCurrentBlockSetEntry)
+	{
+		int nCurrentIndex = (int)m_eCurrentBlockSetEntryType - 1;
+
+		if (nCurrentIndex < 0)
+		{
+			nCurrentIndex = m_aeTypes.Length - 1;
+		}
+
+		m_eCurrentBlockSetEntryType = (Types)nCurrentIndex;
+
+		if (bSetCurrentBlockSetEntry)
+		{
+			SetCurrentBlock();
+		}
+
+		return m_aeTypes[nCurrentIndex];
 	}
 
 	new void Awake()
@@ -104,12 +142,12 @@ public class BlockManager : Singleton<BlockManager>
 		{
 			Types eType = m_aeTypes[nType];
 
-            if (m_dictBlocks.ContainsKey(eType) && cBlockSet.m_dictBlockSet.ContainsKey(eType))
+			if (m_dictBlocks.ContainsKey(eType) && cBlockSet.m_dictBlockSet.ContainsKey(eType))
 			{
 				m_dictBlocks[eType].AddRange(cBlockSet.m_dictBlockSet[eType]);
 			}
 		}
-    }
+	}
 
 	public void SetInitialBlockSetEntry()
 	{
@@ -135,7 +173,10 @@ public class BlockManager : Singleton<BlockManager>
 	{
 		if (m_dictBlocks.ContainsKey(eType))
 		{
-			return Utils.GetArrayEntry(m_dictBlocks[eType].ToArray(), ref nIndex, nIncrement);
+			if (m_dictBlocks[eType].Count > 0)
+			{
+				return Utils.GetArrayEntry(m_dictBlocks[eType].ToArray(), ref nIndex, nIncrement);
+			}
 		}
 
 		return null;

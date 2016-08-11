@@ -146,12 +146,12 @@ public class BuildMode : BaseMode
 
 			if (KeyboardInput.Instance.KeyDown(KeyCode.UpArrow))
 			{
-
+				BlockManager.Instance.GetNextBlockSetType(true);
 			}
 
 			if (KeyboardInput.Instance.KeyDown(KeyCode.DownArrow))
 			{
-				Debug.Break();
+				BlockManager.Instance.GetPreviousBlockSetType(true);
 			}
 
 			if (KeyboardInput.Instance.KeyDown(KeyCode.LeftArrow))
@@ -208,7 +208,7 @@ public class BuildMode : BaseMode
 			GridInfo cGridInfo = cRaycastHit.collider.GetComponent<GridInfo>();
 
 			// If the build type has changed, then get rid of the current highlight. Then further down new one is spawned.
-			if (m_cBlockInfoBuildHighlight != null && (m_cBlockInfoBuildHighlight.Name != BlockManager.Instance.GetCurrentBlockSetEntry().BlockInfo.Name))
+			if ((GetCurrentBlockSetEntry() == null) || (m_cBlockInfoBuildHighlight != null && (m_cBlockInfoBuildHighlight.Name != GetCurrentBlockSetEntry().BlockInfo.Name)))
 			{
 				DestroyBlockBuildHighlight();
 				m_cBlockInfoBuildHighlight = null;
