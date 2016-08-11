@@ -5,12 +5,12 @@ using System.Collections.Generic;
 
 public class BlockSet : MonoBehaviour
 {
-	public Dictionary<BlockManager.Types, List<BlockSetEntry>> m_dictBlockSet = new Dictionary<BlockManager.Types, List<BlockSetEntry>>();
+	public Dictionary<BlockManager.Category, List<BlockSetEntry>> m_dictBlockSet = new Dictionary<BlockManager.Category, List<BlockSetEntry>>();
 
 	void Awake()
 	{
 		// Get the types of blocks.
-		BlockManager.Types[] aeBlockInfoTypes = (BlockManager.Types[])Enum.GetValues(typeof(BlockManager.Types));
+		BlockManager.Category[] aeBlockInfoTypes = (BlockManager.Category[])Enum.GetValues(typeof(BlockManager.Category));
 
 		// Add all the types to the dictionary.
 		for (int nType = 0; nType < aeBlockInfoTypes.Length; nType++)

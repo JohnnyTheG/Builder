@@ -51,10 +51,10 @@ public class CameraController : Singleton<CameraController>
 	{
 		if (m_eState == State.Free)
 		{
-			if (KeyboardInput.Instance.KeyHeld(KeyCode.LeftAlt))
+			if (InputActions.Instance.RotateCamera())
 			{
-				transform.RotateAround(Focus.transform.position, Vector3.up, MouseInput.Instance.MouseX() * RotationSpeedMultiplier);
-				transform.RotateAround(Focus.transform.position, transform.right, MouseInput.Instance.MouseY(true) * RotationSpeedMultiplier);
+				transform.RotateAround(Focus.transform.position, Vector3.up, InputActions.Instance.RotateCameraXAxis() * RotationSpeedMultiplier);
+				transform.RotateAround(Focus.transform.position, transform.right, InputActions.Instance.RotateCameraYAxis() * RotationSpeedMultiplier);
 			}
 		}
 	}
@@ -66,11 +66,8 @@ public class CameraController : Singleton<CameraController>
 			// Flip the movement deltas to negative as mouse movement is "reversed".
 			Vector3 vecMoveDelta = Vector3.zero;
 
-			vecMoveDelta += transform.forward * -MouseInput.Instance.MouseY() * PanningSpeedMultiplier;
-			vecMoveDelta += transform.right * -MouseInput.Instance.MouseX() * PanningSpeedMultiplier;
-
-			// Dont want movement on Y.
-			vecMoveDelta.y = 0.0f;
+			vecMoveDelta += transform.right * -InputActions.Instance.PanCameraXAxis() * PanningSpeedMultiplier;
+			vecMoveDelta += transform.up * -InputActions.Instance.PanCameraYAxis() * PanningSpeedMultiplier;
 
 			transform.position += vecMoveDelta;
 			Focus.transform.position += vecMoveDelta;
@@ -85,9 +82,9 @@ public class CameraController : Singleton<CameraController>
 
 				Vector3 vecPositionBeforeMoveTowards = transform.position;
 
-				float fMouseScrollWheel = MouseInput.Instance.MouseScrollWheel();
+				float fZoom = InputActions.Instance.ZoomCameraAxis();
 
-				transform.position = Vector3.MoveTowards(transform.position, Focus.transform.position, fMouseScrollWheel * ZoomSpeedMultiplier * Time.deltaTime);
+				transform.position = Vector3.MoveTowards(transform.position, Focus.transform.position, fZoom * ZoomSpeedMultiplier * Time.deltaTime);
 
 				// This is primitive. Improve so that the limit is a fixed position.
 				// Currently it depends on position before rolling mouse wheel.

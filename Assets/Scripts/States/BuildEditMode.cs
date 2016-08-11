@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿/*using UnityEngine;
 using System.Collections;
 
 public class BuildEditMode : BaseMode
@@ -17,10 +17,10 @@ public class BuildEditMode : BaseMode
 			Application.Instance.TrySetMode(Application.Mode.Build);
 		}
 
-		if (!KeyboardInput.Instance.KeyHeld(KeyCode.LeftAlt))
+		if (!InputActions.Instance.RotateCamera())
 		{
 			// Update.
-			if (MouseInput.Instance.LeftMouseDown)
+			if (InputActions.Instance.Select())
 			{
 				RaycastHit cRaycastHit;
 
@@ -61,13 +61,13 @@ public class BuildEditMode : BaseMode
 
 		if (GetSelectedBlock() != null)
 		{
-			if (KeyboardInput.Instance.KeyDown(KeyCode.R))
+			if (InputActions.Instance.Rotate())
 			{
 				GetSelectedBlock().Rotate(new Vector3(0.0f, 90.0f, 0.0f));
 			}
 		}
 
-		if (MouseInput.Instance.RightMouseDown)
+		if (InputActions.Instance.Delete())
 		{
 			RaycastHit cRaycastHit;
 
@@ -92,4 +92,4 @@ public class BuildEditMode : BaseMode
 			}
 		}
 	}
-}
+}*/

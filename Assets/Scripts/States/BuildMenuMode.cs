@@ -41,7 +41,7 @@ public class BuildMenuMode : BaseMode
 
 	void Update()
 	{
-		if (KeyboardInput.Instance.KeyDown(KeyCode.Escape))
+		if (InputActions.Instance.Cancel())
 		{
 			Application.Instance.TrySetMode(Application.Mode.Build);
 		}

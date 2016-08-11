@@ -7,7 +7,7 @@ public class BlockInfo : MonoBehaviour
 
 	public string Name = "";
 
-	public BlockManager.Types Type;
+	public BlockManager.Category Type;
 
 	public float Height = 1.0f;
 	public float Width = 1.0f;

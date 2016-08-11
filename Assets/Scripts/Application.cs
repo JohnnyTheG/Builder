@@ -8,7 +8,7 @@ public class Application : Singleton<Application>
 	{
 		Undefined,
 		Build,
-		BuildEdit,
+		//BuildEdit,
 		BuildMenu,
 	}
 
@@ -20,7 +20,7 @@ public class Application : Singleton<Application>
 	readonly Dictionary<Mode, Type> m_dictModes = new Dictionary<Mode, Type>()
 	{
 		{Mode.Build, typeof(BuildMode)},
-		{Mode.BuildEdit, typeof(BuildEditMode)},
+		//{Mode.BuildEdit, typeof(BuildEditMode)},
 		{Mode.BuildMenu, typeof(BuildMenuMode)},
 	};
 

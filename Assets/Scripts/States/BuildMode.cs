@@ -25,7 +25,7 @@ public class BuildMode : BaseMode
 	{
 		UpdateMouseHighlight();
 
-		if (KeyboardInput.Instance.KeyDown(KeyCode.Escape))
+		if (InputActions.Instance.Cancel())
 		{
 			if (GetSelectedBlock() != null)
 			{
@@ -36,15 +36,15 @@ public class BuildMode : BaseMode
 				Application.Instance.TrySetMode(Application.Mode.BuildMenu);
 			}
 		}
-		else if (KeyboardInput.Instance.KeyDown(KeyCode.Tab))
-		{
-			//Application.Instance.TrySetMode(Application.Mode.BuildEdit);
-		}
+		//else if (KeyboardInput.Instance.KeyDown(KeyCode.Tab))
+		//{
+		//	//Application.Instance.TrySetMode(Application.Mode.BuildEdit);
+		//}
 
-		if (!KeyboardInput.Instance.KeyHeld(KeyCode.LeftAlt))
+		if (!InputActions.Instance.RotateCamera())
 		{
 			// Update.
-			if (MouseInput.Instance.LeftMouseDown)
+			if (InputActions.Instance.Select())
 			{
 				RaycastHit cRaycastHit;
 
@@ -98,7 +98,7 @@ public class BuildMode : BaseMode
 				}
 			}
 
-			if (MouseInput.Instance.RightMouseDown)
+			if (InputActions.Instance.Delete())
 			{
 				RaycastHit cRaycastHit;
 
@@ -127,7 +127,7 @@ public class BuildMode : BaseMode
 				}
 			}
 
-			if (KeyboardInput.Instance.KeyDown(KeyCode.R))
+			if (InputActions.Instance.Rotate())
 			{
 				Vector3 vecEuler = m_quatBuildDirection.eulerAngles;
 
@@ -136,7 +136,7 @@ public class BuildMode : BaseMode
 				m_quatBuildDirection = Quaternion.Euler(vecEuler);
 			}
 
-			if (KeyboardInput.Instance.KeyDown(KeyCode.F))
+			if (InputActions.Instance.Focus())
 			{
 				if (GetSelectedBlock() != null)
 				{
@@ -144,24 +144,24 @@ public class BuildMode : BaseMode
 				}
 			}
 
-			if (KeyboardInput.Instance.KeyDown(KeyCode.UpArrow))
+			if (InputActions.Instance.NextBlockSetEntryCategory())
 			{
-				BlockManager.Instance.GetNextBlockSetType(true);
+				BlockManager.Instance.GetNextBlockSetEntryCategory(true);
 			}
 
-			if (KeyboardInput.Instance.KeyDown(KeyCode.DownArrow))
+			if (InputActions.Instance.PreviousBlockSetEntryCategory())
 			{
-				BlockManager.Instance.GetPreviousBlockSetType(true);
+				BlockManager.Instance.GetPreviousBlockSetEntryCategory(true);
 			}
 
-			if (KeyboardInput.Instance.KeyDown(KeyCode.LeftArrow))
-			{
-				BlockManager.Instance.GetPreviousBlock(true);
-			}
-
-			if (KeyboardInput.Instance.KeyDown(KeyCode.RightArrow))
+			if (InputActions.Instance.NextBlockSetEntry())
 			{
 				BlockManager.Instance.GetNextBlock(true);
+			}
+
+			if (InputActions.Instance.PreviousBlockSetEntry())
+			{
+				BlockManager.Instance.GetPreviousBlock(true);
 			}
         }
 	}

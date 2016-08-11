@@ -5,16 +5,16 @@ using System.Collections.Generic;
 
 public class BlockManager : Singleton<BlockManager>
 {
-	public enum Types
+	public enum Category
 	{
 		Wall,
 		Floor,
 		Door,
 	}
 
-	public Dictionary<Types, List<BlockSetEntry>> m_dictBlocks = new Dictionary<Types, List<BlockSetEntry>>();
+	public Dictionary<Category, List<BlockSetEntry>> m_dictBlocks = new Dictionary<Category, List<BlockSetEntry>>();
 
-	Types[] m_aeTypes;
+	Category[] m_aeCategories;
 
 	public bool Initialised
 	{
@@ -24,7 +24,7 @@ public class BlockManager : Singleton<BlockManager>
 	}
 
 	int m_nCurrentBlockSetEntryIndex = 0;
-	Types m_eCurrentBlockSetEntryType = Types.Wall;
+	Category m_eCurrentBlockSetEntryCategory = Category.Wall;
 
 	BlockSetEntry CurrentBlockSetEntry = null;
 
@@ -35,7 +35,7 @@ public class BlockManager : Singleton<BlockManager>
 
 	public BlockSetEntry GetNextBlock(bool bSetCurrentBlockSetEntry)
 	{
-		BlockSetEntry cBlockSetEntry = GetBlockSetEntry(m_eCurrentBlockSetEntryType, ref m_nCurrentBlockSetEntryIndex, 1);
+		BlockSetEntry cBlockSetEntry = GetBlockSetEntry(m_eCurrentBlockSetEntryCategory, ref m_nCurrentBlockSetEntryIndex, 1);
 
 		if (bSetCurrentBlockSetEntry)
 		{
@@ -47,7 +47,7 @@ public class BlockManager : Singleton<BlockManager>
 
 	public BlockSetEntry GetPreviousBlock(bool bSetCurrentBlockSetEntry)
 	{
-		BlockSetEntry cBlockSetEntry = GetBlockSetEntry(m_eCurrentBlockSetEntryType, ref m_nCurrentBlockSetEntryIndex, -1);
+		BlockSetEntry cBlockSetEntry = GetBlockSetEntry(m_eCurrentBlockSetEntryCategory, ref m_nCurrentBlockSetEntryIndex, -1);
 
 		if (bSetCurrentBlockSetEntry)
 		{
@@ -59,52 +59,52 @@ public class BlockManager : Singleton<BlockManager>
 
 	public BlockSetEntry GetCurrentBlock()
 	{
-		BlockSetEntry cBlockSetEntry = GetBlockSetEntry(m_eCurrentBlockSetEntryType, ref m_nCurrentBlockSetEntryIndex, 0);
+		BlockSetEntry cBlockSetEntry = GetBlockSetEntry(m_eCurrentBlockSetEntryCategory, ref m_nCurrentBlockSetEntryIndex, 0);
 
 		return cBlockSetEntry;
 	}
 
 	public void SetCurrentBlock()
 	{
-		CurrentBlockSetEntry = GetBlockSetEntry(m_eCurrentBlockSetEntryType, ref m_nCurrentBlockSetEntryIndex, 0);
+		CurrentBlockSetEntry = GetBlockSetEntry(m_eCurrentBlockSetEntryCategory, ref m_nCurrentBlockSetEntryIndex, 0);
 	}
 
-	public Types GetNextBlockSetType(bool bSetCurrentBlockSetEntry)
+	public Category GetNextBlockSetEntryCategory(bool bSetCurrentBlockSetEntry)
 	{
-		int nCurrentIndex = (int)m_eCurrentBlockSetEntryType + 1;
+		int nCurrentIndex = (int)m_eCurrentBlockSetEntryCategory + 1;
 
-		if (nCurrentIndex > m_aeTypes.Length - 1)
+		if (nCurrentIndex > m_aeCategories.Length - 1)
 		{
 			nCurrentIndex = 0;
 		}
 
-		m_eCurrentBlockSetEntryType = (Types)nCurrentIndex;
+		m_eCurrentBlockSetEntryCategory = (Category)nCurrentIndex;
 
 		if (bSetCurrentBlockSetEntry)
 		{
 			SetCurrentBlock();
 		}
 
-		return m_aeTypes[nCurrentIndex];
+		return m_aeCategories[nCurrentIndex];
 	}
 
-	public Types GetPreviousBlockSetType(bool bSetCurrentBlockSetEntry)
+	public Category GetPreviousBlockSetEntryCategory(bool bSetCurrentBlockSetEntry)
 	{
-		int nCurrentIndex = (int)m_eCurrentBlockSetEntryType - 1;
+		int nCurrentIndex = (int)m_eCurrentBlockSetEntryCategory - 1;
 
 		if (nCurrentIndex < 0)
 		{
-			nCurrentIndex = m_aeTypes.Length - 1;
+			nCurrentIndex = m_aeCategories.Length - 1;
 		}
 
-		m_eCurrentBlockSetEntryType = (Types)nCurrentIndex;
+		m_eCurrentBlockSetEntryCategory = (Category)nCurrentIndex;
 
 		if (bSetCurrentBlockSetEntry)
 		{
 			SetCurrentBlock();
 		}
 
-		return m_aeTypes[nCurrentIndex];
+		return m_aeCategories[nCurrentIndex];
 	}
 
 	new void Awake()
@@ -112,14 +112,14 @@ public class BlockManager : Singleton<BlockManager>
 		base.Awake();
 
 		// Get the types of blocks.
-		m_aeTypes = (Types[])Enum.GetValues(typeof(Types));
+		m_aeCategories = (Category[])Enum.GetValues(typeof(Category));
 
 		// Add all the types to the dictionary.
-		for (int nType = 0; nType < m_aeTypes.Length; nType++)
+		for (int nCategory = 0; nCategory < m_aeCategories.Length; nCategory++)
 		{
-			if (!m_dictBlocks.ContainsKey(m_aeTypes[nType]))
+			if (!m_dictBlocks.ContainsKey(m_aeCategories[nCategory]))
 			{
-				m_dictBlocks.Add(m_aeTypes[nType], new List<BlockSetEntry>());
+				m_dictBlocks.Add(m_aeCategories[nCategory], new List<BlockSetEntry>());
 			}
 		}
 	}
@@ -138,13 +138,13 @@ public class BlockManager : Singleton<BlockManager>
 
 	public void RegisterBlockSetEntry(BlockSet cBlockSet)
 	{
-		for (int nType = 0; nType < m_aeTypes.Length; nType++)
+		for (int nCategory = 0; nCategory < m_aeCategories.Length; nCategory++)
 		{
-			Types eType = m_aeTypes[nType];
+			Category eCategory = m_aeCategories[nCategory];
 
-			if (m_dictBlocks.ContainsKey(eType) && cBlockSet.m_dictBlockSet.ContainsKey(eType))
+			if (m_dictBlocks.ContainsKey(eCategory) && cBlockSet.m_dictBlockSet.ContainsKey(eCategory))
 			{
-				m_dictBlocks[eType].AddRange(cBlockSet.m_dictBlockSet[eType]);
+				m_dictBlocks[eCategory].AddRange(cBlockSet.m_dictBlockSet[eCategory]);
 			}
 		}
 	}
@@ -152,15 +152,15 @@ public class BlockManager : Singleton<BlockManager>
 	public void SetInitialBlockSetEntry()
 	{
 		// Add all the types to the dictionary.
-		for (int nType = 0; nType < m_aeTypes.Length; nType++)
+		for (int nCategory = 0; nCategory < m_aeCategories.Length; nCategory++)
 		{
-			if (m_dictBlocks.ContainsKey(m_aeTypes[nType]))
+			if (m_dictBlocks.ContainsKey(m_aeCategories[nCategory]))
 			{
-				for (int nBlock = 0; nBlock < m_dictBlocks[m_aeTypes[nType]].Count; nBlock++)
+				for (int nBlock = 0; nBlock < m_dictBlocks[m_aeCategories[nCategory]].Count; nBlock++)
 				{
-					if (m_dictBlocks[m_aeTypes[nType]][nBlock] != null)
+					if (m_dictBlocks[m_aeCategories[nCategory]][nBlock] != null)
 					{
-						CurrentBlockSetEntry = m_dictBlocks[m_aeTypes[nType]][nBlock];
+						CurrentBlockSetEntry = m_dictBlocks[m_aeCategories[nCategory]][nBlock];
 
 						return;
 					}
@@ -169,13 +169,13 @@ public class BlockManager : Singleton<BlockManager>
 		}
 	}
 
-	public BlockSetEntry GetBlockSetEntry(Types eType, ref int nIndex, int nIncrement)
+	public BlockSetEntry GetBlockSetEntry(Category eCategory, ref int nIndex, int nIncrement)
 	{
-		if (m_dictBlocks.ContainsKey(eType))
+		if (m_dictBlocks.ContainsKey(eCategory))
 		{
-			if (m_dictBlocks[eType].Count > 0)
+			if (m_dictBlocks[eCategory].Count > 0)
 			{
-				return Utils.GetArrayEntry(m_dictBlocks[eType].ToArray(), ref nIndex, nIncrement);
+				return Utils.GetArrayEntry(m_dictBlocks[eCategory].ToArray(), ref nIndex, nIncrement);
 			}
 		}
 
