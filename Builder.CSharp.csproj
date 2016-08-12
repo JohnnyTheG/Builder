@@ -80,8 +80,9 @@
     <Compile Include="Assets\Scripts\GameGlobals.cs" />
     <Compile Include="Assets\Scripts\GridInfo.cs" />
     <Compile Include="Assets\Scripts\GridSettings.cs" />
-    <Compile Include="Assets\Scripts\KeyboardInput.cs" />
-    <Compile Include="Assets\Scripts\MouseInput.cs" />
+    <Compile Include="Assets\Scripts\Input\InputActions.cs" />
+    <Compile Include="Assets\Scripts\Input\KeyboardInput.cs" />
+    <Compile Include="Assets\Scripts\Input\MouseInput.cs" />
     <Compile Include="Assets\Scripts\PhysicsLayers.cs" />
     <Compile Include="Assets\Scripts\Singleton.cs" />
     <Compile Include="Assets\Scripts\States\BaseMode.cs" />
