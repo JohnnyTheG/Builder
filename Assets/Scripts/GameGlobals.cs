@@ -10,4 +10,6 @@ public class GameGlobals : Singleton<GameGlobals>
 	public Material GhostMaterial;
 	public Color CanBuildColor;
 	public Color CannotBuildColor;
+
+	public Color SelectedBlockColor;
 }

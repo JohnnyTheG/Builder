@@ -18,13 +18,23 @@ public class BlockInfo : MonoBehaviour
 
 	bool m_bIsGhost = false;
 
+	MeshRenderer m_cMeshRenderer;
+
+	Color m_cOriginalColor;
+
+	public void Awake()
+	{
+		m_cMeshRenderer = GetComponent<MeshRenderer>();
+		m_cOriginalColor = m_cMeshRenderer.material.color;
+	}
+
 	public void Initialise(bool bIsGhost)
 	{
 		m_bIsGhost = bIsGhost;
 
 		if (m_bIsGhost)
 		{
-			GetComponent<MeshRenderer>().material = GameGlobals.Instance.GhostMaterial;
+			m_cMeshRenderer.material = GameGlobals.Instance.GhostMaterial;
 
 			Collider[] acColliders = GetComponents<Collider>();
 
@@ -80,10 +90,12 @@ public class BlockInfo : MonoBehaviour
 	public void Selected()
 	{
 		// Do stuff for selection here.
-	}
+		m_cMeshRenderer.material.SetColor("_Color", GameGlobals.Instance.SelectedBlockColor);
+    }
 
 	public void Deselected()
 	{
 		// Do stuff for deselection here.
+		m_cMeshRenderer.material.SetColor("_Color", m_cOriginalColor);
 	}
 }
