@@ -21,9 +21,14 @@ public class InputActions : Singleton<InputActions>
 		return KeyboardInput.Instance.KeyDown(KeyCode.Escape);
     }
 
-	public bool Rotate()
+	public bool RotateAnticlockwise()
 	{
-		return KeyboardInput.Instance.KeyDown(KeyCode.R);
+		return KeyboardInput.Instance.KeyDown(KeyCode.A);
+	}
+
+	public bool RotateClockwise()
+	{
+		return KeyboardInput.Instance.KeyDown(KeyCode.D);
 	}
 
 	public bool Focus()
@@ -33,22 +38,25 @@ public class InputActions : Singleton<InputActions>
 
 	public bool NextBlockSetEntryCategory()
 	{
-		return KeyboardInput.Instance.KeyDown(KeyCode.UpArrow);
+		return KeyboardInput.Instance.KeyDown(KeyCode.Tab);
 	}
 
 	public bool PreviousBlockSetEntryCategory()
 	{
-		return KeyboardInput.Instance.KeyDown(KeyCode.DownArrow);
+		//return KeyboardInput.Instance.KeyDown(KeyCode.DownArrow);
+
+		// Removing this to test tabbing through categories.
+		return false;
 	}
 
 	public bool NextBlockSetEntry()
 	{
-		return KeyboardInput.Instance.KeyDown(KeyCode.LeftArrow);
+		return KeyboardInput.Instance.KeyDown(KeyCode.Q);
     }
 
 	public bool PreviousBlockSetEntry()
 	{
-		return KeyboardInput.Instance.KeyDown(KeyCode.RightArrow);
+		return KeyboardInput.Instance.KeyDown(KeyCode.E);
 	}
 
 	public bool RotateCamera()

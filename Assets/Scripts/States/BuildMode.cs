@@ -124,7 +124,16 @@ public class BuildMode : BaseMode
 				}
 			}
 
-			if (InputActions.Instance.Rotate())
+			if (InputActions.Instance.RotateAnticlockwise())
+			{
+				Vector3 vecEuler = m_quatBuildDirection.eulerAngles;
+
+				vecEuler -= new Vector3(0.0f, 90.0f, 0.0f);
+
+				m_quatBuildDirection = Quaternion.Euler(vecEuler);
+			}
+
+			if (InputActions.Instance.RotateClockwise())
 			{
 				Vector3 vecEuler = m_quatBuildDirection.eulerAngles;
 
