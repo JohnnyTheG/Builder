@@ -22,13 +22,13 @@ public class BlockInfo : MonoBehaviour
 
 	Color m_cOriginalColor;
 
-	public void Awake()
+	public virtual void Awake()
 	{
 		m_cMeshRenderer = GetComponent<MeshRenderer>();
 		m_cOriginalColor = m_cMeshRenderer.material.color;
 	}
 
-	public void Initialise(bool bIsGhost)
+	public virtual void Initialise(bool bIsGhost)
 	{
 		m_bIsGhost = bIsGhost;
 
@@ -77,7 +77,7 @@ public class BlockInfo : MonoBehaviour
 		transform.rotation = Quaternion.Euler(vecRotation);
 	}
 
-	public void Destroy()
+	public virtual void Destroy()
 	{
 		if (m_cGridInfo != null)
 		{
@@ -87,13 +87,13 @@ public class BlockInfo : MonoBehaviour
 		Destroy(gameObject);
 	}
 
-	public void Selected()
+	public virtual void Selected()
 	{
 		// Do stuff for selection here.
 		m_cMeshRenderer.material.SetColor("_Color", GameGlobals.Instance.SelectedBlockColor);
     }
 
-	public void Deselected()
+	public virtual void Deselected()
 	{
 		// Do stuff for deselection here.
 		m_cMeshRenderer.material.SetColor("_Color", m_cOriginalColor);
