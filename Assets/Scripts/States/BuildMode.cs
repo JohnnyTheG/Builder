@@ -184,7 +184,10 @@ public class BuildMode : BaseMode
 
 		if (cCurrentBlockSetEntry != null)
 		{
-			cCurrentBlockSetEntry.Build();
+			if (!bIsGhost)
+			{
+				cCurrentBlockSetEntry.Build();
+			}
 
 			GameObject cBlock = Instantiate(cCurrentBlockSetEntry.BlockInfo.gameObject);
 

@@ -44,6 +44,6 @@ public class BlockSet : MonoBehaviour
 		}
 
 		// Register with the block manager.
-		BlockManager.Instance.RegisterBlockSetEntry(this);
+		BlockManager.Instance.RegisterBlockSet(this);
 	}
 }
