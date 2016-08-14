@@ -10,6 +10,7 @@ public class BlockManager : Singleton<BlockManager>
 		Wall,
 		Floor,
 		Door,
+		Power,
 	}
 
 	public Dictionary<Category, List<BlockSetEntry>> m_dictBlocks = new Dictionary<Category, List<BlockSetEntry>>();
@@ -136,7 +137,7 @@ public class BlockManager : Singleton<BlockManager>
 		Initialised = true;
 	}
 
-	public void RegisterBlockSetEntry(BlockSet cBlockSet)
+	public void RegisterBlockSet(BlockSet cBlockSet)
 	{
 		for (int nCategory = 0; nCategory < m_aeCategories.Length; nCategory++)
 		{
@@ -161,6 +162,8 @@ public class BlockManager : Singleton<BlockManager>
 					if (m_dictBlocks[m_aeCategories[nCategory]][nBlock] != null)
 					{
 						CurrentBlockSetEntry = m_dictBlocks[m_aeCategories[nCategory]][nBlock];
+						m_eCurrentBlockSetEntryCategory = m_aeCategories[nCategory];
+						m_nCurrentBlockSetEntryIndex = nBlock;
 
 						return;
 					}
