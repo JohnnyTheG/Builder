@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PowerGenerator : MonoBehaviour
+public class PowerGeneratorBlockInfo : BlockInfo
 {
 	public int PowerGeneration = 100;
 }
