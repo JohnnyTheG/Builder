@@ -101,7 +101,5 @@ public class Application : Singleton<Application>
 	void OnGUI()
 	{
 		GUI.Label(new Rect(0.0f, 0.0f, 300.0f, 20.0f), "Mode: " + m_eMode.ToString());
-		GUI.Label(new Rect(0.0f, 20.0f, 600.0f, 20.0f), "SelectedBlock: " + (BlockManager.Instance.GetSelectedBlock() != null ? BlockManager.Instance.GetSelectedBlock().name : "None"));
-		GUI.Label(new Rect(0.0f, 40.0f, 600.0f, 20.0f), "Currency: " + CurrencyManager.Instance.GetCurrency());
 	}
 }

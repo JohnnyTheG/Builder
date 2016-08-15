@@ -3,8 +3,8 @@ using System.Collections;
 
 public class PowerManager : Singleton<PowerManager>
 {
-	int PowerCapacity = 1000;
-	int PowerOutput = 1000;
+	int PowerCapacity = 0;
+	int PowerOutput = 0;
 
 	public void AddPowerCapacity(int nPowerCapacity)
 	{
