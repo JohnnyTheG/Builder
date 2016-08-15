@@ -28,7 +28,7 @@ public class InputActions : Singleton<InputActions>
 
 	public bool RotateClockwise()
 	{
-		return KeyboardInput.Instance.KeyDown(KeyCode.D);
+		return KeyboardInput.Instance.KeyDown(KeyCode.D) || KeyboardInput.Instance.KeyDown(KeyCode.R);
 	}
 
 	public bool Focus()
