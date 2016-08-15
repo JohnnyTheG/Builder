@@ -5,6 +5,7 @@ public class PowerManager : Singleton<PowerManager>
 {
 	int PowerCapacity = 0;
 	int PowerOutput = 0;
+	int PowerConsumption = 0;
 
 	public void AddPowerCapacity(int nPowerCapacity)
 	{
@@ -26,6 +27,16 @@ public class PowerManager : Singleton<PowerManager>
 		PowerOutput -= nPowerOutput;
 	}
 
+	public void AddPowerConsumption(int nPowerConsumption)
+	{
+		PowerConsumption += nPowerConsumption;
+	}
+
+	public void RemovePowerConsumption(int nPowerConsumption)
+	{
+		PowerConsumption -= nPowerConsumption;
+	}
+
 	public int GetPowerOutput()
 	{
 		// Output should never be higher than capacity when returned or displayed.
@@ -39,5 +50,10 @@ public class PowerManager : Singleton<PowerManager>
 	public int GetPowerCapacity()
 	{
 		return PowerCapacity;
+	}
+
+	public int GetPowerConsumption()
+	{
+		return PowerConsumption;
 	}
 }
