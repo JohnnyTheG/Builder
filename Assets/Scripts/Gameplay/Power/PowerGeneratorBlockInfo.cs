@@ -9,7 +9,7 @@ public class PowerGeneratorBlockInfo : BlockInfo
 	{
 		base.Initialise(bIsGhost);
 
-		if (!bIsGhost)
+		if (!m_bIsGhost)
 		{
 			PowerManager.Instance.AddPowerOutput(PowerOutput);
 		}
@@ -19,6 +19,9 @@ public class PowerGeneratorBlockInfo : BlockInfo
 	{
 		base.Destroy();
 
-		PowerManager.Instance.RemovePowerOutput(PowerOutput);
+		if (!m_bIsGhost)
+		{
+			PowerManager.Instance.RemovePowerOutput(PowerOutput);
+		}
 	}
 }

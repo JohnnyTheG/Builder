@@ -16,7 +16,7 @@ public class BlockInfo : MonoBehaviour
 	[HideInInspector]
 	public GridInfo m_cGridInfo;
 
-	bool m_bIsGhost = false;
+	protected bool m_bIsGhost = false;
 
 	MeshRenderer m_cMeshRenderer;
 

@@ -9,7 +9,7 @@ public class PowerCapacitorBlockInfo : BlockInfo
 	{
 		base.Initialise(bIsGhost);
 
-		if (!bIsGhost)
+		if (!m_bIsGhost)
 		{
 			PowerManager.Instance.AddPowerCapacity(PowerCapacity);
 		}
@@ -19,6 +19,9 @@ public class PowerCapacitorBlockInfo : BlockInfo
 	{
 		base.Destroy();
 
-		PowerManager.Instance.RemovePowerCapacity(PowerCapacity);
+		if (!m_bIsGhost)
+		{
+			PowerManager.Instance.RemovePowerCapacity(PowerCapacity);
+		}
 	}
 }
