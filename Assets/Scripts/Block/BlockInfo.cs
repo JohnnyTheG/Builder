@@ -15,6 +15,7 @@ public class BlockInfo : MonoBehaviour
 	[NonSerialized]
 	[HideInInspector]
 	public GridInfo m_cGridInfo;
+	GridInfo.BuildSlots m_eBuildSlot;
 
 	protected bool m_bIsGhost = false;
 
@@ -45,21 +46,22 @@ public class BlockInfo : MonoBehaviour
 		}
 	}
 
-	public void Move(GridInfo cGridInfo)
+	public void Move(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot)
 	{
 		if (!m_bIsGhost)
 		{
 			if (m_cGridInfo != null)
 			{
-				m_cGridInfo.SetUnoccupied();
+				m_cGridInfo.SetUnoccupied(eBuildSlot);
 			}
 		}
 
 		m_cGridInfo = cGridInfo;
+		m_eBuildSlot = eBuildSlot;
 
 		if (!m_bIsGhost)
 		{
-			m_cGridInfo.SetOccupied(this);
+			m_cGridInfo.SetOccupied(eBuildSlot, this);
 			
 		}
 
@@ -81,7 +83,7 @@ public class BlockInfo : MonoBehaviour
 	{
 		if (m_cGridInfo != null)
 		{
-			m_cGridInfo.SetUnoccupied();
+			m_cGridInfo.SetUnoccupied(m_eBuildSlot);
 		}
 
 		Destroy(gameObject);

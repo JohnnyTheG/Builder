@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System;
+using System.Collections.Generic;
+using System.Linq;
 
 public class BuildMode : BaseMode
 {
@@ -12,7 +12,17 @@ public class BuildMode : BaseMode
 		InvokeOnShutdownComplete();
 	}
 
-	Quaternion m_quatBuildDirection = Quaternion.Euler(Vector3.zero);
+	//Quaternion m_quatBuildDirection = Quaternion.Euler(Vector3.zero);
+
+	Dictionary<GridInfo.BuildSlots, Quaternion> m_dictBuildDirections = new Dictionary<GridInfo.BuildSlots, Quaternion>()
+	{
+		{GridInfo.BuildSlots.North,     Quaternion.Euler(new Vector3(0.0f, 0.0f, 0.0f))},
+		{GridInfo.BuildSlots.East,		Quaternion.Euler(new Vector3(0.0f, 90.0f, 0.0f))},
+		{GridInfo.BuildSlots.South,		Quaternion.Euler(new Vector3(0.0f, 180.0f, 0.0f))},
+		{GridInfo.BuildSlots.West,		Quaternion.Euler(new Vector3(0.0f, 270.0f, 0.0f))},
+	};
+
+	GridInfo.BuildSlots m_eBuildDirection = GridInfo.BuildSlots.North;
 
 	BlockInfo m_cBlockInfoBuildHighlight;
 
@@ -57,7 +67,7 @@ public class BuildMode : BaseMode
 						{
 							GridInfo cGridInfo = cRaycastHit.collider.GetComponent<GridInfo>();
 
-							if (cGridInfo.CanBeOccupied)
+							if (cGridInfo.CanBeOccupied(m_eBuildDirection))
 							{
 								BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
@@ -71,10 +81,10 @@ public class BuildMode : BaseMode
 						{
 							GridInfo cGridInfo = cRaycastHit.collider.GetComponent<GridInfo>();
 
-							if (cGridInfo.CanBeOccupied)
+							if (cGridInfo.CanBeOccupied(m_eBuildDirection))
 							{
 								// Snap to grid.
-								GetSelectedBlock().Move(cGridInfo);
+								GetSelectedBlock().Move(cGridInfo, m_eBuildDirection);
 
 								SetSelectedBlock(null);
 							}
@@ -101,7 +111,7 @@ public class BuildMode : BaseMode
 
 				Ray cRay = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-				if (Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Block, PhysicsLayers.Grid)))
+				if (Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Block)))
 				{
 					if (cRaycastHit.collider.gameObject.layer == PhysicsLayers.Block)
 					{
@@ -112,35 +122,31 @@ public class BuildMode : BaseMode
 							cBlockInfo.Destroy();
 						}
 					}
-					else if (cRaycastHit.collider.gameObject.layer == PhysicsLayers.Grid)
+					// This concept doesnt work with multiple build build slots on a single grid, as which one do you delete?
+					// This used to delete the single occupier if you right clicked the grid.
+					/*else if (cRaycastHit.collider.gameObject.layer == PhysicsLayers.Grid)
 					{
 						GridInfo cGridInfo = cRaycastHit.collider.gameObject.GetComponent<GridInfo>();
 
-						if (cGridInfo != null && cGridInfo.IsOccupied())
+						if (cGridInfo != null && cGridInfo.IsOccupied(m_eBuildDirection))
 						{
-							cGridInfo.Occupier.Destroy();
+							cGridInfo.GetOccupier(m_eBuildDirection).Destroy();
 						}
-					}
+					}*/
 				}
 			}
 
 			if (InputActions.Instance.RotateAnticlockwise())
 			{
-				Vector3 vecEuler = m_quatBuildDirection.eulerAngles;
-
-				vecEuler -= new Vector3(0.0f, 90.0f, 0.0f);
-
-				m_quatBuildDirection = Quaternion.Euler(vecEuler);
+				m_eBuildDirection = Utils.GetArrayEntry<GridInfo.BuildSlots>(m_dictBuildDirections.Keys.ToArray(), (int)m_eBuildDirection, -1);
 			}
 
 			if (InputActions.Instance.RotateClockwise())
 			{
-				Vector3 vecEuler = m_quatBuildDirection.eulerAngles;
-
-				vecEuler += new Vector3(0.0f, 90.0f, 0.0f);
-
-				m_quatBuildDirection = Quaternion.Euler(vecEuler);
+				m_eBuildDirection = Utils.GetArrayEntry<GridInfo.BuildSlots>(m_dictBuildDirections.Keys.ToArray(), (int)m_eBuildDirection, 1);
 			}
+
+			Debug.Log("Build Direction: " + m_eBuildDirection.ToString());
 
 			if (InputActions.Instance.Focus())
 			{
@@ -195,11 +201,11 @@ public class BuildMode : BaseMode
 
 			cBlockInfo.Initialise(bIsGhost);
 
-			cBlock.transform.rotation = m_quatBuildDirection;
+			cBlock.transform.rotation = m_dictBuildDirections[m_eBuildDirection];
 
 			if (cBlockInfo != null)
 			{
-				cBlockInfo.Move(cGridInfo);
+				cBlockInfo.Move(cGridInfo, m_eBuildDirection);
 			}
 
 			return cBlockInfo;
@@ -232,9 +238,9 @@ public class BuildMode : BaseMode
 
 			if (m_cBlockInfoBuildHighlight != null)
 			{
-				m_cBlockInfoBuildHighlight.Move(cGridInfo);
+				m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildDirection);
 
-				m_cBlockInfoBuildHighlight.transform.rotation = m_quatBuildDirection;
+				m_cBlockInfoBuildHighlight.transform.rotation = m_dictBuildDirections[m_eBuildDirection];
 
 				BlockSetEntry cCurrentBlockSetEntry = GetCurrentBlockSetEntry();
 
