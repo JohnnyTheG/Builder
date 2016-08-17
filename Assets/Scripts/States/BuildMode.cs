@@ -17,9 +17,9 @@ public class BuildMode : BaseMode
 	Dictionary<GridInfo.BuildSlots, Quaternion> m_dictBuildDirections = new Dictionary<GridInfo.BuildSlots, Quaternion>()
 	{
 		{GridInfo.BuildSlots.North,     Quaternion.Euler(new Vector3(0.0f, 0.0f, 0.0f))},
-		{GridInfo.BuildSlots.East,		Quaternion.Euler(new Vector3(0.0f, 90.0f, 0.0f))},
-		{GridInfo.BuildSlots.South,		Quaternion.Euler(new Vector3(0.0f, 180.0f, 0.0f))},
-		{GridInfo.BuildSlots.West,		Quaternion.Euler(new Vector3(0.0f, 270.0f, 0.0f))},
+		{GridInfo.BuildSlots.East,      Quaternion.Euler(new Vector3(0.0f, 90.0f, 0.0f))},
+		{GridInfo.BuildSlots.South,     Quaternion.Euler(new Vector3(0.0f, 180.0f, 0.0f))},
+		{GridInfo.BuildSlots.West,      Quaternion.Euler(new Vector3(0.0f, 270.0f, 0.0f))},
 	};
 
 	GridInfo.BuildSlots m_eBuildDirection = GridInfo.BuildSlots.North;
@@ -65,15 +65,22 @@ public class BuildMode : BaseMode
 					{
 						if (GetSelectedBlock() == null)
 						{
-							GridInfo cGridInfo = cRaycastHit.collider.GetComponent<GridInfo>();
+							BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
-							if (cGridInfo.CanBeOccupied(m_eBuildDirection))
+							GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
+
+							if (cBlockSetEntry.IsCentreOnly())
 							{
-								BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
+								eBuildSlot = GridInfo.BuildSlots.Centre;
+							}
 
-								if (cBlockSetEntry.CanBeBuilt())
+							if (cBlockSetEntry.CanBeBuilt(eBuildSlot))
+							{
+								GridInfo cGridInfo = cRaycastHit.collider.GetComponent<GridInfo>();
+
+								if (cGridInfo.CanBeOccupied(eBuildSlot))
 								{
-									CreateBlock(cGridInfo);
+									CreateBlock(cGridInfo, eBuildSlot);
 								}
 							}
 						}
@@ -81,10 +88,19 @@ public class BuildMode : BaseMode
 						{
 							GridInfo cGridInfo = cRaycastHit.collider.GetComponent<GridInfo>();
 
-							if (cGridInfo.CanBeOccupied(m_eBuildDirection))
+							BlockInfo cBlockInfo = GetSelectedBlock();
+
+							GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
+
+							if (cBlockInfo.IsCentreOnly())
+							{
+								eBuildSlot = GridInfo.BuildSlots.Centre;
+							}
+
+							if (cGridInfo.CanBeOccupied(eBuildSlot))
 							{
 								// Snap to grid.
-								GetSelectedBlock().Move(cGridInfo, m_eBuildDirection);
+								GetSelectedBlock().Move(cGridInfo, eBuildSlot);
 
 								SetSelectedBlock(null);
 							}
@@ -146,8 +162,6 @@ public class BuildMode : BaseMode
 				m_eBuildDirection = Utils.GetArrayEntry<GridInfo.BuildSlots>(m_dictBuildDirections.Keys.ToArray(), (int)m_eBuildDirection, 1);
 			}
 
-			Debug.Log("Build Direction: " + m_eBuildDirection.ToString());
-
 			if (InputActions.Instance.Focus())
 			{
 				if (GetSelectedBlock() != null)
@@ -175,7 +189,7 @@ public class BuildMode : BaseMode
 			{
 				BlockManager.Instance.GetPreviousBlock(true);
 			}
-        }
+		}
 	}
 
 	void OnDestroy()
@@ -184,7 +198,7 @@ public class BuildMode : BaseMode
 		DestroyBlockBuildHighlight();
 	}
 
-	BlockInfo CreateBlock(GridInfo cGridInfo, bool bIsGhost = false)
+	BlockInfo CreateBlock(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, bool bIsGhost = false)
 	{
 		BlockSetEntry cCurrentBlockSetEntry = GetCurrentBlockSetEntry();
 
@@ -201,11 +215,19 @@ public class BuildMode : BaseMode
 
 			cBlockInfo.Initialise(bIsGhost);
 
-			cBlock.transform.rotation = m_dictBuildDirections[m_eBuildDirection];
+			if (eBuildSlot != GridInfo.BuildSlots.Centre)
+			{
+				cBlock.transform.rotation = m_dictBuildDirections[m_eBuildDirection];
+			}
+			else
+			{
+				// Just default centre blocks to north for now.
+				cBlock.transform.rotation = m_dictBuildDirections[GridInfo.BuildSlots.North];
+			}
 
 			if (cBlockInfo != null)
 			{
-				cBlockInfo.Move(cGridInfo, m_eBuildDirection);
+				cBlockInfo.Move(cGridInfo, eBuildSlot);
 			}
 
 			return cBlockInfo;
@@ -224,16 +246,25 @@ public class BuildMode : BaseMode
 		{
 			GridInfo cGridInfo = cRaycastHit.collider.GetComponent<GridInfo>();
 
+			BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
+
 			// If the build type has changed, then get rid of the current highlight. Then further down new one is spawned.
-			if ((GetCurrentBlockSetEntry() == null) || (m_cBlockInfoBuildHighlight != null && (m_cBlockInfoBuildHighlight.Name != GetCurrentBlockSetEntry().BlockInfo.Name)))
+			if ((cBlockSetEntry == null) || (m_cBlockInfoBuildHighlight != null && (m_cBlockInfoBuildHighlight.Name != cBlockSetEntry.BlockInfo.Name)))
 			{
 				DestroyBlockBuildHighlight();
 				m_cBlockInfoBuildHighlight = null;
 			}
 
-			if (m_cBlockInfoBuildHighlight == null)
+			if (cBlockSetEntry != null && m_cBlockInfoBuildHighlight == null)
 			{
-				m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, true);
+				GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
+
+				if (cBlockSetEntry.IsCentreOnly())
+				{
+					eBuildSlot = GridInfo.BuildSlots.Centre;
+				}
+
+				m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, eBuildSlot, true);
 			}
 
 			if (m_cBlockInfoBuildHighlight != null)
@@ -242,10 +273,8 @@ public class BuildMode : BaseMode
 
 				m_cBlockInfoBuildHighlight.transform.rotation = m_dictBuildDirections[m_eBuildDirection];
 
-				BlockSetEntry cCurrentBlockSetEntry = GetCurrentBlockSetEntry();
-
 				// Set the colour.
-				if (CurrencyManager.Instance.CurrencyAvailable(cCurrentBlockSetEntry.BlockCost))
+				if (CurrencyManager.Instance.CurrencyAvailable(cBlockSetEntry.BlockCost))
 				{
 					m_cBlockInfoBuildHighlight.GetComponent<MeshRenderer>().material.color = GameGlobals.Instance.CanBuildColor;
 				}

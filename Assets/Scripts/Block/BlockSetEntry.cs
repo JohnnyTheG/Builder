@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Linq;
 
 public class BlockSetEntry : MonoBehaviour
 {
@@ -9,6 +9,17 @@ public class BlockSetEntry : MonoBehaviour
 
 	[SerializeField]
 	bool BlockUnlocked = true;
+
+	[HideInInspector]
+	public GridInfo.BuildSlots[] BlockBuildSlots;
+
+	void Awake()
+	{
+		if (BlockInfo != null)
+		{
+			BlockBuildSlots = BlockInfo.BuildSlots;
+		}
+	}
 
 	public void Unlock()
 	{
@@ -20,13 +31,17 @@ public class BlockSetEntry : MonoBehaviour
 		return BlockUnlocked;
 	}
 
-	public bool CanBeBuilt()
+	public bool CanBeBuilt(GridInfo.BuildSlots eBuildSlot)
 	{
 		if (BlockUnlocked)
 		{
 			if (CurrencyManager.Instance.CurrencyAvailable(BlockCost))
 			{
-				return true;
+				// Check to see if that block can be built on the proposed slot.
+				if (BlockBuildSlots.Contains(eBuildSlot))
+				{
+					return true;
+				}
 			}
 		}
 
@@ -36,5 +51,15 @@ public class BlockSetEntry : MonoBehaviour
 	public void Build()
 	{
 		CurrencyManager.Instance.SpendCurrency(BlockCost);
+	}
+
+	public bool IsCentreOnly()
+	{
+		if (BlockBuildSlots.Length == 1 && BlockBuildSlots[0] == GridInfo.BuildSlots.Centre)
+		{
+			return true;
+		}
+
+		return false;
 	}
 }

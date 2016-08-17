@@ -9,6 +9,9 @@ public class BlockInfo : MonoBehaviour
 
 	public BlockManager.Category Type;
 
+	// Default to edging.
+	public GridInfo.BuildSlots[] BuildSlots = new GridInfo.BuildSlots[4] { GridInfo.BuildSlots.North, GridInfo.BuildSlots.East, GridInfo.BuildSlots.South, GridInfo.BuildSlots.West };
+
 	public float Height = 1.0f;
 	public float Width = 1.0f;
 
@@ -99,5 +102,15 @@ public class BlockInfo : MonoBehaviour
 	{
 		// Do stuff for deselection here.
 		m_cMeshRenderer.material.SetColor("_Color", m_cOriginalColor);
+	}
+
+	public bool IsCentreOnly()
+	{
+		if (BuildSlots.Length == 1 && BuildSlots[0] == GridInfo.BuildSlots.Centre)
+		{
+			return true;
+		}
+
+		return false;
 	}
 }
