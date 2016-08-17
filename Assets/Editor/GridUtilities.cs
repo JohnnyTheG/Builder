@@ -50,17 +50,29 @@ public class GridUtilities : EditorWindow
 			cGridSettings = cGrid.GetComponent<GridSettings>();
 		}
 
-		cGridSettings.Grid = new GameObject[cGridSettings.Length, cGridSettings.Width];
+		cGridSettings.Grid = new GridInfo[cGridSettings.Length, cGridSettings.Width];
 
-		for (int nWidth = 0; nWidth < cGridSettings.Width; nWidth++)
+		for (int nX = 0; nX < cGridSettings.Width; nX++)
 		{
-			for (int nLength = 0; nLength < cGridSettings.Length; nLength++)
+			for (int nY = 0; nY < cGridSettings.Length; nY++)
 			{
-				GameObject cGridSquare = (GameObject)Instantiate(m_cGridPrefab, new Vector3(nLength, 0.0f, nWidth), Quaternion.identity);
+				GameObject cGridSquare = (GameObject)Instantiate(m_cGridPrefab, new Vector3(nY, 0.0f, nX), Quaternion.identity);
 
 				cGridSquare.transform.parent = cGrid.transform;
 
-				cGridSettings.Grid[nLength, nWidth] = cGridSquare;
+				GridInfo cGridInfo = cGridSquare.GetComponent<GridInfo>();
+
+				if (cGridInfo != null)
+				{
+					cGridInfo.GridX = nX;
+					cGridInfo.GridY = nY;
+
+					cGridSettings.Grid[nY, nX] = cGridInfo;
+				}
+				else
+				{
+					Debug.LogError("GridUtilities: Spawned Grid prefab has no GridInfo component.");
+				}
 			}
 		}
 	}

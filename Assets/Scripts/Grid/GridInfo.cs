@@ -6,6 +6,9 @@ public class GridInfo : MonoBehaviour
 {
 	public float Height = 0.3f;
 
+	public int GridX = 0;
+	public int GridY = 0;
+
 	bool Occupiable = true;
 
 	// Order of this is important.
