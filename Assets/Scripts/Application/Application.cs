@@ -10,6 +10,7 @@ public class Application : Singleton<Application>
 		Build,
 		//BuildEdit,
 		BuildMenu,
+		RoomMapping,
 	}
 
 	Mode m_eMode = Mode.Undefined;
@@ -22,6 +23,7 @@ public class Application : Singleton<Application>
 		{Mode.Build, typeof(BuildMode)},
 		//{Mode.BuildEdit, typeof(BuildEditMode)},
 		{Mode.BuildMenu, typeof(BuildMenuMode)},
+		{Mode.RoomMapping,  typeof(RoomMappingMode)},
 	};
 
 	void SetMode(Mode eMode)

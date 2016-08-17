@@ -11,6 +11,16 @@ public class InputActions : Singleton<InputActions>
 		return MouseInput.Instance.LeftMouseDown;
 	}
 
+	public bool SelectHeld()
+	{
+		return MouseInput.Instance.LeftMouseHeld;
+	}
+
+	public bool SelectReleased()
+	{
+		return MouseInput.Instance.LeftMouseUp;
+	}
+
 	public bool Delete()
 	{
 		return MouseInput.Instance.RightMouseDown;

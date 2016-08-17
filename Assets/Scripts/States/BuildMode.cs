@@ -12,8 +12,6 @@ public class BuildMode : BaseMode
 		InvokeOnShutdownComplete();
 	}
 
-	//Quaternion m_quatBuildDirection = Quaternion.Euler(Vector3.zero);
-
 	Dictionary<GridInfo.BuildSlots, Quaternion> m_dictBuildDirections = new Dictionary<GridInfo.BuildSlots, Quaternion>()
 	{
 		{GridInfo.BuildSlots.North,     Quaternion.Euler(new Vector3(0.0f, 0.0f, 0.0f))},
@@ -46,10 +44,10 @@ public class BuildMode : BaseMode
 				Application.Instance.TrySetMode(Application.Mode.BuildMenu);
 			}
 		}
-		//else if (KeyboardInput.Instance.KeyDown(KeyCode.Tab))
-		//{
-		//	//Application.Instance.TrySetMode(Application.Mode.BuildEdit);
-		//}
+		else if (KeyboardInput.Instance.KeyDown(KeyCode.Tab))
+		{
+			Application.Instance.TrySetMode(Application.Mode.RoomMapping);
+		}
 
 		if (!InputActions.Instance.RotateCamera())
 		{

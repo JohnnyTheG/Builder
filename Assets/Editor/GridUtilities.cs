@@ -50,11 +50,9 @@ public class GridUtilities : EditorWindow
 			cGridSettings = cGrid.GetComponent<GridSettings>();
 		}
 
-		cGridSettings.Grid = new GridInfo[cGridSettings.Length, cGridSettings.Width];
-
-		for (int nX = 0; nX < cGridSettings.Width; nX++)
+		for (int nX = 0; nX < cGridSettings.XSize; nX++)
 		{
-			for (int nY = 0; nY < cGridSettings.Length; nY++)
+			for (int nY = 0; nY < cGridSettings.YSize; nY++)
 			{
 				GameObject cGridSquare = (GameObject)Instantiate(m_cGridPrefab, new Vector3(nY, 0.0f, nX), Quaternion.identity);
 
@@ -66,8 +64,6 @@ public class GridUtilities : EditorWindow
 				{
 					cGridInfo.GridX = nX;
 					cGridInfo.GridY = nY;
-
-					cGridSettings.Grid[nY, nX] = cGridInfo;
 				}
 				else
 				{
