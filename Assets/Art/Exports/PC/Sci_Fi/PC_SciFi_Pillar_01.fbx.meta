@@ -1,17 +1,17 @@
 fileFormatVersion: 2
-guid: 49fecb8d5ea8980498a537a64fcc6725
-timeCreated: 1471194932
+guid: d783825511c84b5429f17f529f156f50
+timeCreated: 1471461282
 licenseType: Free
 ModelImporter:
   serializedVersion: 19
   fileIDToRecycleName:
-    100000: Building_1x1x2
+    100000: PC_SciFi_Pillar_01
     100002: //RootNode
-    400000: Building_1x1x2
+    400000: PC_SciFi_Pillar_01
     400002: //RootNode
-    2300000: Building_1x1x2
-    3300000: Building_1x1x2
-    4300000: Building_1x1x2
+    2300000: PC_SciFi_Pillar_01
+    3300000: PC_SciFi_Pillar_01
+    4300000: PC_SciFi_Pillar_01
     9500000: //RootNode
   materials:
     importMaterials: 0
