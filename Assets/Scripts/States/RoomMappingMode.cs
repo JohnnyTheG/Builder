@@ -21,7 +21,7 @@ public class RoomMappingMode : BaseMode
 
 	public void Update()
 	{
-		if (KeyboardInput.Instance.KeyDown(KeyCode.Tab))
+		if (KeyboardInput.Instance.KeyDown(KeyCode.BackQuote))
 		{
 			Application.Instance.TrySetMode(Application.Mode.Build);
 		}

@@ -44,7 +44,7 @@ public class BuildMode : BaseMode
 				Application.Instance.TrySetMode(Application.Mode.BuildMenu);
 			}
 		}
-		else if (KeyboardInput.Instance.KeyDown(KeyCode.Tab))
+		else if (KeyboardInput.Instance.KeyDown(KeyCode.BackQuote))
 		{
 			Application.Instance.TrySetMode(Application.Mode.RoomMapping);
 		}
