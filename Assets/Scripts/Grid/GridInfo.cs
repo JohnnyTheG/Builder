@@ -104,11 +104,16 @@ public class GridInfo : MonoBehaviour
 
 	public void Highlight()
 	{
-		m_cMeshRenderer.material.color = Color.red;
+		m_cMeshRenderer.material.color = Color.green;
 	}
 
 	public void Dehighlight()
 	{
 		m_cMeshRenderer.material.color = m_cOriginalColor;
+	}
+
+	public void BlockedHighlight()
+	{
+		m_cMeshRenderer.material.color = Color.red;
 	}
 }

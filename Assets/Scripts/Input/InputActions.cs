@@ -99,5 +99,10 @@ public class InputActions : Singleton<InputActions>
 		return MouseInput.Instance.MouseScrollWheel();
     }
 
+	public bool ConfirmMapRoom()
+	{
+		return KeyboardInput.Instance.KeyDown(KeyCode.Return);
+	}
+
 #endif
 }
