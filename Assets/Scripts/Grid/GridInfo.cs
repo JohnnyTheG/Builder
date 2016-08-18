@@ -30,6 +30,15 @@ public class GridInfo : MonoBehaviour
 		{ BuildSlots.Centre, null },
 	};
 
+	MeshRenderer m_cMeshRenderer;
+	Color m_cOriginalColor;
+
+	void Awake()
+	{
+		m_cMeshRenderer = GetComponent<MeshRenderer>();
+		m_cOriginalColor = m_cMeshRenderer.material.color;
+	}
+
 	public void SetOccupied(BuildSlots eBuildSlot, BlockInfo cBlockInfo)
 	{
 		if (m_dictOccupiers.ContainsKey(eBuildSlot))
@@ -76,43 +85,6 @@ public class GridInfo : MonoBehaviour
 		return null;
 	}
 
-	/*
-
-	bool Occupied = false;
-
-	public BlockInfo Occupier
-	{
-		get;
-
-		private set;
-	}
-
-	public bool CanBeOccupied
-	{
-		get
-		{
-			return Occupiable && !Occupied;
-		}
-	}
-
-	public bool IsOccupied()
-	{
-		return Occupied;
-	}
-
-	public void SetOccupied(BlockInfo cOccupyingBlockInfo)
-	{
-		Occupied = true;
-		Occupier = cOccupyingBlockInfo;
-	}
-
-	public void SetUnoccupied()
-	{
-		Occupied = false;
-		Occupier = null;
-	}*/
-
-
 	public bool InRoom
 	{
 		get;
@@ -128,5 +100,15 @@ public class GridInfo : MonoBehaviour
 	public void SetNotInRoom()
 	{
 		InRoom = false;
+	}
+
+	public void Highlight()
+	{
+		m_cMeshRenderer.material.color = Color.red;
+	}
+
+	public void Dehighlight()
+	{
+		m_cMeshRenderer.material.color = m_cOriginalColor;
 	}
 }

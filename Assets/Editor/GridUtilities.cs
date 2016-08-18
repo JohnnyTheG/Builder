@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using System.Collections;
 
 public class GridUtilities : EditorWindow
@@ -71,5 +72,7 @@ public class GridUtilities : EditorWindow
 				}
 			}
 		}
+
+		EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
 	}
 }

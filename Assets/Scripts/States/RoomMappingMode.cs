@@ -6,9 +6,14 @@ public class RoomMappingMode : BaseMode
 	GridInfo m_cGridInfoStart;
 	GridInfo m_cGridInfoFinish;
 
+	GridInfo[] m_acCurrentGridSelection;
+
 	public override void Shutdown(OnShutdownCompleteCallback OnShutdownComplete)
 	{
 		base.Shutdown(OnShutdownComplete);
+
+		// Clear this on exit, to remove highlighting.
+		ClearCurrentGridSelection();
 
 		InvokeOnShutdownComplete();
 	}
@@ -28,11 +33,17 @@ public class RoomMappingMode : BaseMode
 
 		if (!InputActions.Instance.RotateCamera())
 		{
+			if (InputActions.Instance.Cancel())
+			{
+				ClearCurrentGridSelection();
+			}
+
 			RaycastHit cRaycastHit;
 
 			if (InputActions.Instance.Select())
 			{
-				Debug.Log("RoomMappingMode: Select Pressed");
+				// If a new selection starts, clear the old selection.
+				ClearCurrentGridSelection();
 
 				if (RaycastForGrid(out cRaycastHit))
 				{
@@ -42,23 +53,29 @@ public class RoomMappingMode : BaseMode
 
 			if (InputActions.Instance.SelectHeld())
 			{
-				Debug.Log("RoomMappingMode: Select Held");
-
 				if (RaycastForGrid(out cRaycastHit))
 				{
 					m_cGridInfoFinish = cRaycastHit.collider.GetComponent<GridInfo>();
+				}
+				else
+				{
+					// Hit nothing, so no grid selection.
+					m_cGridInfoFinish = null;
 				}
 			}
 
 			if (InputActions.Instance.SelectReleased())
 			{
-				Debug.Log("RoomMappingMode: Select Released");
-
 				if (m_cGridInfoStart != null && m_cGridInfoFinish != null)
 				{
-					GridInfo[] acGridSelection = GridSettings.Instance.GetGridSelection(m_cGridInfoStart, m_cGridInfoFinish);
+					m_acCurrentGridSelection = GridSettings.Instance.GetGridSelection(m_cGridInfoStart, m_cGridInfoFinish);
 
-					Debug.Log("RoomMappingMode: Selection contained " + acGridSelection.Length + " grid squares.");
+					Debug.Log("RoomMappingMode: Selection contained " + m_acCurrentGridSelection.Length + " grid squares.");
+
+					for (int nGridInfo = 0; nGridInfo < m_acCurrentGridSelection.Length; nGridInfo++)
+					{
+						m_acCurrentGridSelection[nGridInfo].Highlight();
+					}
 				}
 			}
 		}
@@ -69,5 +86,18 @@ public class RoomMappingMode : BaseMode
 		Ray cRay = Camera.main.ScreenPointToRay(Input.mousePosition);
 
 		return Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Grid));
+	}
+
+	void ClearCurrentGridSelection()
+	{
+		if (m_acCurrentGridSelection != null)
+		{
+			for (int nGridInfo = 0; nGridInfo < m_acCurrentGridSelection.Length; nGridInfo++)
+			{
+				m_acCurrentGridSelection[nGridInfo].Dehighlight();
+			}
+
+			m_acCurrentGridSelection = null;
+		}
 	}
 }
