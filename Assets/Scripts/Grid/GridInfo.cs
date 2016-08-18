@@ -102,9 +102,14 @@ public class GridInfo : MonoBehaviour
 		InRoom = false;
 	}
 
-	public void Highlight()
+	public void MappingHighlight()
 	{
 		m_cMeshRenderer.material.color = Color.green;
+	}
+
+	public void UnmappingHighlight()
+	{
+		m_cMeshRenderer.material.color = Color.red;
 	}
 
 	public void Dehighlight()

@@ -26,6 +26,17 @@ public class InputActions : Singleton<InputActions>
 		return MouseInput.Instance.RightMouseDown;
 	}
 
+	public bool DeleteHeld()
+	{
+		return MouseInput.Instance.RightMouseHeld;
+	}
+
+	public bool DeleteReleased()
+	{
+		return MouseInput.Instance.RightMouseUp;
+	}
+
+
 	public bool Cancel()
 	{
 		return KeyboardInput.Instance.KeyDown(KeyCode.Escape);
@@ -98,11 +109,6 @@ public class InputActions : Singleton<InputActions>
 	{
 		return MouseInput.Instance.MouseScrollWheel();
     }
-
-	public bool ConfirmMapRoom()
-	{
-		return KeyboardInput.Instance.KeyDown(KeyCode.Return);
-	}
 
 #endif
 }

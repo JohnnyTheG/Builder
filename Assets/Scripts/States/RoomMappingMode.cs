@@ -7,6 +7,13 @@ public class RoomMappingMode : BaseMode
 	GridInfo m_cGridInfoFinish;
 
 	GridInfo[] m_acCurrentGridSelection;
+	GridInfo[] m_acSelectHeldCurrentGridSelection;
+
+	enum Mode
+	{
+		Mapping,
+		Unmapping,
+	}
 
 	public override void Shutdown(OnShutdownCompleteCallback OnShutdownComplete)
 	{
@@ -28,7 +35,7 @@ public class RoomMappingMode : BaseMode
 	{
 		UpdateMouseHighlight();
 
-        if (KeyboardInput.Instance.KeyDown(KeyCode.BackQuote))
+		if (KeyboardInput.Instance.KeyDown(KeyCode.BackQuote))
 		{
 			Application.Instance.TrySetMode(Application.Mode.Build);
 		}
@@ -41,54 +48,139 @@ public class RoomMappingMode : BaseMode
 			{
 				if (InputActions.Instance.Select())
 				{
-					// If a new selection starts, clear the old selection.
-					ClearCurrentGridSelection();
-
-					if (RaycastForGrid(out cRaycastHit))
-					{
-						m_cGridInfoStart = cRaycastHit.collider.GetComponent<GridInfo>();
-					}
+					StartGridSelection(out cRaycastHit);
 				}
 
 				if (InputActions.Instance.SelectHeld())
 				{
-					if (RaycastForGrid(out cRaycastHit))
-					{
-						m_cGridInfoFinish = cRaycastHit.collider.GetComponent<GridInfo>();
-					}
-					else
-					{
-						// Hit nothing, so no grid selection.
-						m_cGridInfoFinish = null;
-					}
+					TickGridSelection(out cRaycastHit, Mode.Mapping);
 				}
 
 				if (InputActions.Instance.SelectReleased())
 				{
-					if (m_cGridInfoStart != null && m_cGridInfoFinish != null)
+					if (FinishGridSelection(Mode.Mapping))
 					{
-						m_acCurrentGridSelection = GridSettings.Instance.GetGridSelection(m_cGridInfoStart, m_cGridInfoFinish);
+						MapCurrentGridSelection();
+					}
+				}
 
-						Debug.Log("RoomMappingMode: Selection contained " + m_acCurrentGridSelection.Length + " grid squares.");
+				if (InputActions.Instance.Delete())
+				{
+					StartGridSelection(out cRaycastHit);
+				}
 
-						for (int nGridInfo = 0; nGridInfo < m_acCurrentGridSelection.Length; nGridInfo++)
-						{
-							m_acCurrentGridSelection[nGridInfo].Highlight();
-						}
+				if (InputActions.Instance.DeleteHeld())
+				{
+					TickGridSelection(out cRaycastHit, Mode.Unmapping);
+				}
+
+				if (InputActions.Instance.DeleteReleased())
+				{
+					if (FinishGridSelection(Mode.Unmapping))
+					{
+						UnmapCurrentGridSelection();
 					}
 				}
 			}
 			else
 			{
-				if (InputActions.Instance.ConfirmMapRoom())
-				{
-					MapCurrentGridSelection();
-				}
-				else if (InputActions.Instance.SelectReleased() || InputActions.Instance.Cancel())
+				if (InputActions.Instance.SelectReleased() || InputActions.Instance.Cancel())
 				{
 					ClearCurrentGridSelection();
 				}
 			}
+		}
+	}
+
+	void StartGridSelection(out RaycastHit cRaycastHit)
+	{
+		// If a new selection starts, clear the old selection.
+		ClearCurrentGridSelection();
+
+		if (RaycastForGrid(out cRaycastHit))
+		{
+			m_cGridInfoStart = cRaycastHit.collider.GetComponent<GridInfo>();
+		}
+	}
+
+	void TickGridSelection(out RaycastHit cRaycastHit, Mode eMode)
+	{
+		if (RaycastForGrid(out cRaycastHit))
+		{
+			m_cGridInfoFinish = cRaycastHit.collider.GetComponent<GridInfo>();
+
+			Debug.Log("Select Held: Setting Current Selection");
+
+			GetCurrentGridSelection(eMode);
+		}
+		else
+		{
+			// Hit nothing, so no grid selection.
+			m_cGridInfoFinish = null;
+		}
+	}
+
+	bool FinishGridSelection(Mode eMode)
+	{
+		if (m_cGridInfoStart != null && m_cGridInfoFinish != null)
+		{
+			GetCurrentGridSelection(eMode);
+
+			// The operation is over now. So set the actual selection.
+			m_acCurrentGridSelection = m_acSelectHeldCurrentGridSelection;
+
+			m_acSelectHeldCurrentGridSelection = null;
+
+			return true;
+		}
+
+		return false;
+	}
+
+	void GetCurrentGridSelection(Mode eMode)
+	{
+		// Unhighlight any currently selected block.
+		if (m_acSelectHeldCurrentGridSelection != null)
+		{
+			for (int nGridInfo = 0; nGridInfo < m_acSelectHeldCurrentGridSelection.Length; nGridInfo++)
+			{
+				m_acSelectHeldCurrentGridSelection[nGridInfo].Dehighlight();
+			}
+		}
+
+		m_acSelectHeldCurrentGridSelection = GridSettings.Instance.GetGridSelection(m_cGridInfoStart, m_cGridInfoFinish);
+
+		Debug.Log("RoomMappingMode: Selection contained " + m_acSelectHeldCurrentGridSelection.Length + " grid squares.");
+
+		switch (eMode)
+		{
+			case Mode.Mapping:
+
+				GetCurrentMappingGridSelection();
+
+				break;
+
+			case Mode.Unmapping:
+
+				GetCurrentUnmappingGridSelection();
+
+				break;
+		}
+	}
+
+	void GetCurrentMappingGridSelection()
+	{
+		for (int nGridInfo = 0; nGridInfo < m_acSelectHeldCurrentGridSelection.Length; nGridInfo++)
+		{
+			m_acSelectHeldCurrentGridSelection[nGridInfo].MappingHighlight();
+		}
+	}
+
+	void GetCurrentUnmappingGridSelection()
+	{
+		for (int nGridInfo = 0; nGridInfo < m_acSelectHeldCurrentGridSelection.Length; nGridInfo++)
+		{
+			m_acSelectHeldCurrentGridSelection[nGridInfo].UnmappingHighlight();
 		}
 	}
 
@@ -125,6 +217,21 @@ public class RoomMappingMode : BaseMode
 			}
 
 			RoomManager.Instance.RegisterRoom(m_acCurrentGridSelection);
+
+			ClearCurrentGridSelection(false);
+		}
+	}
+
+	void UnmapCurrentGridSelection()
+	{
+		if (m_acCurrentGridSelection != null)
+		{
+			for (int nGridInfo = 0; nGridInfo < m_acCurrentGridSelection.Length; nGridInfo++)
+			{
+				m_acCurrentGridSelection[nGridInfo].Dehighlight();
+			}
+
+			RoomManager.Instance.DeregisterRoom(m_acCurrentGridSelection);
 
 			ClearCurrentGridSelection(false);
 		}
