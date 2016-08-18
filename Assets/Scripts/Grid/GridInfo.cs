@@ -116,4 +116,9 @@ public class GridInfo : MonoBehaviour
 	{
 		m_cMeshRenderer.material.color = Color.red;
 	}
+
+	public void MappedHighlight()
+	{
+		m_cMeshRenderer.material.color = Color.cyan;
+	}
 }

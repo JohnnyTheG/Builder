@@ -99,13 +99,16 @@ public class RoomMappingMode : BaseMode
 		return Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Grid));
 	}
 
-	void ClearCurrentGridSelection()
+	void ClearCurrentGridSelection(bool bDehighlight = true)
 	{
 		if (m_acCurrentGridSelection != null)
 		{
-			for (int nGridInfo = 0; nGridInfo < m_acCurrentGridSelection.Length; nGridInfo++)
+			if (bDehighlight)
 			{
-				m_acCurrentGridSelection[nGridInfo].Dehighlight();
+				for (int nGridInfo = 0; nGridInfo < m_acCurrentGridSelection.Length; nGridInfo++)
+				{
+					m_acCurrentGridSelection[nGridInfo].Dehighlight();
+				}
 			}
 
 			m_acCurrentGridSelection = null;
@@ -116,7 +119,14 @@ public class RoomMappingMode : BaseMode
 	{
 		if (m_acCurrentGridSelection != null)
 		{
+			for (int nGridInfo = 0; nGridInfo < m_acCurrentGridSelection.Length; nGridInfo++)
+			{
+				m_acCurrentGridSelection[nGridInfo].MappedHighlight();
+			}
+
 			RoomManager.Instance.RegisterRoom(m_acCurrentGridSelection);
+
+			ClearCurrentGridSelection(false);
 		}
 	}
 
