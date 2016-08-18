@@ -26,7 +26,9 @@ public class RoomMappingMode : BaseMode
 
 	public void Update()
 	{
-		if (KeyboardInput.Instance.KeyDown(KeyCode.BackQuote))
+		UpdateMouseHighlight();
+
+        if (KeyboardInput.Instance.KeyDown(KeyCode.BackQuote))
 		{
 			Application.Instance.TrySetMode(Application.Mode.Build);
 		}
@@ -115,6 +117,23 @@ public class RoomMappingMode : BaseMode
 		if (m_acCurrentGridSelection != null)
 		{
 			RoomManager.Instance.RegisterRoom(m_acCurrentGridSelection);
+		}
+	}
+
+	public void UpdateMouseHighlight()
+	{
+		RaycastHit cRaycastHit;
+
+		if (RaycastForGrid(out cRaycastHit))
+		{
+			GridInfo cGridInfo = cRaycastHit.collider.GetComponent<GridInfo>();
+
+			GameGlobals.Instance.MouseHighlight.SetActive(true);
+			GameGlobals.Instance.MouseHighlight.transform.position = cRaycastHit.collider.transform.position + new Vector3(0.0f, (cGridInfo.Height * 0.5f) + (GameGlobals.Instance.MouseHighlight.transform.localScale.y * 0.5f), 0.0f);
+		}
+		else
+		{
+			GameGlobals.Instance.MouseHighlight.SetActive(false);
 		}
 	}
 }
