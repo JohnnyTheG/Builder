@@ -117,6 +117,8 @@ public class RoomMappingMode : BaseMode
 		{
 			// Hit nothing, so no grid selection.
 			m_cGridInfoFinish = null;
+
+			ClearCurrentGridSelection();
 		}
 	}
 
@@ -144,8 +146,8 @@ public class RoomMappingMode : BaseMode
 		{
 			for (int nGridInfo = 0; nGridInfo < m_acSelectHeldCurrentGridSelection.Length; nGridInfo++)
 			{
-				m_acSelectHeldCurrentGridSelection[nGridInfo].Dehighlight();
-			}
+				DehighlightGridInfo(m_acSelectHeldCurrentGridSelection[nGridInfo]);
+            }
 		}
 
 		m_acSelectHeldCurrentGridSelection = GridSettings.Instance.GetGridSelection(m_cGridInfoStart, m_cGridInfoFinish);
@@ -165,6 +167,18 @@ public class RoomMappingMode : BaseMode
 				GetCurrentUnmappingGridSelection();
 
 				break;
+		}
+	}
+
+	void DehighlightGridInfo(GridInfo cGridInfo)
+	{
+		if (!cGridInfo.InRoom)
+		{
+			cGridInfo.Dehighlight();
+		}
+		else
+		{
+			cGridInfo.MappedHighlight();
 		}
 	}
 
@@ -199,11 +213,26 @@ public class RoomMappingMode : BaseMode
 			{
 				for (int nGridInfo = 0; nGridInfo < m_acCurrentGridSelection.Length; nGridInfo++)
 				{
-					m_acCurrentGridSelection[nGridInfo].Dehighlight();
+					DehighlightGridInfo(m_acCurrentGridSelection[nGridInfo]);
 				}
 			}
 
 			m_acCurrentGridSelection = null;
+		}
+
+		if (m_acSelectHeldCurrentGridSelection != null)
+		{
+			if (bDehighlight)
+			{
+				for (int nGridInfo = 0; nGridInfo < m_acSelectHeldCurrentGridSelection.Length; nGridInfo++)
+				{
+					GridInfo cGridInfo = m_acSelectHeldCurrentGridSelection[nGridInfo];
+
+					DehighlightGridInfo(cGridInfo);
+				}
+			}
+
+			m_acSelectHeldCurrentGridSelection = null;
 		}
 	}
 
@@ -226,12 +255,12 @@ public class RoomMappingMode : BaseMode
 	{
 		if (m_acCurrentGridSelection != null)
 		{
+			RoomManager.Instance.DeregisterRoom(m_acCurrentGridSelection);
+
 			for (int nGridInfo = 0; nGridInfo < m_acCurrentGridSelection.Length; nGridInfo++)
 			{
-				m_acCurrentGridSelection[nGridInfo].Dehighlight();
+				DehighlightGridInfo(m_acCurrentGridSelection[nGridInfo]);
 			}
-
-			RoomManager.Instance.DeregisterRoom(m_acCurrentGridSelection);
 
 			ClearCurrentGridSelection(false);
 		}

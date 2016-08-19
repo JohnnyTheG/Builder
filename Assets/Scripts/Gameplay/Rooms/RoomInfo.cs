@@ -9,6 +9,11 @@ public class RoomInfo
 	public void RegisterRoomGrid(GridInfo[] acRoomGrid)
 	{
 		m_lstRoomGrid.AddRange(acRoomGrid);
+
+		for (int nGridInfo = 0; nGridInfo < m_lstRoomGrid.Count; nGridInfo++)
+		{
+			m_lstRoomGrid[nGridInfo].SetInRoom();
+		}
 	}
 
 	public void DeregisterRoomGrid(GridInfo[] acRoomGrid)
@@ -17,6 +22,8 @@ public class RoomInfo
 		{
 			if (m_lstRoomGrid.Contains(acRoomGrid[nGridInfo]))
 			{
+				acRoomGrid[nGridInfo].SetNotInRoom();
+
 				m_lstRoomGrid.Remove(acRoomGrid[nGridInfo]);
 			}
 		}
