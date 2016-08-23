@@ -90,7 +90,7 @@ public class RoomMappingMode : BaseMode
 				}
 			}
 		}
-	}
+	}	
 
 	void StartGridSelection(out RaycastHit cRaycastHit)
 	{

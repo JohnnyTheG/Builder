@@ -13,6 +13,14 @@ public class RoomInfo
 		}
 	}
 
+	public bool IsUnmapped
+	{
+		get
+		{
+			return m_lstRoomGrid.Count == 0;
+		}
+	}
+
 	class GridCornerCoordinates
 	{
 		public int m_nXMin = int.MaxValue;

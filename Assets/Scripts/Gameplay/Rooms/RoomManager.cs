@@ -58,11 +58,16 @@ public class RoomManager : Singleton<RoomManager>
 
 	public void DeregisterRoom(GridInfo[] acRoomGrid)
 	{
-		for (int nRoom = 0; nRoom < m_lstRooms.Count; nRoom++)
+		for (int nRoom = m_lstRooms.Count - 1; nRoom >= 0; nRoom--)
 		{
 			RoomInfo cRoomInfo = m_lstRooms[nRoom];
 
 			cRoomInfo.DeregisterRoomGrid(acRoomGrid);
+
+			if (cRoomInfo.IsUnmapped)
+			{
+				m_lstRooms.Remove(cRoomInfo);
+			}
 		}
 	}
 

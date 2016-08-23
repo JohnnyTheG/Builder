@@ -24,6 +24,18 @@ public class BlockManager : Singleton<BlockManager>
 		private set;
 	}
 
+	List<BlockInfo> m_lstBlocks = new List<BlockInfo>();
+
+	public void RegisterBlock(BlockInfo cBlockInfo)
+	{
+		m_lstBlocks.Add(cBlockInfo);
+	}
+
+	public void DeregisterBlock(BlockInfo cBlockInfo)
+	{
+		m_lstBlocks.Remove(cBlockInfo);
+	}
+
 	int m_nCurrentBlockSetEntryIndex = 0;
 	Category m_eCurrentBlockSetEntryCategory = Category.Wall;
 

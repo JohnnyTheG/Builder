@@ -47,6 +47,10 @@ public class BlockInfo : MonoBehaviour
 				Destroy(acColliders[nCollider]);
 			}
 		}
+		else
+		{
+			BlockManager.Instance.RegisterBlock(this);
+		}
 	}
 
 	public void Move(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot)
@@ -87,6 +91,11 @@ public class BlockInfo : MonoBehaviour
 		if (m_cGridInfo != null)
 		{
 			m_cGridInfo.SetUnoccupied(m_eBuildSlot);
+		}
+
+		if (!m_bIsGhost)
+		{
+			BlockManager.Instance.DeregisterBlock(this);
 		}
 
 		Destroy(gameObject);
