@@ -37,7 +37,17 @@ public class RoomManager : Singleton<RoomManager>
 			{
 				RoomInfo cContainingRoomInfo = lstRoomsContaining[nRoom];
 
-				lstRoomGrid.AddRange(cContainingRoomInfo.RoomGrid);
+				//lstRoomGrid.AddRange(cContainingRoomInfo.RoomGrid);
+
+				for (int nGridInfo = 0; nGridInfo < cContainingRoomInfo.RoomGrid.Count; nGridInfo++)
+				{
+					GridInfo cGridInfo = cContainingRoomInfo.RoomGrid[nGridInfo];
+
+					if (!lstRoomGrid.Contains(cGridInfo))
+					{
+						lstRoomGrid.Add(cGridInfo);
+					}
+				}
 
 				m_lstRooms.Remove(cContainingRoomInfo);
 			}
