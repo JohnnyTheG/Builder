@@ -23,7 +23,7 @@ public class InputActions : Singleton<InputActions>
 
 	public bool Delete()
 	{
-		return MouseInput.Instance.RightMouseDown;
+		return MouseInput.Instance.RightMouseDown || KeyboardInput.Instance.KeyDown(KeyCode.Delete);
 	}
 
 	public bool DeleteHeld()
