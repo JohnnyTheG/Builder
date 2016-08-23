@@ -5,6 +5,14 @@ public class RoomInfo
 	List<GridInfo> m_lstRoomGrid = new List<GridInfo>();
 	GridCornerCoordinates m_cGridCornerCoordinates = new GridCornerCoordinates();
 
+	public List<GridInfo> RoomGrid
+	{
+		get
+		{
+			return m_lstRoomGrid;
+		}
+	}
+
 	class GridCornerCoordinates
 	{
 		public int m_nXMin = int.MaxValue;
@@ -37,6 +45,11 @@ public class RoomInfo
 			}
 		}
     }
+
+	public bool Contains(GridInfo cGridInfo)
+	{
+		return m_lstRoomGrid.Contains(cGridInfo);
+	}
 
 	void FindGridCornerCoordinates()
 	{

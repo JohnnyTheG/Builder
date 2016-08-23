@@ -109,8 +109,6 @@ public class RoomMappingMode : BaseMode
 		{
 			m_cGridInfoFinish = cRaycastHit.collider.GetComponent<GridInfo>();
 
-			Debug.Log("Select Held: Setting Current Selection");
-
 			GetCurrentGridSelection(eMode);
 		}
 		else
@@ -151,8 +149,6 @@ public class RoomMappingMode : BaseMode
 		}
 
 		m_acSelectHeldCurrentGridSelection = GridSettings.Instance.GetGridSelection(m_cGridInfoStart, m_cGridInfoFinish);
-
-		Debug.Log("RoomMappingMode: Selection contained " + m_acSelectHeldCurrentGridSelection.Length + " grid squares.");
 
 		switch (eMode)
 		{
