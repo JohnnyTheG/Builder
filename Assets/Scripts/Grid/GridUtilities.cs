@@ -7,4 +7,9 @@ public class GridUtilities : MonoBehaviour
 	{
 		return cCollider.transform.parent.GetComponent<GridInfo>();
 	}
+
+	public static GridLayer GetGridLayerFromCollider(Collider cCollider)
+	{
+		return cCollider.GetComponent<GridLayer>();
+	}
 }

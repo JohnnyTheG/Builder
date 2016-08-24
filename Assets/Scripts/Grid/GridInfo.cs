@@ -12,6 +12,9 @@ public class GridInfo : MonoBehaviour
 	public Collider TopCollider;
 	public Collider BottomCollider;
 
+	public GameObject TopBuildTarget;
+	public GameObject BottomBuildTarget;
+
 	bool Occupiable = true;
 
 	// Order of this is important.

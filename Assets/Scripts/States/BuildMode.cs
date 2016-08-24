@@ -75,10 +75,11 @@ public class BuildMode : BaseMode
 							if (cBlockSetEntry.CanBeBuilt(eBuildSlot))
 							{
 								GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+								GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
 
 								if (cGridInfo.CanBeOccupied(eBuildSlot))
 								{
-									CreateBlock(cGridInfo, eBuildSlot);
+									CreateBlock(cGridInfo, eBuildSlot, cGridLayer);
 								}
 							}
 						}
@@ -98,7 +99,7 @@ public class BuildMode : BaseMode
 							if (cGridInfo.CanBeOccupied(eBuildSlot))
 							{
 								// Snap to grid.
-								GetSelectedBlock().Move(cGridInfo, eBuildSlot);
+								GetSelectedBlock().Move(cGridInfo, eBuildSlot, cBlockInfo.m_eGridLayer);
 
 								SetSelectedBlock(null);
 							}
@@ -196,7 +197,7 @@ public class BuildMode : BaseMode
 		DestroyBlockBuildHighlight();
 	}
 
-	BlockInfo CreateBlock(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, bool bIsGhost = false)
+	BlockInfo CreateBlock(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridLayer cGridLayer, bool bIsGhost = false)
 	{
 		BlockSetEntry cCurrentBlockSetEntry = GetCurrentBlockSetEntry();
 
@@ -225,7 +226,7 @@ public class BuildMode : BaseMode
 
 			if (cBlockInfo != null)
 			{
-				cBlockInfo.Move(cGridInfo, eBuildSlot);
+				cBlockInfo.Move(cGridInfo, eBuildSlot, cGridLayer.Layer);
 			}
 
 			return cBlockInfo;
@@ -243,6 +244,7 @@ public class BuildMode : BaseMode
 		if (Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Grid)))
 		{
 			GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+			GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
 
 			BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
@@ -262,12 +264,12 @@ public class BuildMode : BaseMode
 					eBuildSlot = GridInfo.BuildSlots.Centre;
 				}
 
-				m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, eBuildSlot, true);
+				m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, eBuildSlot, cGridLayer, true);
 			}
 
 			if (m_cBlockInfoBuildHighlight != null)
 			{
-				m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildDirection);
+				m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildDirection, m_cBlockInfoBuildHighlight.m_eGridLayer);
 
 				m_cBlockInfoBuildHighlight.transform.rotation = m_dictBuildDirections[m_eBuildDirection];
 

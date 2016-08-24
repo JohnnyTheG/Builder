@@ -19,6 +19,9 @@ public class BlockInfo : MonoBehaviour
 	[HideInInspector]
 	public GridInfo m_cGridInfo;
 	GridInfo.BuildSlots m_eBuildSlot;
+	[NonSerialized]
+	[HideInInspector]
+	public GridLayer.Layers m_eGridLayer;
 
 	protected bool m_bIsGhost = false;
 
@@ -53,7 +56,7 @@ public class BlockInfo : MonoBehaviour
 		}
 	}
 
-	public void Move(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot)
+	public void Move(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridLayer.Layers eGridLayer)
 	{
 		if (!m_bIsGhost)
 		{
@@ -65,6 +68,7 @@ public class BlockInfo : MonoBehaviour
 
 		m_cGridInfo = cGridInfo;
 		m_eBuildSlot = eBuildSlot;
+		m_eGridLayer = eGridLayer;
 
 		if (!m_bIsGhost)
 		{
@@ -72,9 +76,24 @@ public class BlockInfo : MonoBehaviour
 			
 		}
 
-		// Y is half height of the block plus half height of the floor.
-		// If pivot is set correctly at base of the mesh, then the half height isnt needed.
-		transform.position = m_cGridInfo.transform.position + new Vector3(0.0f, /*(Height * 0.5f) +*/ (cGridInfo.Height * 0.5f), 0.0f);
+		Vector3 vecPosition = Vector3.zero;
+
+		switch (eGridLayer)
+		{
+			case GridLayer.Layers.Top:
+
+				vecPosition = cGridInfo.TopBuildTarget.transform.position;
+
+				break;
+
+			case GridLayer.Layers.Bottom:
+
+				vecPosition = cGridInfo.BottomBuildTarget.transform.position;
+
+				break;
+		}
+
+		transform.position = vecPosition;
 	}
 
 	public void Rotate(Vector3 vecAngle)

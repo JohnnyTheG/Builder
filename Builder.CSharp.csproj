@@ -85,6 +85,7 @@
     <Compile Include="Assets\Scripts\Gameplay\Rooms\RoomManager.cs" />
     <Compile Include="Assets\Scripts\Global\GameGlobals.cs" />
     <Compile Include="Assets\Scripts\Grid\GridInfo.cs" />
+    <Compile Include="Assets\Scripts\Grid\GridLayer.cs" />
     <Compile Include="Assets\Scripts\Grid\GridSettings.cs" />
     <Compile Include="Assets\Scripts\Grid\GridUtilities.cs" />
     <Compile Include="Assets\Scripts\Input\InputActions.cs" />
