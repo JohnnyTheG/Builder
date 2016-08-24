@@ -81,10 +81,12 @@
     <Compile Include="Assets\Scripts\Gameplay\Power\PowerCapacitorBlockInfo.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Power\PowerGeneratorBlockInfo.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Power\PowerManager.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\Rooms\RoomInfo.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Rooms\RoomManager.cs" />
     <Compile Include="Assets\Scripts\Global\GameGlobals.cs" />
     <Compile Include="Assets\Scripts\Grid\GridInfo.cs" />
     <Compile Include="Assets\Scripts\Grid\GridSettings.cs" />
+    <Compile Include="Assets\Scripts\Grid\GridUtilities.cs" />
     <Compile Include="Assets\Scripts\Input\InputActions.cs" />
     <Compile Include="Assets\Scripts\Input\KeyboardInput.cs" />
     <Compile Include="Assets\Scripts\Input\MouseInput.cs" />

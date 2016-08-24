@@ -99,15 +99,15 @@ public class RoomMappingMode : BaseMode
 
 		if (RaycastForGrid(out cRaycastHit))
 		{
-			m_cGridInfoStart = cRaycastHit.collider.GetComponent<GridInfo>();
-		}
+			m_cGridInfoStart = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+        }
 	}
 
 	void TickGridSelection(out RaycastHit cRaycastHit, Mode eMode)
 	{
 		if (RaycastForGrid(out cRaycastHit))
 		{
-			m_cGridInfoFinish = cRaycastHit.collider.GetComponent<GridInfo>();
+			m_cGridInfoFinish = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
 
 			GetCurrentGridSelection(eMode);
 		}
@@ -268,7 +268,7 @@ public class RoomMappingMode : BaseMode
 
 		if (RaycastForGrid(out cRaycastHit))
 		{
-			GridInfo cGridInfo = cRaycastHit.collider.GetComponent<GridInfo>();
+			GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
 
 			GameGlobals.Instance.MouseHighlight.SetActive(true);
 			GameGlobals.Instance.MouseHighlight.transform.position = cRaycastHit.collider.transform.position + new Vector3(0.0f, (cGridInfo.Height * 0.5f) + (GameGlobals.Instance.MouseHighlight.transform.localScale.y * 0.5f), 0.0f);

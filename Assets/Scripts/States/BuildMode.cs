@@ -74,7 +74,7 @@ public class BuildMode : BaseMode
 
 							if (cBlockSetEntry.CanBeBuilt(eBuildSlot))
 							{
-								GridInfo cGridInfo = cRaycastHit.collider.GetComponent<GridInfo>();
+								GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
 
 								if (cGridInfo.CanBeOccupied(eBuildSlot))
 								{
@@ -84,7 +84,7 @@ public class BuildMode : BaseMode
 						}
 						else
 						{
-							GridInfo cGridInfo = cRaycastHit.collider.GetComponent<GridInfo>();
+							GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
 
 							BlockInfo cBlockInfo = GetSelectedBlock();
 
@@ -140,7 +140,7 @@ public class BuildMode : BaseMode
 					// This used to delete the single occupier if you right clicked the grid.
 					/*else if (cRaycastHit.collider.gameObject.layer == PhysicsLayers.Grid)
 					{
-						GridInfo cGridInfo = cRaycastHit.collider.gameObject.GetComponent<GridInfo>();
+						GridInfo cGridInfo = GetGridInfoFromCollider(cRaycastHit.collider);
 
 						if (cGridInfo != null && cGridInfo.IsOccupied(m_eBuildDirection))
 						{
@@ -242,7 +242,7 @@ public class BuildMode : BaseMode
 
 		if (Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Grid)))
 		{
-			GridInfo cGridInfo = cRaycastHit.collider.GetComponent<GridInfo>();
+			GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
 
 			BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 

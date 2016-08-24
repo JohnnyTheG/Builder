@@ -9,6 +9,9 @@ public class GridInfo : MonoBehaviour
 	public int GridX = 0;
 	public int GridY = 0;
 
+	public Collider TopCollider;
+	public Collider BottomCollider;
+
 	bool Occupiable = true;
 
 	// Order of this is important.

@@ -111,7 +111,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Editor\EditorCoroutine.cs" />
-    <Compile Include="Assets\Editor\GridUtilities.cs" />
+    <Compile Include="Assets\Editor\GridEditor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Art\Exports\Mobile\Temp.txt" />

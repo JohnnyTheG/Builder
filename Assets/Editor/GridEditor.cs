@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using System.Collections;
 
-public class GridUtilities : EditorWindow
+public class GridEditor : EditorWindow
 {
 	static string m_strGridParentName = "Grid";
 
