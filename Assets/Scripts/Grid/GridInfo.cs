@@ -27,6 +27,26 @@ public class GridInfo : MonoBehaviour
 		Centre,
 	}
 
+	public enum BuildLayer
+	{
+		Top,
+		Bottom,
+	}
+
+	class BuildInfo
+	{
+		BuildSlots m_eBuildSlot;
+
+		BuildLayer m_eBuildLayer;
+
+		public BuildInfo(BuildSlots eBuildSlot, BuildLayer eBuildLayer)
+		{
+			m_eBuildSlot = eBuildSlot;
+
+			m_eBuildLayer = eBuildLayer;
+		}
+	}
+
 	Dictionary<BuildSlots, BlockInfo> m_dictOccupiers = new Dictionary<BuildSlots, BlockInfo>()
 	{
 		{ BuildSlots.North, null },
@@ -35,6 +55,11 @@ public class GridInfo : MonoBehaviour
 		{ BuildSlots.West, null },
 		{ BuildSlots.Centre, null },
 	};
+
+	/*Dictionary<BuildInfo, BlockInfo> m_dictOccupiers = new Dictionary<BuildInfo, BlockInfo>()
+	{
+		{ new BuildInfo(
+	};*/
 
 	MeshRenderer m_cMeshRenderer;
 	Color m_cOriginalColor;

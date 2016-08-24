@@ -21,7 +21,7 @@ public class BlockInfo : MonoBehaviour
 	GridInfo.BuildSlots m_eBuildSlot;
 	[NonSerialized]
 	[HideInInspector]
-	public GridLayer.Layers m_eGridLayer;
+	public GridInfo.BuildLayer m_eBuildLayer;
 
 	protected bool m_bIsGhost = false;
 
@@ -56,7 +56,7 @@ public class BlockInfo : MonoBehaviour
 		}
 	}
 
-	public void Move(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridLayer.Layers eGridLayer)
+	public void Move(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eBuildLayer)
 	{
 		if (!m_bIsGhost)
 		{
@@ -68,7 +68,7 @@ public class BlockInfo : MonoBehaviour
 
 		m_cGridInfo = cGridInfo;
 		m_eBuildSlot = eBuildSlot;
-		m_eGridLayer = eGridLayer;
+		m_eBuildLayer = eBuildLayer;
 
 		if (!m_bIsGhost)
 		{
@@ -78,15 +78,15 @@ public class BlockInfo : MonoBehaviour
 
 		Vector3 vecPosition = Vector3.zero;
 
-		switch (eGridLayer)
+		switch (eBuildLayer)
 		{
-			case GridLayer.Layers.Top:
+			case GridInfo.BuildLayer.Top:
 
 				vecPosition = cGridInfo.TopBuildTarget.transform.position;
 
 				break;
 
-			case GridLayer.Layers.Bottom:
+			case GridInfo.BuildLayer.Bottom:
 
 				vecPosition = cGridInfo.BottomBuildTarget.transform.position;
 

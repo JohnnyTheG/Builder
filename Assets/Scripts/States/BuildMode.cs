@@ -99,7 +99,7 @@ public class BuildMode : BaseMode
 							if (cGridInfo.CanBeOccupied(eBuildSlot))
 							{
 								// Snap to grid.
-								GetSelectedBlock().Move(cGridInfo, eBuildSlot, cBlockInfo.m_eGridLayer);
+								GetSelectedBlock().Move(cGridInfo, eBuildSlot, cBlockInfo.m_eBuildLayer);
 
 								SetSelectedBlock(null);
 							}
@@ -137,17 +137,6 @@ public class BuildMode : BaseMode
 							cBlockInfo.Destroy();
 						}
 					}
-					// This concept doesnt work with multiple build build slots on a single grid, as which one do you delete?
-					// This used to delete the single occupier if you right clicked the grid.
-					/*else if (cRaycastHit.collider.gameObject.layer == PhysicsLayers.Grid)
-					{
-						GridInfo cGridInfo = GetGridInfoFromCollider(cRaycastHit.collider);
-
-						if (cGridInfo != null && cGridInfo.IsOccupied(m_eBuildDirection))
-						{
-							cGridInfo.GetOccupier(m_eBuildDirection).Destroy();
-						}
-					}*/
 				}
 			}
 
@@ -269,7 +258,7 @@ public class BuildMode : BaseMode
 
 			if (m_cBlockInfoBuildHighlight != null)
 			{
-				m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildDirection, m_cBlockInfoBuildHighlight.m_eGridLayer);
+				m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildDirection, m_cBlockInfoBuildHighlight.m_eBuildLayer);
 
 				m_cBlockInfoBuildHighlight.transform.rotation = m_dictBuildDirections[m_eBuildDirection];
 
