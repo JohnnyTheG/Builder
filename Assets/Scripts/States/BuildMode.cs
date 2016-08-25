@@ -273,62 +273,75 @@ public class BuildMode : BaseMode
 
 	public void UpdateMouseHighlight()
 	{
-		RaycastHit cRaycastHit;
-
-		Ray cRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-		if (Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Grid)))
+		// If the grid is flipping, then get rid of highlighting.
+		if (GridSettings.Instance.Flipping)
 		{
-			GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
-			GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
-
-			BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
-
-			// If the build type has changed, then get rid of the current highlight. Then further down new one is spawned.
-			if ((cBlockSetEntry == null) || (m_cBlockInfoBuildHighlight != null && (m_cBlockInfoBuildHighlight.Name != cBlockSetEntry.BlockInfo.Name)))
-			{
-				DestroyBlockBuildHighlight();
-				m_cBlockInfoBuildHighlight = null;
-			}
-
-			if (cBlockSetEntry != null && m_cBlockInfoBuildHighlight == null)
-			{
-				GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
-
-				if (cBlockSetEntry.IsCentreOnly())
-				{
-					eBuildSlot = GridInfo.BuildSlots.Centre;
-				}
-
-				m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, eBuildSlot, cGridLayer, true);
-			}
-
-			if (m_cBlockInfoBuildHighlight != null)
-			{
-				m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildDirection, cGridLayer.Layer);
-
-				m_cBlockInfoBuildHighlight.transform.rotation = GetBlockRotation(m_eBuildDirection, cGridLayer.Layer);
-
-				// Set the colour.
-				if (CurrencyManager.Instance.CurrencyAvailable(cBlockSetEntry.BlockCost))
-				{
-					m_cBlockInfoBuildHighlight.GetComponent<MeshRenderer>().material.color = GameGlobals.Instance.CanBuildColor;
-				}
-				else
-				{
-					m_cBlockInfoBuildHighlight.GetComponent<MeshRenderer>().material.color = GameGlobals.Instance.CannotBuildColor;
-				}
-			}
-
-			GameGlobals.Instance.MouseHighlight.SetActive(true);
-			GameGlobals.Instance.MouseHighlight.transform.position = cRaycastHit.collider.transform.position + new Vector3(0.0f, (cGridInfo.Height * 0.5f) + (GameGlobals.Instance.MouseHighlight.transform.localScale.y * 0.5f), 0.0f);
+			DisableHighlights();
 		}
 		else
 		{
-			DestroyBlockBuildHighlight();
+			RaycastHit cRaycastHit;
 
-			GameGlobals.Instance.MouseHighlight.SetActive(false);
+			Ray cRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+			if (Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Grid)))
+			{
+				GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+				GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
+
+				BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
+
+				// If the build type has changed, then get rid of the current highlight. Then further down new one is spawned.
+				if ((cBlockSetEntry == null) || (m_cBlockInfoBuildHighlight != null && (m_cBlockInfoBuildHighlight.Name != cBlockSetEntry.BlockInfo.Name)))
+				{
+					DestroyBlockBuildHighlight();
+					m_cBlockInfoBuildHighlight = null;
+				}
+
+				if (cBlockSetEntry != null && m_cBlockInfoBuildHighlight == null)
+				{
+					GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
+
+					if (cBlockSetEntry.IsCentreOnly())
+					{
+						eBuildSlot = GridInfo.BuildSlots.Centre;
+					}
+
+					m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, eBuildSlot, cGridLayer, true);
+				}
+
+				if (m_cBlockInfoBuildHighlight != null)
+				{
+					m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildDirection, cGridLayer.Layer);
+
+					m_cBlockInfoBuildHighlight.transform.rotation = GetBlockRotation(m_eBuildDirection, cGridLayer.Layer);
+
+					// Set the colour.
+					if (CurrencyManager.Instance.CurrencyAvailable(cBlockSetEntry.BlockCost))
+					{
+						m_cBlockInfoBuildHighlight.GetComponent<MeshRenderer>().material.color = GameGlobals.Instance.CanBuildColor;
+					}
+					else
+					{
+						m_cBlockInfoBuildHighlight.GetComponent<MeshRenderer>().material.color = GameGlobals.Instance.CannotBuildColor;
+					}
+				}
+
+				GameGlobals.Instance.MouseHighlight.SetActive(true);
+				GameGlobals.Instance.MouseHighlight.transform.position = cRaycastHit.collider.transform.position + new Vector3(0.0f, (cGridInfo.Height * 0.5f) + (GameGlobals.Instance.MouseHighlight.transform.localScale.y * 0.5f), 0.0f);
+			}
+			else
+			{
+				DisableHighlights();
+			}
 		}
+	}
+
+	void DisableHighlights()
+	{
+		DestroyBlockBuildHighlight();
+
+		GameGlobals.Instance.MouseHighlight.SetActive(false);
 	}
 
 	void DestroyBlockBuildHighlight()
