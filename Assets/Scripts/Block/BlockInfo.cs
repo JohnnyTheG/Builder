@@ -90,9 +90,6 @@ public class BlockInfo : MonoBehaviour
 
 				vecPosition = cGridInfo.BottomBuildTarget.transform.position;
 
-				// This rotates the block so that it is "upside down".
-				Rotate(new Vector3(0.0f, 0.0f, 180.0f));
-
 				break;
 		}
 

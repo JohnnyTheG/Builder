@@ -206,15 +206,7 @@ public class BuildMode : BaseMode
 
 			cBlockInfo.Initialise(bIsGhost);
 
-			if (eBuildSlot != GridInfo.BuildSlots.Centre)
-			{
-				cBlock.transform.rotation = m_dictBuildDirections[m_eBuildDirection];
-			}
-			else
-			{
-				// Just default centre blocks to north for now.
-				cBlock.transform.rotation = m_dictBuildDirections[GridInfo.BuildSlots.North];
-			}
+			cBlock.transform.rotation = GetBlockRotation(eBuildSlot, cGridLayer.Layer);
 
 			if (cBlockInfo != null)
 			{
@@ -225,6 +217,46 @@ public class BuildMode : BaseMode
 		}
 
 		return null;
+	}
+
+	Quaternion GetBlockRotation(GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eBuildLayer)
+	{
+		Vector3 vecRotation = Vector3.zero;
+
+		switch (eBuildSlot)
+		{
+			case GridInfo.BuildSlots.Centre:
+
+				// Just default centre blocks to north for now.
+				vecRotation = m_dictBuildDirections[GridInfo.BuildSlots.North].eulerAngles;
+
+				break;
+
+			default:
+
+				vecRotation = m_dictBuildDirections[m_eBuildDirection].eulerAngles;
+
+				break;
+		}
+
+		// Flip the block if its on the bottom.
+		switch (eBuildLayer)
+		{
+			case GridInfo.BuildLayer.Top:
+
+				vecRotation.z = 0.0f;
+
+				break;
+
+			case GridInfo.BuildLayer.Bottom:
+
+				vecRotation.y += 180.0f;
+				vecRotation.z += 180.0f;
+
+				break;
+		}
+
+		return Quaternion.Euler(vecRotation);
 	}
 
 	public void UpdateMouseHighlight()
@@ -261,9 +293,9 @@ public class BuildMode : BaseMode
 
 			if (m_cBlockInfoBuildHighlight != null)
 			{
-				m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildDirection, m_cBlockInfoBuildHighlight.m_eBuildLayer);
+				m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildDirection, cGridLayer.Layer);
 
-				m_cBlockInfoBuildHighlight.transform.rotation = m_dictBuildDirections[m_eBuildDirection];
+				m_cBlockInfoBuildHighlight.transform.rotation = GetBlockRotation(m_eBuildDirection, cGridLayer.Layer);
 
 				// Set the colour.
 				if (CurrencyManager.Instance.CurrencyAvailable(cBlockSetEntry.BlockCost))
