@@ -24,16 +24,30 @@ public class BuildMode : BaseMode
 
 	BlockInfo m_cBlockInfoBuildHighlight;
 
+	bool m_bGridFlipping = false;
+
+	void OnGridFlipStart()
+	{
+		m_bGridFlipping = true;
+	}
+
+	void OnGridFlipComplete()
+	{
+		m_bGridFlipping = false;
+	}
+
 	void Start()
 	{
 		// Enter.
+		GridSettings.Instance.OnGridFlipStart += OnGridFlipStart;
+		GridSettings.Instance.OnGridFlipComplete += OnGridFlipComplete;
 	}
 
 	void Update()
 	{
 		UpdateMouseHighlight();
 
-		if (GridSettings.Instance.Flipping)
+		if (m_bGridFlipping)
 		{
 			return;
 		}
@@ -197,6 +211,9 @@ public class BuildMode : BaseMode
 
 	void OnDestroy()
 	{
+		GridSettings.Instance.OnGridFlipStart -= OnGridFlipStart;
+		GridSettings.Instance.OnGridFlipComplete -= OnGridFlipComplete;
+
 		// Exit.
 		DestroyBlockBuildHighlight();
 	}
@@ -274,7 +291,7 @@ public class BuildMode : BaseMode
 	public void UpdateMouseHighlight()
 	{
 		// If the grid is flipping, then get rid of highlighting.
-		if (GridSettings.Instance.Flipping)
+		if (m_bGridFlipping)
 		{
 			DisableHighlights();
 		}

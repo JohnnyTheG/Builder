@@ -8,15 +8,10 @@ public class GridSettings : Singleton<GridSettings>
 
 	public GridInfo[,] Grid;
 
-	public bool Flipping
-	{
-		get;
-
-		private set;
-	}
+	bool m_bGridFlipInProgress = false;
 
 	[SerializeField]
-	float FlipDuration = 0.5f;
+	float GridFlipDuration = 1.0f;
 
 	float m_fFlipTime = 0.0f;
 
@@ -28,6 +23,12 @@ public class GridSettings : Singleton<GridSettings>
 
 	// Which build layer is "up" (i.e. facing upwards towards Vector3.up).
 	GridInfo.BuildLayer m_eUpBuildLayer = GridInfo.BuildLayer.Top;
+
+	public delegate void OnGridFlipStartCallback();
+	public delegate void OnGridFlipCompleteCallback();
+
+	public event OnGridFlipStartCallback OnGridFlipStart;
+	public event OnGridFlipCompleteCallback OnGridFlipComplete;
 
 	new public void Awake()
 	{
@@ -70,9 +71,9 @@ public class GridSettings : Singleton<GridSettings>
 	{
 		//transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles + new Vector3(0.0f, 0.0f, 180.0f));
 
-		if (!Flipping)
+		if (!m_bGridFlipInProgress)
 		{
-			Flipping = true;
+			m_bGridFlipInProgress = true;
 
 			m_fFlipTime = 0.0f;
 
@@ -100,24 +101,34 @@ public class GridSettings : Singleton<GridSettings>
 
 					break;
 			}
+
+			if (OnGridFlipStart != null)
+			{
+				OnGridFlipStart();
+			}
 		}
 	}
 
 	public void Update()
 	{
-		if (Flipping)
+		if (m_bGridFlipInProgress)
 		{
 			m_fFlipTime += Time.deltaTime;
 
-			if (m_fFlipTime >= FlipDuration)
+			if (m_fFlipTime >= GridFlipDuration)
 			{
 				transform.rotation = m_quatFinish;
 
-				Flipping = false;
+				m_bGridFlipInProgress = false;
+
+				if (OnGridFlipComplete != null)
+				{
+					OnGridFlipComplete();
+				}
 			}
 			else
 			{
-				transform.rotation = Quaternion.Lerp(m_quatStart, m_quatFinish, Easing.EaseInOut(m_fFlipTime / FlipDuration, EasingType.Cubic, EasingType.Cubic));
+				transform.rotation = Quaternion.Lerp(m_quatStart, m_quatFinish, Easing.EaseInOut(m_fFlipTime / GridFlipDuration, EasingType.Cubic, EasingType.Cubic));
 			}
 		}
 	}
