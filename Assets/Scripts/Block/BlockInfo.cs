@@ -94,6 +94,9 @@ public class BlockInfo : MonoBehaviour
 		}
 
 		transform.position = vecPosition;
+
+		// Attach to the grid info holding it.
+		transform.parent = cGridInfo.transform;
 	}
 
 	public void Rotate(Vector3 vecAngle)
