@@ -61,6 +61,7 @@ public class BuildMode : BaseMode
 				{
 					if (cRaycastHit.collider.gameObject.layer == PhysicsLayers.Grid)
 					{
+						// If there isnt a selected block.
 						if (GetSelectedBlock() == null)
 						{
 							BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
@@ -77,15 +78,17 @@ public class BuildMode : BaseMode
 								GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
 								GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
 
-								if (cGridInfo.CanBeOccupied(eBuildSlot))
+								if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer))
 								{
 									CreateBlock(cGridInfo, eBuildSlot, cGridLayer);
 								}
 							}
 						}
+						// There is a selected block.
 						else
 						{
 							GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+							GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
 
 							BlockInfo cBlockInfo = GetSelectedBlock();
 
@@ -96,10 +99,10 @@ public class BuildMode : BaseMode
 								eBuildSlot = GridInfo.BuildSlots.Centre;
 							}
 
-							if (cGridInfo.CanBeOccupied(eBuildSlot))
+							if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer))
 							{
 								// Snap to grid.
-								GetSelectedBlock().Move(cGridInfo, eBuildSlot, cBlockInfo.m_eBuildLayer);
+								GetSelectedBlock().Move(cGridInfo, eBuildSlot, cGridLayer.Layer);
 
 								SetSelectedBlock(null);
 							}

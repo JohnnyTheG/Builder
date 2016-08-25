@@ -62,7 +62,7 @@ public class BlockInfo : MonoBehaviour
 		{
 			if (m_cGridInfo != null)
 			{
-				m_cGridInfo.SetUnoccupied(eBuildSlot);
+				m_cGridInfo.SetUnoccupied(eBuildSlot, eBuildLayer);
 			}
 		}
 
@@ -72,7 +72,7 @@ public class BlockInfo : MonoBehaviour
 
 		if (!m_bIsGhost)
 		{
-			m_cGridInfo.SetOccupied(eBuildSlot, this);
+			m_cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, this);
 			
 		}
 
@@ -89,6 +89,9 @@ public class BlockInfo : MonoBehaviour
 			case GridInfo.BuildLayer.Bottom:
 
 				vecPosition = cGridInfo.BottomBuildTarget.transform.position;
+
+				// This rotates the block so that it is "upside down".
+				Rotate(new Vector3(0.0f, 0.0f, 180.0f));
 
 				break;
 		}
@@ -109,7 +112,7 @@ public class BlockInfo : MonoBehaviour
 	{
 		if (m_cGridInfo != null)
 		{
-			m_cGridInfo.SetUnoccupied(m_eBuildSlot);
+			m_cGridInfo.SetUnoccupied(m_eBuildSlot, m_eBuildLayer);
 		}
 
 		if (!m_bIsGhost)

@@ -33,33 +33,23 @@ public class GridInfo : MonoBehaviour
 		Bottom,
 	}
 
-	class BuildInfo
+	class BuildLayerInfo
 	{
-		BuildSlots m_eBuildSlot;
-
-		BuildLayer m_eBuildLayer;
-
-		public BuildInfo(BuildSlots eBuildSlot, BuildLayer eBuildLayer)
+		public Dictionary<BuildSlots, BlockInfo> m_dictOccupiers = new Dictionary<BuildSlots, BlockInfo>()
 		{
-			m_eBuildSlot = eBuildSlot;
-
-			m_eBuildLayer = eBuildLayer;
-		}
+			{ BuildSlots.North, null },
+			{ BuildSlots.East, null },
+			{ BuildSlots.South, null },
+			{ BuildSlots.West, null },
+			{ BuildSlots.Centre, null },
+		};
 	}
 
-	Dictionary<BuildSlots, BlockInfo> m_dictOccupiers = new Dictionary<BuildSlots, BlockInfo>()
+	Dictionary<BuildLayer, BuildLayerInfo> m_dictBuildLayers = new Dictionary<BuildLayer, BuildLayerInfo>()
 	{
-		{ BuildSlots.North, null },
-		{ BuildSlots.East, null },
-		{ BuildSlots.South, null },
-		{ BuildSlots.West, null },
-		{ BuildSlots.Centre, null },
+		{ BuildLayer.Top, new BuildLayerInfo() },
+		{ BuildLayer.Bottom, new BuildLayerInfo() },
 	};
-
-	/*Dictionary<BuildInfo, BlockInfo> m_dictOccupiers = new Dictionary<BuildInfo, BlockInfo>()
-	{
-		{ new BuildInfo(
-	};*/
 
 	MeshRenderer m_cMeshRenderer;
 	Color m_cOriginalColor;
@@ -70,47 +60,72 @@ public class GridInfo : MonoBehaviour
 		m_cOriginalColor = m_cMeshRenderer.material.color;
 	}
 
-	public void SetOccupied(BuildSlots eBuildSlot, BlockInfo cBlockInfo)
+	public void SetOccupied(BuildSlots eBuildSlot, BuildLayer eBuildLayer, BlockInfo cBlockInfo)
 	{
-		if (m_dictOccupiers.ContainsKey(eBuildSlot))
+		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
 		{
-			m_dictOccupiers[eBuildSlot] = cBlockInfo;
+			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
+
+			if (cBuildLayerInfo.m_dictOccupiers.ContainsKey(eBuildSlot))
+			{
+				cBuildLayerInfo.m_dictOccupiers[eBuildSlot] = cBlockInfo;
+			}
 		}
 	}
 
-	public void SetUnoccupied(BuildSlots eBuildSlot)
+	public void SetUnoccupied(BuildSlots eBuildSlot, BuildLayer eBuildLayer)
 	{
-		if (m_dictOccupiers.ContainsKey(eBuildSlot))
+		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
 		{
-			m_dictOccupiers[eBuildSlot] = null;
+			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
+
+			if (cBuildLayerInfo.m_dictOccupiers.ContainsKey(eBuildSlot))
+			{
+				cBuildLayerInfo.m_dictOccupiers[eBuildSlot] = null;
+			}
 		}
 	}
 
-	public bool CanBeOccupied(BuildSlots eBuildSlot)
+	public bool CanBeOccupied(BuildSlots eBuildSlot, BuildLayer eBuildLayer)
 	{
-		if (m_dictOccupiers.ContainsKey(eBuildSlot))
+		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
 		{
-			return m_dictOccupiers[eBuildSlot] == null && Occupiable;
+			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
+
+			if (cBuildLayerInfo.m_dictOccupiers.ContainsKey(eBuildSlot))
+			{
+				return cBuildLayerInfo.m_dictOccupiers[eBuildSlot] == null && Occupiable;
+			}
 		}
 
 		return false;
 	}
 
-	public bool IsOccupied(BuildSlots eBuildSlot)
+	public bool IsOccupied(BuildSlots eBuildSlot, BuildLayer eBuildLayer)
 	{
-		if (m_dictOccupiers.ContainsKey(eBuildSlot))
+		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
 		{
-			return m_dictOccupiers[eBuildSlot] != null;
+			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
+
+			if (cBuildLayerInfo.m_dictOccupiers.ContainsKey(eBuildSlot))
+			{
+				return cBuildLayerInfo.m_dictOccupiers[eBuildSlot] != null;
+			}
 		}
 
 		return true;
 	}
 
-	public BlockInfo GetOccupier(BuildSlots eBuildSlot)
+	public BlockInfo GetOccupier(BuildSlots eBuildSlot, BuildLayer eBuildLayer)
 	{
-		if (m_dictOccupiers.ContainsKey(eBuildSlot))
+		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
 		{
-			return m_dictOccupiers[eBuildSlot];
+			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
+
+			if (cBuildLayerInfo.m_dictOccupiers.ContainsKey(eBuildSlot))
+			{
+				return cBuildLayerInfo.m_dictOccupiers[eBuildSlot];
+			}
 		}
 
 		return null;
