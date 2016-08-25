@@ -110,5 +110,10 @@ public class InputActions : Singleton<InputActions>
 		return MouseInput.Instance.MouseScrollWheel();
     }
 
+	public bool FlipGrid()
+	{
+		return KeyboardInput.Instance.KeyDown(KeyCode.Z);
+	}
+
 #endif
 }

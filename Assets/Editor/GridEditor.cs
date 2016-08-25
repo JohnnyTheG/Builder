@@ -54,9 +54,11 @@ public class GridEditor : EditorWindow
 		int nHalfX = cGridSettings.XSize / 2;
 		int nHalfY = cGridSettings.YSize / 2;
 
-		for (int nX = -nHalfX; nX < nHalfX; nX++)
+		cGridSettings.transform.position = new Vector3(nHalfX - 0.5f, 0.0f, nHalfY - 0.5f);
+
+		for (int nX = 0; nX < cGridSettings.XSize; nX++)
 		{
-			for (int nY = -nHalfY; nY < nHalfY; nY++)
+			for (int nY = 0; nY < cGridSettings.YSize; nY++)
 			{
 				GameObject cGridSquare = (GameObject)Instantiate(m_cGridPrefab, new Vector3(nY, 0.0f, nX), Quaternion.identity);
 

@@ -33,6 +33,18 @@ public class BuildMode : BaseMode
 	{
 		UpdateMouseHighlight();
 
+		if (GridSettings.Instance.Flipping)
+		{
+			return;
+		}
+
+		if (InputActions.Instance.FlipGrid())
+		{
+			GridSettings.Instance.Flip();
+
+			return;
+		}
+
 		if (InputActions.Instance.Cancel())
 		{
 			if (GetSelectedBlock() != null)
@@ -240,7 +252,7 @@ public class BuildMode : BaseMode
 		}
 
 		// Flip the block if its on the bottom.
-		switch (eBuildLayer)
+		/*switch (eBuildLayer)
 		{
 			case GridInfo.BuildLayer.Top:
 
@@ -254,7 +266,7 @@ public class BuildMode : BaseMode
 				vecRotation.z += 180.0f;
 
 				break;
-		}
+		}*/
 
 		return Quaternion.Euler(vecRotation);
 	}
