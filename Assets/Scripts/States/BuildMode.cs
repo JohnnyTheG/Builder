@@ -49,14 +49,14 @@ public class BuildMode : BaseMode
 
 		if (m_bGridFlipping)
 		{
-			SetSelectedBlock(null);
-
 			return;
 		}
 
 		if (InputActions.Instance.FlipGrid())
 		{
 			GridSettings.Instance.Flip();
+
+			SetSelectedBlock(null);
 
 			return;
 		}
