@@ -49,6 +49,8 @@ public class BuildMode : BaseMode
 
 		if (m_bGridFlipping)
 		{
+			SetSelectedBlock(null);
+
 			return;
 		}
 
