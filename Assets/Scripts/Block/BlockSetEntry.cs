@@ -13,11 +13,15 @@ public class BlockSetEntry : MonoBehaviour
 	[HideInInspector]
 	public GridInfo.BuildSlots[] BlockBuildSlots;
 
+	[HideInInspector]
+	public GridInfo.BuildLayer[] BlockBuildLayers;
+
 	void Awake()
 	{
 		if (BlockInfo != null)
 		{
 			BlockBuildSlots = BlockInfo.BuildSlots;
+			BlockBuildLayers = BlockInfo.BuildLayers;
 		}
 	}
 
@@ -31,14 +35,15 @@ public class BlockSetEntry : MonoBehaviour
 		return BlockUnlocked;
 	}
 
-	public bool CanBeBuilt(GridInfo.BuildSlots eBuildSlot)
+	public bool CanBeBuilt(GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eBuildLayer)
 	{
 		if (BlockUnlocked)
 		{
 			if (CurrencyManager.Instance.CurrencyAvailable(BlockCost))
 			{
 				// Check to see if that block can be built on the proposed slot.
-				if (BlockBuildSlots.Contains(eBuildSlot))
+				// Also check to see if it can be built on that layer.
+				if (BlockBuildSlots.Contains(eBuildSlot) && BlockBuildLayers.Contains(eBuildLayer))
 				{
 					return true;
 				}

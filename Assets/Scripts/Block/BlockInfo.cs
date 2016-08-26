@@ -10,7 +10,12 @@ public class BlockInfo : MonoBehaviour
 	public BlockManager.Category Type;
 
 	// Default to edging.
+	// This is set in editor to show the possible build slots for this block.
 	public GridInfo.BuildSlots[] BuildSlots = new GridInfo.BuildSlots[4] { GridInfo.BuildSlots.North, GridInfo.BuildSlots.East, GridInfo.BuildSlots.South, GridInfo.BuildSlots.West };
+
+	// Default to both layers.
+	// This is set in editor to show the possible build layers for this block.
+	public GridInfo.BuildLayer[] BuildLayers = new GridInfo.BuildLayer[2] { GridInfo.BuildLayer.Top, GridInfo.BuildLayer.Bottom };
 
 	public float Height = 1.0f;
 	public float Width = 1.0f;
