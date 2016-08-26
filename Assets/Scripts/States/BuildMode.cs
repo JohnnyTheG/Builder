@@ -95,16 +95,16 @@ public class BuildMode : BaseMode
 							BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
 							GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
+							GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
 
 							if (cBlockSetEntry.IsCentreOnly())
 							{
 								eBuildSlot = GridInfo.BuildSlots.Centre;
 							}
 
-							if (cBlockSetEntry.CanBeBuilt(eBuildSlot))
+							if (cBlockSetEntry.CanBeBuilt(eBuildSlot, cGridLayer.Layer))
 							{
 								GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
-								GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
 
 								if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer))
 								{
