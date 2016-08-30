@@ -3,12 +3,12 @@ using System.Linq;
 
 public class BlockSetEntry : MonoBehaviour
 {
-	public BlockInfo BlockInfo;
+	[SerializeField]
+	bool BlockUnlocked = true;
 
 	public int BlockCost;
 
-	[SerializeField]
-	bool BlockUnlocked = true;
+	public BlockInfo BlockInfo;
 
 	[HideInInspector]
 	public GridInfo.BuildSlots[] BlockBuildSlots;
@@ -16,12 +16,26 @@ public class BlockSetEntry : MonoBehaviour
 	[HideInInspector]
 	public GridInfo.BuildLayer[] BlockBuildLayers;
 
+	public BlockInfo OppositeBlockInfo;
+
+	[HideInInspector]
+	public GridInfo.BuildSlots[] OppositeBlockBuildSlots;
+
+	[HideInInspector]
+	public GridInfo.BuildLayer[] OppositeBlockBuildLayers;
+
 	void Awake()
 	{
 		if (BlockInfo != null)
 		{
 			BlockBuildSlots = BlockInfo.BuildSlots;
 			BlockBuildLayers = BlockInfo.BuildLayers;
+		}
+
+		if (OppositeBlockInfo != null)
+		{
+			OppositeBlockBuildSlots = OppositeBlockInfo.BuildSlots;
+			OppositeBlockBuildLayers = OppositeBlockInfo.BuildLayers;
 		}
 	}
 
@@ -37,6 +51,10 @@ public class BlockSetEntry : MonoBehaviour
 
 	public bool CanBeBuilt(GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eBuildLayer)
 	{
+		bool bCanBeBuilt = false;
+		// If there is no opposite block, this goes to true just to allow final return to be true.
+		bool bOppositeCanBeBuilt = OppositeBlockInfo == null;
+
 		if (BlockUnlocked)
 		{
 			if (CurrencyManager.Instance.CurrencyAvailable(BlockCost))
@@ -45,12 +63,21 @@ public class BlockSetEntry : MonoBehaviour
 				// Also check to see if it can be built on that layer.
 				if (BlockBuildSlots.Contains(eBuildSlot) && BlockBuildLayers.Contains(eBuildLayer))
 				{
-					return true;
+					bCanBeBuilt = true;
+				}
+
+				// If there is an opposite block to be built.
+				if (OppositeBlockInfo != null)
+				{
+					if (OppositeBlockBuildSlots.Contains(eBuildSlot) && OppositeBlockBuildLayers.Contains(GridUtilities.GetOppositeBuildLayer(eBuildLayer)))
+					{
+						bOppositeCanBeBuilt = true;
+					}
 				}
 			}
 		}
 
-		return false;
+		return bCanBeBuilt && bOppositeCanBeBuilt;
 	}
 
 	public void Build()
@@ -66,5 +93,10 @@ public class BlockSetEntry : MonoBehaviour
 		}
 
 		return false;
+	}
+
+	public bool HasOppositeBlock()
+	{
+		return OppositeBlockInfo != null;
 	}
 }

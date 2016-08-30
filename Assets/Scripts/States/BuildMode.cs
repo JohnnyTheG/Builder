@@ -106,7 +106,7 @@ public class BuildMode : BaseMode
 							{
 								GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
 
-								if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer))
+								if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer, cBlockSetEntry.HasOppositeBlock()))
 								{
 									CreateBlock(cGridInfo, eBuildSlot, cGridLayer);
 								}
@@ -231,23 +231,28 @@ public class BuildMode : BaseMode
 				cCurrentBlockSetEntry.Build();
 			}
 
-			GameObject cBlock = Instantiate(cCurrentBlockSetEntry.BlockInfo.gameObject);
-
-			BlockInfo cBlockInfo = cBlock.GetComponent<BlockInfo>();
-
-			cBlockInfo.Initialise(bIsGhost);
-
-			cBlock.transform.rotation = GetBlockRotation(eBuildSlot, cGridLayer.Layer);
-
-			if (cBlockInfo != null)
-			{
-				cBlockInfo.Move(cGridInfo, eBuildSlot, cGridLayer.Layer);
-			}
-
-			return cBlockInfo;
+			return CreateBlockGameObject(cCurrentBlockSetEntry.BlockInfo.gameObject, cGridInfo, eBuildSlot, cGridLayer, bIsGhost);
 		}
 
 		return null;
+	}
+
+	BlockInfo CreateBlockGameObject(GameObject cBlockToCreate, GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridLayer cGridLayer, bool bIsGhost)
+	{
+		GameObject cBlock = Instantiate(cBlockToCreate);
+
+		BlockInfo cBlockInfo = cBlock.GetComponent<BlockInfo>();
+
+		cBlockInfo.Initialise(bIsGhost);
+
+		cBlock.transform.rotation = GetBlockRotation(eBuildSlot, cGridLayer.Layer);
+
+		if (cBlockInfo != null)
+		{
+			cBlockInfo.Move(cGridInfo, eBuildSlot, cGridLayer.Layer);
+		}
+
+		return cBlockInfo;
 	}
 
 	Quaternion GetBlockRotation(GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eBuildLayer)

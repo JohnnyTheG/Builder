@@ -79,6 +79,7 @@
     <Compile Include="Assets\Scripts\Gameplay\Atmosphere\AtmosphereManager.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Currency\CurrencyManager.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Power\PowerCapacitorBlockInfo.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\Power\PowerConnectionBlockInfo.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Power\PowerGeneratorBlockInfo.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Power\PowerManager.cs" />
     <Compile Include="Assets\Scripts\Gameplay\Rooms\RoomInfo.cs" />

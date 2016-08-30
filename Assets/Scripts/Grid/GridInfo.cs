@@ -86,7 +86,20 @@ public class GridInfo : MonoBehaviour
 		}
 	}
 
-	public bool CanBeOccupied(BuildSlots eBuildSlot, BuildLayer eBuildLayer)
+	public bool CanBeOccupied(BuildSlots eBuildSlot, BuildLayer eBuildLayer, bool bCheckOpposite)
+	{
+		bool bCanBeOccupied = CanBeOccupiedInternal(eBuildSlot, eBuildLayer);
+
+		// If the opposite side needs checked, then if the above check was passed.
+		if (bCheckOpposite && bCanBeOccupied)
+		{
+			bCanBeOccupied = CanBeOccupiedInternal(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer));
+		}
+
+		return bCanBeOccupied;
+	}
+
+	public bool CanBeOccupiedInternal(BuildSlots eBuildSlot, BuildLayer eBuildLayer)
 	{
 		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
 		{
