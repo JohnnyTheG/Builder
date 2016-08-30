@@ -23,6 +23,13 @@ public class GridSettings : Singleton<GridSettings>
 
 	// Which build layer is "up" (i.e. facing upwards towards Vector3.up).
 	GridInfo.BuildLayer m_eUpBuildLayer = GridInfo.BuildLayer.Top;
+	public GridInfo.BuildLayer UpBuildLayer
+	{
+		get
+		{
+			return m_eUpBuildLayer;
+		}
+	}
 
 	public delegate void OnGridFlipStartCallback();
 	public delegate void OnGridFlipCompleteCallback();
@@ -132,4 +139,4 @@ public class GridSettings : Singleton<GridSettings>
 			}
 		}
 	}
-} 
+}

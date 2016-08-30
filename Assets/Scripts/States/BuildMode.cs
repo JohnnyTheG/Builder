@@ -242,9 +242,6 @@ public class BuildMode : BaseMode
 			{
 				cOpposite = CreateBlockGameObject(cCurrentBlockSetEntry.OppositeBlockInfo.gameObject, cGridInfo, eBuildSlot, GridUtilities.GetOppositeBuildLayer(eGridLayer.Layer), bIsGhost);
 				cBlock.m_cOppositeBlockInfo = cOpposite;
-
-				// The opposite block will be upside down at this stage so flip it.
-				cOpposite.transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles + new Vector3(0.0f, 180.0f, 180.0f));
 			}
 
 			cBlock.m_cOppositeBlockInfo = cOpposite;
@@ -291,6 +288,11 @@ public class BuildMode : BaseMode
 				vecRotation = m_dictBuildDirections[m_eBuildDirection].eulerAngles;
 
 				break;
+		}
+
+		if (GridSettings.Instance.UpBuildLayer != eBuildLayer)
+		{
+			vecRotation += new Vector3(0.0f, 180.0f, 180.0f);
 		}
 
 		return Quaternion.Euler(vecRotation);
@@ -340,6 +342,11 @@ public class BuildMode : BaseMode
 					m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildDirection, cGridLayer.Layer, true);
 
 					m_cBlockInfoBuildHighlight.transform.rotation = GetBlockRotation(m_eBuildDirection, cGridLayer.Layer);
+
+					if (m_cBlockInfoBuildHighlight.HasOppositeBlock())
+					{
+						m_cBlockInfoBuildHighlight.m_cOppositeBlockInfo.transform.rotation = GetBlockRotation(m_eBuildDirection, GridUtilities.GetOppositeBuildLayer(cGridLayer.Layer));
+					}
 
 					// Set the colour.
 					if (CurrencyManager.Instance.CurrencyAvailable(cBlockSetEntry.BlockCost))
