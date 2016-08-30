@@ -15,9 +15,9 @@ public class PowerCapacitorBlockInfo : BlockInfo
 		}
 	}
 
-	public override void Destroy()
+	public override void DestroyBlockInfo(bool bDestroyOpposite)
 	{
-		base.Destroy();
+		base.DestroyBlockInfo(bDestroyOpposite);
 
 		if (!m_bIsGhost)
 		{

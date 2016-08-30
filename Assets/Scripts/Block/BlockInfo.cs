@@ -20,6 +20,9 @@ public class BlockInfo : MonoBehaviour
 	public float Height = 1.0f;
 	public float Width = 1.0f;
 
+	[HideInInspector]
+	public BlockInfo m_cOppositeBlockInfo = null;
+
 	[NonSerialized]
 	[HideInInspector]
 	public GridInfo m_cGridInfo;
@@ -61,7 +64,7 @@ public class BlockInfo : MonoBehaviour
 		}
 	}
 
-	public void Move(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eBuildLayer)
+	public void Move(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eBuildLayer, bool bMoveOppositeBlock)
 	{
 		if (!m_bIsGhost)
 		{
@@ -78,7 +81,7 @@ public class BlockInfo : MonoBehaviour
 		if (!m_bIsGhost)
 		{
 			m_cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, this);
-			
+
 		}
 
 		Vector3 vecPosition = Vector3.zero;
@@ -102,6 +105,14 @@ public class BlockInfo : MonoBehaviour
 
 		// Attach to the grid info holding it.
 		transform.parent = cGridInfo.transform;
+
+		if (bMoveOppositeBlock)
+		{
+			if (m_cOppositeBlockInfo != null)
+			{
+				m_cOppositeBlockInfo.Move(cGridInfo, eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), false);
+			}
+		}
 	}
 
 	public void Rotate(Vector3 vecAngle)
@@ -113,7 +124,7 @@ public class BlockInfo : MonoBehaviour
 		transform.rotation = Quaternion.Euler(vecRotation);
 	}
 
-	public virtual void Destroy()
+	public virtual void DestroyBlockInfo(bool bDestroyOpposite)
 	{
 		if (m_cGridInfo != null)
 		{
@@ -125,6 +136,14 @@ public class BlockInfo : MonoBehaviour
 			BlockManager.Instance.DeregisterBlock(this);
 		}
 
+		if (bDestroyOpposite)
+		{
+			if (m_cOppositeBlockInfo != null)
+			{
+				m_cOppositeBlockInfo.DestroyBlockInfo(false);
+			}
+		}
+
 		Destroy(gameObject);
 	}
 
@@ -132,7 +151,7 @@ public class BlockInfo : MonoBehaviour
 	{
 		// Do stuff for selection here.
 		m_cMeshRenderer.material.SetColor("_Color", GameGlobals.Instance.SelectedBlockColor);
-    }
+	}
 
 	public virtual void Deselected()
 	{
@@ -148,5 +167,10 @@ public class BlockInfo : MonoBehaviour
 		}
 
 		return false;
+	}
+
+	public bool HasOppositeBlock()
+	{
+		return m_cOppositeBlockInfo != null;
 	}
 }

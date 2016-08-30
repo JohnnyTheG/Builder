@@ -94,21 +94,24 @@ public class BuildMode : BaseMode
 						{
 							BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
-							GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
-							GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
-
-							if (cBlockSetEntry.IsCentreOnly())
+							if (cBlockSetEntry != null)
 							{
-								eBuildSlot = GridInfo.BuildSlots.Centre;
-							}
+								GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
+								GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
 
-							if (cBlockSetEntry.CanBeBuilt(eBuildSlot, cGridLayer.Layer))
-							{
-								GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
-
-								if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer, cBlockSetEntry.HasOppositeBlock()))
+								if (cBlockSetEntry.IsCentreOnly())
 								{
-									CreateBlock(cGridInfo, eBuildSlot, cGridLayer);
+									eBuildSlot = GridInfo.BuildSlots.Centre;
+								}
+
+								if (cBlockSetEntry.CanBeBuilt(eBuildSlot, cGridLayer.Layer))
+								{
+									GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+
+									if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer, cBlockSetEntry.HasOppositeBlock()))
+									{
+										CreateBlock(cGridInfo, eBuildSlot, cGridLayer);
+									}
 								}
 							}
 						}
@@ -127,10 +130,10 @@ public class BuildMode : BaseMode
 								eBuildSlot = GridInfo.BuildSlots.Centre;
 							}
 
-							if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer))
+							if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer, cBlockInfo.HasOppositeBlock()))
 							{
 								// Snap to grid.
-								GetSelectedBlock().Move(cGridInfo, eBuildSlot, cGridLayer.Layer);
+								GetSelectedBlock().Move(cGridInfo, eBuildSlot, cGridLayer.Layer, true);
 
 								SetSelectedBlock(null);
 							}
@@ -165,7 +168,7 @@ public class BuildMode : BaseMode
 
 						if (cBlockInfo != null)
 						{
-							cBlockInfo.Destroy();
+							cBlockInfo.DestroyBlockInfo(true);
 						}
 					}
 				}
@@ -220,7 +223,7 @@ public class BuildMode : BaseMode
 		DestroyBlockBuildHighlight();
 	}
 
-	BlockInfo CreateBlock(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridLayer cGridLayer, bool bIsGhost = false)
+	BlockInfo CreateBlock(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridLayer eGridLayer, bool bIsGhost = false)
 	{
 		BlockSetEntry cCurrentBlockSetEntry = GetCurrentBlockSetEntry();
 
@@ -231,13 +234,28 @@ public class BuildMode : BaseMode
 				cCurrentBlockSetEntry.Build();
 			}
 
-			return CreateBlockGameObject(cCurrentBlockSetEntry.BlockInfo.gameObject, cGridInfo, eBuildSlot, cGridLayer, bIsGhost);
+			BlockInfo cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.BlockInfo.gameObject, cGridInfo, eBuildSlot, eGridLayer.Layer, bIsGhost);
+
+			BlockInfo cOpposite = null;
+
+			if (cCurrentBlockSetEntry.HasOppositeBlock())
+			{
+				cOpposite = CreateBlockGameObject(cCurrentBlockSetEntry.OppositeBlockInfo.gameObject, cGridInfo, eBuildSlot, GridUtilities.GetOppositeBuildLayer(eGridLayer.Layer), bIsGhost);
+				cBlock.m_cOppositeBlockInfo = cOpposite;
+
+				// The opposite block will be upside down at this stage so flip it.
+				cOpposite.transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles + new Vector3(0.0f, 180.0f, 180.0f));
+			}
+
+			cBlock.m_cOppositeBlockInfo = cOpposite;
+
+			return cBlock;
 		}
 
 		return null;
 	}
 
-	BlockInfo CreateBlockGameObject(GameObject cBlockToCreate, GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridLayer cGridLayer, bool bIsGhost)
+	BlockInfo CreateBlockGameObject(GameObject cBlockToCreate, GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eGridLayer, bool bIsGhost)
 	{
 		GameObject cBlock = Instantiate(cBlockToCreate);
 
@@ -245,11 +263,11 @@ public class BuildMode : BaseMode
 
 		cBlockInfo.Initialise(bIsGhost);
 
-		cBlock.transform.rotation = GetBlockRotation(eBuildSlot, cGridLayer.Layer);
+		cBlock.transform.rotation = GetBlockRotation(eBuildSlot, eGridLayer);
 
 		if (cBlockInfo != null)
 		{
-			cBlockInfo.Move(cGridInfo, eBuildSlot, cGridLayer.Layer);
+			cBlockInfo.Move(cGridInfo, eBuildSlot, eGridLayer, false);
 		}
 
 		return cBlockInfo;
@@ -274,23 +292,6 @@ public class BuildMode : BaseMode
 
 				break;
 		}
-
-		// Flip the block if its on the bottom.
-		/*switch (eBuildLayer)
-		{
-			case GridInfo.BuildLayer.Top:
-
-				vecRotation.z = 0.0f;
-
-				break;
-
-			case GridInfo.BuildLayer.Bottom:
-
-				vecRotation.y += 180.0f;
-				vecRotation.z += 180.0f;
-
-				break;
-		}*/
 
 		return Quaternion.Euler(vecRotation);
 	}
@@ -336,7 +337,7 @@ public class BuildMode : BaseMode
 
 				if (m_cBlockInfoBuildHighlight != null)
 				{
-					m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildDirection, cGridLayer.Layer);
+					m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildDirection, cGridLayer.Layer, true);
 
 					m_cBlockInfoBuildHighlight.transform.rotation = GetBlockRotation(m_eBuildDirection, cGridLayer.Layer);
 
@@ -372,7 +373,7 @@ public class BuildMode : BaseMode
 	{
 		if (m_cBlockInfoBuildHighlight != null)
 		{
-			Destroy(m_cBlockInfoBuildHighlight.gameObject);
+			m_cBlockInfoBuildHighlight.DestroyBlockInfo(true);
 		}
 	}
 }
