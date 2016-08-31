@@ -105,21 +105,10 @@ public class BuildMode : BaseMode
 						// If there isnt a selected block.
 						if (GetSelectedBlock() == null)
 						{
-							BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
-
 							GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
 							GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
 
-							if (!cBlockSetEntry.CanDragBuild)
-							{
-								GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
-
-								CreateBlockOnGrid(cBlockSetEntry, cGridInfo, eBuildSlot, cGridLayer.Layer);
-							}
-							else
-							{
-								StartDragBuild(cGridInfo, cGridLayer.Layer);
-							}
+							StartDragBuild(cGridInfo, cGridLayer.Layer);
 						}
 						// There is a selected block.
 						else
@@ -184,26 +173,6 @@ public class BuildMode : BaseMode
 				}
 			}
 
-			if (InputActions.Instance.Delete())
-			{
-				RaycastHit cRaycastHit;
-
-				Ray cRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-				if (Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Block)))
-				{
-					if (cRaycastHit.collider.gameObject.layer == PhysicsLayers.Block)
-					{
-						BlockInfo cBlockInfo = cRaycastHit.collider.gameObject.GetComponent<BlockInfo>();
-
-						if (cBlockInfo != null)
-						{
-							cBlockInfo.DestroyBlockInfo(true);
-						}
-					}
-				}
-			}
-
 			if (InputActions.Instance.RotateAnticlockwise())
 			{
 				m_eBuildDirection = Utils.GetArrayEntry<GridInfo.BuildSlots>(m_dictBuildDirections.Keys.ToArray(), (int)m_eBuildDirection, -1);
@@ -214,32 +183,59 @@ public class BuildMode : BaseMode
 				m_eBuildDirection = Utils.GetArrayEntry<GridInfo.BuildSlots>(m_dictBuildDirections.Keys.ToArray(), (int)m_eBuildDirection, 1);
 			}
 
-			if (InputActions.Instance.Focus())
+			switch (m_eState)
 			{
-				if (GetSelectedBlock() != null)
-				{
-					CameraController.Instance.SetFocus(GetSelectedBlock().transform.position);
-				}
-			}
+				case State.Build:
 
-			if (InputActions.Instance.NextBlockSetEntryCategory())
-			{
-				BlockManager.Instance.GetNextBlockSetEntryCategory(true);
-			}
+					if (InputActions.Instance.Delete())
+					{
+						RaycastHit cRaycastHit;
 
-			if (InputActions.Instance.PreviousBlockSetEntryCategory())
-			{
-				BlockManager.Instance.GetPreviousBlockSetEntryCategory(true);
-			}
+						Ray cRay = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-			if (InputActions.Instance.NextBlockSetEntry())
-			{
-				BlockManager.Instance.GetNextBlock(true);
-			}
+						if (Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Block)))
+						{
+							if (cRaycastHit.collider.gameObject.layer == PhysicsLayers.Block)
+							{
+								BlockInfo cBlockInfo = cRaycastHit.collider.gameObject.GetComponent<BlockInfo>();
 
-			if (InputActions.Instance.PreviousBlockSetEntry())
-			{
-				BlockManager.Instance.GetPreviousBlock(true);
+								if (cBlockInfo != null)
+								{
+									cBlockInfo.DestroyBlockInfo(true);
+								}
+							}
+						}
+					}
+
+					if (InputActions.Instance.Focus())
+					{
+						if (GetSelectedBlock() != null)
+						{
+							CameraController.Instance.SetFocus(GetSelectedBlock().transform.position);
+						}
+					}
+
+					if (InputActions.Instance.NextBlockSetEntryCategory())
+					{
+						BlockManager.Instance.GetNextBlockSetEntryCategory(true);
+					}
+
+					if (InputActions.Instance.PreviousBlockSetEntryCategory())
+					{
+						BlockManager.Instance.GetPreviousBlockSetEntryCategory(true);
+					}
+
+					if (InputActions.Instance.NextBlockSetEntry())
+					{
+						BlockManager.Instance.GetNextBlock(true);
+					}
+
+					if (InputActions.Instance.PreviousBlockSetEntry())
+					{
+						BlockManager.Instance.GetPreviousBlock(true);
+					}
+
+					break;
 			}
 		}
 	}
@@ -380,6 +376,9 @@ public class BuildMode : BaseMode
 
 		// Get rid of existing highlights.
 		DestroyDragBuildHighlights();
+
+		// Hide the ground square icon.
+		GameGlobals.Instance.MouseHighlight.SetActive(false);
 
 		BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
@@ -529,13 +528,25 @@ public class BuildMode : BaseMode
 	{
 		Debug.Log("Updating Drag Build");
 
-		RaycastHit cRaycastHit;
+		BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
-		if (GridUtilities.RaycastForGridFromMouse(out cRaycastHit))
+		// If the block can be drag built.
+		if (cBlockSetEntry.CanDragBuild)
 		{
-			GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+			RaycastHit cRaycastHit;
 
-			m_cDragBuildFinishGridInfo = cGridInfo;
+			// Find the grid and then set that as the finish position.
+			if (GridUtilities.RaycastForGridFromMouse(out cRaycastHit))
+			{
+				GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+
+				m_cDragBuildFinishGridInfo = cGridInfo;
+			}
+		}
+		else
+		{
+			// Cant drag build this block. It should be spawned on the start position only when key is released.
+			m_cDragBuildFinishGridInfo = m_cDragBuildStartGridInfo;
 		}
 	}
 
