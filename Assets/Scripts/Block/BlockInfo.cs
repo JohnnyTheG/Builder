@@ -81,7 +81,6 @@ public class BlockInfo : MonoBehaviour
 		if (!m_bIsGhost)
 		{
 			m_cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, this);
-
 		}
 
 		Vector3 vecPosition = Vector3.zero;
@@ -126,13 +125,13 @@ public class BlockInfo : MonoBehaviour
 
 	public virtual void DestroyBlockInfo(bool bDestroyOpposite)
 	{
-		if (m_cGridInfo != null)
-		{
-			m_cGridInfo.SetUnoccupied(m_eBuildSlot, m_eBuildLayer);
-		}
-
 		if (!m_bIsGhost)
 		{
+			if (m_cGridInfo != null)
+			{
+				m_cGridInfo.SetUnoccupied(m_eBuildSlot, m_eBuildLayer);
+			}
+
 			BlockManager.Instance.DeregisterBlock(this);
 		}
 
