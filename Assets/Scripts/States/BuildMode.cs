@@ -103,31 +103,17 @@ public class BuildMode : BaseMode
 							BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
 							GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+							GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
 
 							if (!cBlockSetEntry.CanDragBuild)
 							{
-								if (cBlockSetEntry != null)
-								{
-									GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
-									GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
+								GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
 
-									if (cBlockSetEntry.IsCentreOnly())
-									{
-										eBuildSlot = GridInfo.BuildSlots.Centre;
-									}
-
-									if (cBlockSetEntry.CanBeBuilt(eBuildSlot, cGridLayer.Layer))
-									{
-										if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer, cBlockSetEntry.HasOppositeBlock()))
-										{
-											CreateBlock(cGridInfo, eBuildSlot, cGridLayer);
-										}
-									}
-								}
+								CreateBlockOnGrid(cBlockSetEntry, cGridInfo, eBuildSlot, cGridLayer.Layer);
 							}
 							else
 							{
-								StartDragBuild(cGridInfo);
+								StartDragBuild(cGridInfo, cGridLayer.Layer);
 							}
 						}
 						// There is a selected block.
@@ -262,7 +248,26 @@ public class BuildMode : BaseMode
 		DestroyBlockBuildHighlight();
 	}
 
-	BlockInfo CreateBlock(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridLayer eGridLayer, bool bIsGhost = false)
+	void CreateBlockOnGrid(BlockSetEntry cBlockSetEntry, GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eBuildLayer)
+	{
+		if (cBlockSetEntry != null)
+		{
+			if (cBlockSetEntry.IsCentreOnly())
+			{
+				eBuildSlot = GridInfo.BuildSlots.Centre;
+			}
+
+			if (cBlockSetEntry.CanBeBuilt(eBuildSlot, eBuildLayer))
+			{
+				if (cGridInfo.CanBeOccupied(eBuildSlot, eBuildLayer, cBlockSetEntry.HasOppositeBlock()))
+				{
+					CreateBlock(cGridInfo, eBuildSlot, eBuildLayer);
+				}
+			}
+		}
+	}
+
+	BlockInfo CreateBlock(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eBuildLayer, bool bIsGhost = false)
 	{
 		BlockSetEntry cCurrentBlockSetEntry = GetCurrentBlockSetEntry();
 
@@ -273,13 +278,13 @@ public class BuildMode : BaseMode
 				cCurrentBlockSetEntry.Build();
 			}
 
-			BlockInfo cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.BlockInfo.gameObject, cGridInfo, eBuildSlot, eGridLayer.Layer, bIsGhost);
+			BlockInfo cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
 
 			BlockInfo cOpposite = null;
 
 			if (cCurrentBlockSetEntry.HasOppositeBlock())
 			{
-				cOpposite = CreateBlockGameObject(cCurrentBlockSetEntry.OppositeBlockInfo.gameObject, cGridInfo, eBuildSlot, GridUtilities.GetOppositeBuildLayer(eGridLayer.Layer), bIsGhost);
+				cOpposite = CreateBlockGameObject(cCurrentBlockSetEntry.OppositeBlockInfo.gameObject, cGridInfo, eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), bIsGhost);
 				cBlock.m_cOppositeBlockInfo = cOpposite;
 			}
 
@@ -373,7 +378,7 @@ public class BuildMode : BaseMode
 						eBuildSlot = GridInfo.BuildSlots.Centre;
 					}
 
-					m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, eBuildSlot, cGridLayer, true);
+					m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, eBuildSlot, cGridLayer.Layer, true);
 				}
 
 				if (m_cBlockInfoBuildHighlight != null)
@@ -426,7 +431,9 @@ public class BuildMode : BaseMode
 	GridInfo m_cDragBuildStartGridInfo = null;
 	GridInfo m_cDragBuildFinishGridInfo = null;
 
-	void StartDragBuild(GridInfo cGridInfo)
+	GridInfo.BuildLayer m_eDragBuildLayer = GridInfo.BuildLayer.Top;
+
+	void StartDragBuild(GridInfo cGridInfo, GridInfo.BuildLayer eBuildLayer)
 	{
 		Debug.Log("Starting Drag Build");
 
@@ -434,6 +441,8 @@ public class BuildMode : BaseMode
 
 		// Start position of the drag build.
 		m_cDragBuildStartGridInfo = cGridInfo;
+
+		m_eDragBuildLayer = eBuildLayer;
 	}
 
 	void UpdateDragBuild()
@@ -460,7 +469,7 @@ public class BuildMode : BaseMode
 
 		for (int nGridInfo = 0; nGridInfo < acGridLine.Length; nGridInfo++)
 		{
-			acGridLine[nGridInfo].MappingHighlight();
+			CreateBlockOnGrid(GetCurrentBlockSetEntry(), acGridLine[nGridInfo], m_eBuildDirection, m_eDragBuildLayer);
 		}
 	}
 }
