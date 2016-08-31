@@ -27,4 +27,11 @@ public class GridUtilities : MonoBehaviour
 				return GridInfo.BuildLayer.Bottom;
 		}
 	}
+
+	public static bool RaycastForGridFromMouse(out RaycastHit cRaycastHit)
+	{
+		Ray cRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+		return Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Grid));
+	}
 }

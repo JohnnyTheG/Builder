@@ -4,6 +4,14 @@ using System.Linq;
 
 public class BuildMode : BaseMode
 {
+	enum State
+	{
+		Build,
+		DragBuild,
+	}
+
+	State m_eState = State.Build;
+
 	public override void Shutdown(OnShutdownCompleteCallback OnShutdownComplete)
 	{
 		base.Shutdown(OnShutdownComplete);
@@ -94,25 +102,32 @@ public class BuildMode : BaseMode
 						{
 							BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
-							if (cBlockSetEntry != null)
+							GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+
+							if (!cBlockSetEntry.CanDragBuild)
 							{
-								GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
-								GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
-
-								if (cBlockSetEntry.IsCentreOnly())
+								if (cBlockSetEntry != null)
 								{
-									eBuildSlot = GridInfo.BuildSlots.Centre;
-								}
+									GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
+									GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
 
-								if (cBlockSetEntry.CanBeBuilt(eBuildSlot, cGridLayer.Layer))
-								{
-									GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
-
-									if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer, cBlockSetEntry.HasOppositeBlock()))
+									if (cBlockSetEntry.IsCentreOnly())
 									{
-										CreateBlock(cGridInfo, eBuildSlot, cGridLayer);
+										eBuildSlot = GridInfo.BuildSlots.Centre;
+									}
+
+									if (cBlockSetEntry.CanBeBuilt(eBuildSlot, cGridLayer.Layer))
+									{
+										if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer, cBlockSetEntry.HasOppositeBlock()))
+										{
+											CreateBlock(cGridInfo, eBuildSlot, cGridLayer);
+										}
 									}
 								}
+							}
+							else
+							{
+								StartDragBuild(cGridInfo);
 							}
 						}
 						// There is a selected block.
@@ -151,6 +166,30 @@ public class BuildMode : BaseMode
 				else
 				{
 					SetSelectedBlock(null);
+				}
+			}
+
+			if (InputActions.Instance.SelectHeld())
+			{
+				switch (m_eState)
+				{
+					case State.DragBuild:
+
+						UpdateDragBuild();
+
+						break;
+				}
+			}
+
+			if (InputActions.Instance.SelectReleased())
+			{
+				switch (m_eState)
+				{
+					case State.DragBuild:
+
+						FinishDragBuild();
+
+						break;
 				}
 			}
 
@@ -311,7 +350,7 @@ public class BuildMode : BaseMode
 
 			Ray cRay = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-			if (Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Grid)))
+			if (GridUtilities.RaycastForGridFromMouse(out cRaycastHit))
 			{
 				GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
 				GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
@@ -381,6 +420,47 @@ public class BuildMode : BaseMode
 		if (m_cBlockInfoBuildHighlight != null)
 		{
 			m_cBlockInfoBuildHighlight.DestroyBlockInfo(true);
+		}
+	}
+
+	GridInfo m_cDragBuildStartGridInfo = null;
+	GridInfo m_cDragBuildFinishGridInfo = null;
+
+	void StartDragBuild(GridInfo cGridInfo)
+	{
+		Debug.Log("Starting Drag Build");
+
+		m_eState = State.DragBuild;
+
+		// Start position of the drag build.
+		m_cDragBuildStartGridInfo = cGridInfo;
+	}
+
+	void UpdateDragBuild()
+	{
+		Debug.Log("Updating Drag Build");
+
+		RaycastHit cRaycastHit;
+
+		if (GridUtilities.RaycastForGridFromMouse(out cRaycastHit))
+		{
+			GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+
+			m_cDragBuildFinishGridInfo = cGridInfo;
+		}
+	}
+
+	void FinishDragBuild()
+	{
+		Debug.Log("Finishing Drag Build");
+
+		m_eState = State.Build;
+
+		GridInfo[] acGridLine = GridSettings.Instance.GetGridLine(m_cDragBuildStartGridInfo, m_cDragBuildFinishGridInfo);
+
+		for (int nGridInfo = 0; nGridInfo < acGridLine.Length; nGridInfo++)
+		{
+			acGridLine[nGridInfo].MappingHighlight();
 		}
 	}
 }

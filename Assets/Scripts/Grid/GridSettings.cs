@@ -74,6 +74,37 @@ public class GridSettings : Singleton<GridSettings>
 		return lstGridSelection.ToArray();
 	}
 
+	public GridInfo[] GetGridLine(GridInfo cGridInfoStart, GridInfo cGridInfoFinish)
+	{
+		List<GridInfo> lstGridSelection = new List<GridInfo>();
+
+		int nXMin = cGridInfoStart.GridX <= cGridInfoFinish.GridX ? cGridInfoStart.GridX : cGridInfoFinish.GridX;
+		int nXMax = cGridInfoStart.GridX >= cGridInfoFinish.GridX ? cGridInfoStart.GridX : cGridInfoFinish.GridX;
+
+		int nYMin = cGridInfoStart.GridY <= cGridInfoFinish.GridY ? cGridInfoStart.GridY : cGridInfoFinish.GridY;
+		int nYMax = cGridInfoStart.GridY >= cGridInfoFinish.GridY ? cGridInfoStart.GridY : cGridInfoFinish.GridY;
+
+		int nXDelta = nXMax - nXMin;
+		int nYDelta = nYMax - nYMin;
+
+		if (nXDelta >= nYDelta)
+		{
+			for (int nX = nXMin; nX <= nXMax; nX++)
+			{
+				lstGridSelection.Add(Grid[nX, cGridInfoStart.GridY]);
+			}
+		}
+		else
+		{
+			for (int nY = nYMin; nY <= nYMax; nY++)
+			{
+				lstGridSelection.Add(Grid[cGridInfoStart.GridX, nY]);
+			}
+		}
+
+		return lstGridSelection.ToArray();
+	}
+
 	public void Flip()
 	{
 		//transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles + new Vector3(0.0f, 0.0f, 180.0f));

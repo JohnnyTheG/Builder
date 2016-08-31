@@ -8,6 +8,8 @@ public class BlockSetEntry : MonoBehaviour
 
 	public int BlockCost;
 
+	public bool CanDragBuild = false;
+
 	public BlockInfo BlockInfo;
 
 	[HideInInspector]

@@ -97,7 +97,7 @@ public class RoomMappingMode : BaseMode
 		// If a new selection starts, clear the old selection.
 		ClearCurrentGridSelection();
 
-		if (RaycastForGrid(out cRaycastHit))
+		if (GridUtilities.RaycastForGridFromMouse(out cRaycastHit))
 		{
 			m_cGridInfoStart = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
         }
@@ -105,7 +105,7 @@ public class RoomMappingMode : BaseMode
 
 	void TickGridSelection(out RaycastHit cRaycastHit, Mode eMode)
 	{
-		if (RaycastForGrid(out cRaycastHit))
+		if (GridUtilities.RaycastForGridFromMouse(out cRaycastHit))
 		{
 			m_cGridInfoFinish = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
 
@@ -194,13 +194,6 @@ public class RoomMappingMode : BaseMode
 		}
 	}
 
-	bool RaycastForGrid(out RaycastHit cRaycastHit)
-	{
-		Ray cRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-		return Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Grid));
-	}
-
 	void ClearCurrentGridSelection(bool bDehighlight = true)
 	{
 		if (m_acCurrentGridSelection != null)
@@ -266,7 +259,7 @@ public class RoomMappingMode : BaseMode
 	{
 		RaycastHit cRaycastHit;
 
-		if (RaycastForGrid(out cRaycastHit))
+		if (GridUtilities.RaycastForGridFromMouse(out cRaycastHit))
 		{
 			GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
 
