@@ -31,6 +31,7 @@ public class BuildMode : BaseMode
 	GridInfo.BuildSlots m_eBuildDirection = GridInfo.BuildSlots.North;
 
 	BlockInfo m_cBlockInfoBuildHighlight;
+	List<BlockInfo> m_lstDragBuildHighlights = new List<BlockInfo>();
 
 	bool m_bGridFlipping = false;
 
@@ -71,7 +72,11 @@ public class BuildMode : BaseMode
 
 		if (InputActions.Instance.Cancel())
 		{
-			if (GetSelectedBlock() != null)
+			if (m_eState == State.DragBuild && m_lstDragBuildHighlights.Count > 0)
+			{
+				CancelDragBuild();
+			}
+			else if (GetSelectedBlock() != null)
 			{
 				SetSelectedBlock(null);
 			}
@@ -351,71 +356,136 @@ public class BuildMode : BaseMode
 		}
 		else
 		{
-			RaycastHit cRaycastHit;
-
-			Ray cRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-			if (GridUtilities.RaycastForGridFromMouse(out cRaycastHit))
+			switch (m_eState)
 			{
-				GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
-				GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
+				case State.Build:
 
-				BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
+					UpdateMouseHighlightBuild();
 
-				// If the build type has changed, then get rid of the current highlight. Then further down new one is spawned.
-				if ((cBlockSetEntry == null) || (m_cBlockInfoBuildHighlight != null && (m_cBlockInfoBuildHighlight.Name != cBlockSetEntry.BlockInfo.Name)))
-				{
-					DestroyBlockBuildHighlight();
-					m_cBlockInfoBuildHighlight = null;
-				}
+					break;
 
-				if (cBlockSetEntry != null && m_cBlockInfoBuildHighlight == null)
-				{
-					GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
+				case State.DragBuild:
 
-					if (cBlockSetEntry.IsCentreOnly())
-					{
-						eBuildSlot = GridInfo.BuildSlots.Centre;
-					}
+					UpdateMouseHighlightDragBuild();
 
-					m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, eBuildSlot, cGridLayer.Layer, true);
-				}
-
-				if (m_cBlockInfoBuildHighlight != null)
-				{
-					m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildDirection, cGridLayer.Layer, true);
-
-					m_cBlockInfoBuildHighlight.transform.rotation = GetBlockRotation(m_eBuildDirection, cGridLayer.Layer);
-
-					if (m_cBlockInfoBuildHighlight.HasOppositeBlock())
-					{
-						m_cBlockInfoBuildHighlight.m_cOppositeBlockInfo.transform.rotation = GetBlockRotation(m_eBuildDirection, GridUtilities.GetOppositeBuildLayer(cGridLayer.Layer));
-					}
-
-					// Set the colour.
-					if (CurrencyManager.Instance.CurrencyAvailable(cBlockSetEntry.BlockCost))
-					{
-						m_cBlockInfoBuildHighlight.GetComponent<MeshRenderer>().material.color = GameGlobals.Instance.CanBuildColor;
-					}
-					else
-					{
-						m_cBlockInfoBuildHighlight.GetComponent<MeshRenderer>().material.color = GameGlobals.Instance.CannotBuildColor;
-					}
-				}
-
-				GameGlobals.Instance.MouseHighlight.SetActive(true);
-				GameGlobals.Instance.MouseHighlight.transform.position = cRaycastHit.collider.transform.position + new Vector3(0.0f, (cGridInfo.Height * 0.5f) + (GameGlobals.Instance.MouseHighlight.transform.localScale.y * 0.5f), 0.0f);
-			}
-			else
-			{
-				DisableHighlights();
+					break;
 			}
 		}
+	}
+
+	void UpdateMouseHighlightDragBuild()
+	{
+		// Ensure there are no highlights from a normal build.
+		DestroyBlockBuildHighlight();
+
+		// Get rid of existing highlights.
+		DestroyDragBuildHighlights();
+
+		BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
+
+		GridInfo[] acGridLine = GridSettings.Instance.GetGridLine(m_cDragBuildStartGridInfo, m_cDragBuildFinishGridInfo);
+
+		// Block cost times number of blocks in line.
+		bool bCanAffordBuild = CanAffordBlocks(GetCurrentBlockSetEntry().BlockCost, acGridLine.Length);
+
+		GridInfo.BuildSlots eBuildSlot = GetBuildDirection(cBlockSetEntry);
+
+		for (int nGridInfo = 0; nGridInfo < acGridLine.Length; nGridInfo++)
+		{
+			BlockInfo cBlockInfo = CreateBlock(acGridLine[nGridInfo], eBuildSlot, m_eDragBuildLayer, true);
+
+			SetHighlightColour(cBlockInfo, bCanAffordBuild);
+
+			m_lstDragBuildHighlights.Add(cBlockInfo);
+		}
+	}
+
+	void UpdateMouseHighlightBuild()
+	{
+		// Ensure there are no highlights from a drag build.
+		DestroyDragBuildHighlights();
+
+		RaycastHit cRaycastHit;
+
+		if (GridUtilities.RaycastForGridFromMouse(out cRaycastHit))
+		{
+			GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+			GridLayer cGridLayer = GridUtilities.GetGridLayerFromCollider(cRaycastHit.collider);
+
+			BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
+
+			// If the build type has changed, then get rid of the current highlight. Then further down new one is spawned.
+			if ((cBlockSetEntry == null) || (m_cBlockInfoBuildHighlight != null && (m_cBlockInfoBuildHighlight.Name != cBlockSetEntry.BlockInfo.Name)))
+			{
+				DestroyBlockBuildHighlight();
+				m_cBlockInfoBuildHighlight = null;
+			}
+
+			if (cBlockSetEntry != null && m_cBlockInfoBuildHighlight == null)
+			{
+				GridInfo.BuildSlots eBuildSlot = GetBuildDirection(cBlockSetEntry);
+
+				m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, eBuildSlot, cGridLayer.Layer, true);
+			}
+
+			if (m_cBlockInfoBuildHighlight != null)
+			{
+				m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildDirection, cGridLayer.Layer, true);
+
+				m_cBlockInfoBuildHighlight.transform.rotation = GetBlockRotation(m_eBuildDirection, cGridLayer.Layer);
+
+				if (m_cBlockInfoBuildHighlight.HasOppositeBlock())
+				{
+					m_cBlockInfoBuildHighlight.m_cOppositeBlockInfo.transform.rotation = GetBlockRotation(m_eBuildDirection, GridUtilities.GetOppositeBuildLayer(cGridLayer.Layer));
+				}
+
+				// Only creating a single block, hence the 1.
+				SetHighlightColour(m_cBlockInfoBuildHighlight, CanAffordBlocks(cBlockSetEntry.BlockCost, 1));
+			}
+
+			GameGlobals.Instance.MouseHighlight.SetActive(true);
+			GameGlobals.Instance.MouseHighlight.transform.position = cRaycastHit.collider.transform.position + new Vector3(0.0f, (cGridInfo.Height * 0.5f) + (GameGlobals.Instance.MouseHighlight.transform.localScale.y * 0.5f), 0.0f);
+		}
+		else
+		{
+			DisableHighlights();
+		}
+	}
+
+	bool CanAffordBlocks(int nBlockCost, int nBlockCount)
+	{
+		return CurrencyManager.Instance.CurrencyAvailable(nBlockCost * nBlockCount);
+	}
+
+	void SetHighlightColour(BlockInfo cBlockInfo, bool bCanAffordBuild)
+	{
+		if (bCanAffordBuild)
+		{
+			cBlockInfo.GetComponent<MeshRenderer>().material.color = GameGlobals.Instance.CanBuildColor;
+		}
+		else
+		{
+			cBlockInfo.GetComponent<MeshRenderer>().material.color = GameGlobals.Instance.CannotBuildColor;
+		}
+	}
+
+	GridInfo.BuildSlots GetBuildDirection(BlockSetEntry cBlockSetEntry)
+	{
+		GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
+
+		if (cBlockSetEntry.IsCentreOnly())
+		{
+			eBuildSlot = GridInfo.BuildSlots.Centre;
+		}
+
+		return eBuildSlot;
 	}
 
 	void DisableHighlights()
 	{
 		DestroyBlockBuildHighlight();
+
+		DestroyDragBuildHighlights();
 
 		GameGlobals.Instance.MouseHighlight.SetActive(false);
 	}
@@ -425,6 +495,16 @@ public class BuildMode : BaseMode
 		if (m_cBlockInfoBuildHighlight != null)
 		{
 			m_cBlockInfoBuildHighlight.DestroyBlockInfo(true);
+		}
+	}
+
+	void DestroyDragBuildHighlights()
+	{
+		for (int nHighlight = m_lstDragBuildHighlights.Count - 1; nHighlight >= 0; nHighlight--)
+		{
+			m_lstDragBuildHighlights[nHighlight].DestroyBlockInfo(true);
+
+			m_lstDragBuildHighlights.RemoveAt(nHighlight);
 		}
 	}
 
@@ -467,9 +547,21 @@ public class BuildMode : BaseMode
 
 		GridInfo[] acGridLine = GridSettings.Instance.GetGridLine(m_cDragBuildStartGridInfo, m_cDragBuildFinishGridInfo);
 
-		for (int nGridInfo = 0; nGridInfo < acGridLine.Length; nGridInfo++)
+		BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
+
+		if (CanAffordBlocks(cBlockSetEntry.BlockCost, acGridLine.Length))
 		{
-			CreateBlockOnGrid(GetCurrentBlockSetEntry(), acGridLine[nGridInfo], m_eBuildDirection, m_eDragBuildLayer);
+			for (int nGridInfo = 0; nGridInfo < acGridLine.Length; nGridInfo++)
+			{
+				CreateBlockOnGrid(GetCurrentBlockSetEntry(), acGridLine[nGridInfo], m_eBuildDirection, m_eDragBuildLayer);
+			}
 		}
+	}
+
+	void CancelDragBuild()
+	{
+		Debug.Log("Cancelling Drag Build");
+
+		m_eState = State.Build;
 	}
 }
