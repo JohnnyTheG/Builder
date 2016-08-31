@@ -38,6 +38,15 @@ public class BuildMode : BaseMode
 	void OnGridFlipStart()
 	{
 		m_bGridFlipping = true;
+
+		switch (m_eState)
+		{
+			case State.DragBuild:
+
+				CancelDragBuild();
+
+				break;
+		}
 	}
 
 	void OnGridFlipComplete()
