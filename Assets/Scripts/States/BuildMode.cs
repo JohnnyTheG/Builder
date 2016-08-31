@@ -43,6 +43,7 @@ public class BuildMode : BaseMode
 		{
 			case State.DragBuild:
 
+				// When grid starts flipping, cancel any drag build in progress.
 				CancelDragBuild();
 
 				break;
