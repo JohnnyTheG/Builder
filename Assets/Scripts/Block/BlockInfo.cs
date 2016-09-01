@@ -11,7 +11,7 @@ public class BlockInfo : MonoBehaviour
 
 	// Default to edging.
 	// This is set in editor to show the possible build slots for this block.
-	public GridInfo.BuildSlots[] BuildSlots = new GridInfo.BuildSlots[4] { GridInfo.BuildSlots.North, GridInfo.BuildSlots.East, GridInfo.BuildSlots.South, GridInfo.BuildSlots.West };
+	public GridInfo.BuildSlot[] BuildSlots = new GridInfo.BuildSlot[4] { GridInfo.BuildSlot.North, GridInfo.BuildSlot.East, GridInfo.BuildSlot.South, GridInfo.BuildSlot.West };
 
 	// Default to both layers.
 	// This is set in editor to show the possible build layers for this block.
@@ -26,7 +26,7 @@ public class BlockInfo : MonoBehaviour
 	[NonSerialized]
 	[HideInInspector]
 	public GridInfo m_cGridInfo;
-	GridInfo.BuildSlots m_eBuildSlot;
+	GridInfo.BuildSlot m_eBuildSlot;
 	[NonSerialized]
 	[HideInInspector]
 	public GridInfo.BuildLayer m_eBuildLayer;
@@ -64,7 +64,7 @@ public class BlockInfo : MonoBehaviour
 		}
 	}
 
-	public void Move(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eBuildLayer, bool bMoveOppositeBlock)
+	public void Move(GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer, bool bMoveOppositeBlock)
 	{
 		if (!m_bIsGhost)
 		{
@@ -160,7 +160,7 @@ public class BlockInfo : MonoBehaviour
 
 	public bool IsCentreOnly()
 	{
-		if (BuildSlots.Length == 1 && BuildSlots[0] == GridInfo.BuildSlots.Centre)
+		if (BuildSlots.Length == 1 && BuildSlots[0] == GridInfo.BuildSlot.Centre)
 		{
 			return true;
 		}

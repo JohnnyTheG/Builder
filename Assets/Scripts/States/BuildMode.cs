@@ -20,15 +20,15 @@ public class BuildMode : BaseMode
 		InvokeOnShutdownComplete();
 	}
 
-	Dictionary<GridInfo.BuildSlots, Quaternion> m_dictBuildDirections = new Dictionary<GridInfo.BuildSlots, Quaternion>()
+	Dictionary<GridInfo.BuildSlot, Quaternion> m_dictBuildDirections = new Dictionary<GridInfo.BuildSlot, Quaternion>()
 	{
-		{GridInfo.BuildSlots.North,     Quaternion.Euler(new Vector3(0.0f, 0.0f, 0.0f))},
-		{GridInfo.BuildSlots.East,      Quaternion.Euler(new Vector3(0.0f, 90.0f, 0.0f))},
-		{GridInfo.BuildSlots.South,     Quaternion.Euler(new Vector3(0.0f, 180.0f, 0.0f))},
-		{GridInfo.BuildSlots.West,      Quaternion.Euler(new Vector3(0.0f, 270.0f, 0.0f))},
+		{GridInfo.BuildSlot.North,     Quaternion.Euler(new Vector3(0.0f, 0.0f, 0.0f))},
+		{GridInfo.BuildSlot.East,      Quaternion.Euler(new Vector3(0.0f, 90.0f, 0.0f))},
+		{GridInfo.BuildSlot.South,     Quaternion.Euler(new Vector3(0.0f, 180.0f, 0.0f))},
+		{GridInfo.BuildSlot.West,      Quaternion.Euler(new Vector3(0.0f, 270.0f, 0.0f))},
 	};
 
-	GridInfo.BuildSlots m_eBuildDirection = GridInfo.BuildSlots.North;
+	GridInfo.BuildSlot m_eBuildDirection = GridInfo.BuildSlot.North;
 
 	BlockInfo m_cBlockInfoBuildHighlight;
 	List<BlockInfo> m_lstDragBuildHighlights = new List<BlockInfo>();
@@ -128,11 +128,11 @@ public class BuildMode : BaseMode
 
 							BlockInfo cBlockInfo = GetSelectedBlock();
 
-							GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
+							GridInfo.BuildSlot eBuildSlot = m_eBuildDirection;
 
 							if (cBlockInfo.IsCentreOnly())
 							{
-								eBuildSlot = GridInfo.BuildSlots.Centre;
+								eBuildSlot = GridInfo.BuildSlot.Centre;
 							}
 
 							if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer, cBlockInfo.HasOppositeBlock()))
@@ -185,12 +185,12 @@ public class BuildMode : BaseMode
 
 			if (InputActions.Instance.RotateAnticlockwise())
 			{
-				m_eBuildDirection = Utils.GetArrayEntry<GridInfo.BuildSlots>(m_dictBuildDirections.Keys.ToArray(), (int)m_eBuildDirection, -1);
+				m_eBuildDirection = Utils.GetArrayEntry<GridInfo.BuildSlot>(m_dictBuildDirections.Keys.ToArray(), (int)m_eBuildDirection, -1);
 			}
 
 			if (InputActions.Instance.RotateClockwise())
 			{
-				m_eBuildDirection = Utils.GetArrayEntry<GridInfo.BuildSlots>(m_dictBuildDirections.Keys.ToArray(), (int)m_eBuildDirection, 1);
+				m_eBuildDirection = Utils.GetArrayEntry<GridInfo.BuildSlot>(m_dictBuildDirections.Keys.ToArray(), (int)m_eBuildDirection, 1);
 			}
 
 			switch (m_eState)
@@ -259,13 +259,13 @@ public class BuildMode : BaseMode
 		DestroyBlockBuildHighlight();
 	}
 
-	void CreateBlockOnGrid(BlockSetEntry cBlockSetEntry, GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eBuildLayer)
+	void ValidateAndCreateBlock(BlockSetEntry cBlockSetEntry, GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer)
 	{
 		if (cBlockSetEntry != null)
 		{
 			if (cBlockSetEntry.IsCentreOnly())
 			{
-				eBuildSlot = GridInfo.BuildSlots.Centre;
+				eBuildSlot = GridInfo.BuildSlot.Centre;
 			}
 
 			if (cBlockSetEntry.CanBeBuilt(eBuildSlot, eBuildLayer))
@@ -278,7 +278,7 @@ public class BuildMode : BaseMode
 		}
 	}
 
-	BlockInfo CreateBlock(GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eBuildLayer, bool bIsGhost = false)
+	BlockInfo CreateBlock(GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer, bool bIsGhost = false)
 	{
 		BlockSetEntry cCurrentBlockSetEntry = GetCurrentBlockSetEntry();
 
@@ -289,12 +289,36 @@ public class BuildMode : BaseMode
 				cCurrentBlockSetEntry.Build();
 			}
 
-			BlockInfo cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
+			BlockInfo cBlock = null;
+
+			if (cCurrentBlockSetEntry.AutomaticCorners)
+			{
+				List<GridInfo.BuildSlot> lstCornerBuildSlots = cGridInfo.GetCornerBuildSlots(eBuildSlot, eBuildLayer);
+
+				if (lstCornerBuildSlots.Count > 0)
+				{
+					GridInfo.BuildSlot eCornerBuildSlot = GridUtilities.GetCornerBuildSlot(eBuildSlot, lstCornerBuildSlots[0]);
+
+					// Swap out for the corner.
+					cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.Corner.BlockInfo.gameObject, cGridInfo, eCornerBuildSlot, eBuildLayer, bIsGhost);
+				}
+				else
+				{
+					// Create the block itself.
+					cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
+				}
+			}
+			else
+			{
+				// Create the block itself.
+				cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
+			}
 
 			BlockInfo cOpposite = null;
 
 			if (cCurrentBlockSetEntry.HasOppositeBlock())
 			{
+				// Create any opposite it needs.
 				cOpposite = CreateBlockGameObject(cCurrentBlockSetEntry.OppositeBlockInfo.gameObject, cGridInfo, eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), bIsGhost);
 				cBlock.m_cOppositeBlockInfo = cOpposite;
 			}
@@ -307,7 +331,7 @@ public class BuildMode : BaseMode
 		return null;
 	}
 
-	BlockInfo CreateBlockGameObject(GameObject cBlockToCreate, GridInfo cGridInfo, GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eGridLayer, bool bIsGhost)
+	BlockInfo CreateBlockGameObject(GameObject cBlockToCreate, GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eGridLayer, bool bIsGhost)
 	{
 		GameObject cBlock = Instantiate(cBlockToCreate);
 
@@ -325,22 +349,22 @@ public class BuildMode : BaseMode
 		return cBlockInfo;
 	}
 
-	Quaternion GetBlockRotation(GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eBuildLayer)
+	Quaternion GetBlockRotation(GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer)
 	{
 		Vector3 vecRotation = Vector3.zero;
 
 		switch (eBuildSlot)
 		{
-			case GridInfo.BuildSlots.Centre:
+			case GridInfo.BuildSlot.Centre:
 
 				// Just default centre blocks to north for now.
-				vecRotation = m_dictBuildDirections[GridInfo.BuildSlots.North].eulerAngles;
+				vecRotation = m_dictBuildDirections[GridInfo.BuildSlot.North].eulerAngles;
 
 				break;
 
 			default:
 
-				vecRotation = m_dictBuildDirections[m_eBuildDirection].eulerAngles;
+				vecRotation = m_dictBuildDirections[eBuildSlot].eulerAngles;
 
 				break;
 		}
@@ -397,7 +421,7 @@ public class BuildMode : BaseMode
 		// Block cost times number of blocks in line.
 		bool bCanAffordBuild = CanAffordBlocks(GetCurrentBlockSetEntry().BlockCost, acGridLine.Length);
 
-		GridInfo.BuildSlots eBuildSlot = GetBuildDirection(cBlockSetEntry);
+		GridInfo.BuildSlot eBuildSlot = GetBuildDirection(cBlockSetEntry);
 
 		for (int nGridInfo = 0; nGridInfo < acGridLine.Length; nGridInfo++)
 		{
@@ -432,7 +456,7 @@ public class BuildMode : BaseMode
 
 			if (cBlockSetEntry != null && m_cBlockInfoBuildHighlight == null)
 			{
-				GridInfo.BuildSlots eBuildSlot = GetBuildDirection(cBlockSetEntry);
+				GridInfo.BuildSlot eBuildSlot = GetBuildDirection(cBlockSetEntry);
 
 				m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, eBuildSlot, cGridLayer.Layer, true);
 			}
@@ -478,13 +502,13 @@ public class BuildMode : BaseMode
 		}
 	}
 
-	GridInfo.BuildSlots GetBuildDirection(BlockSetEntry cBlockSetEntry)
+	GridInfo.BuildSlot GetBuildDirection(BlockSetEntry cBlockSetEntry)
 	{
-		GridInfo.BuildSlots eBuildSlot = m_eBuildDirection;
+		GridInfo.BuildSlot eBuildSlot = m_eBuildDirection;
 
 		if (cBlockSetEntry.IsCentreOnly())
 		{
-			eBuildSlot = GridInfo.BuildSlots.Centre;
+			eBuildSlot = GridInfo.BuildSlot.Centre;
 		}
 
 		return eBuildSlot;
@@ -524,8 +548,6 @@ public class BuildMode : BaseMode
 
 	void StartDragBuild(GridInfo cGridInfo, GridInfo.BuildLayer eBuildLayer)
 	{
-		Debug.Log("Starting Drag Build");
-
 		m_eState = State.DragBuild;
 
 		// Start position of the drag build.
@@ -536,8 +558,6 @@ public class BuildMode : BaseMode
 
 	void UpdateDragBuild()
 	{
-		Debug.Log("Updating Drag Build");
-
 		BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
 		// If the block can be drag built.
@@ -562,8 +582,6 @@ public class BuildMode : BaseMode
 
 	void FinishDragBuild()
 	{
-		Debug.Log("Finishing Drag Build");
-
 		m_eState = State.Build;
 
 		GridInfo[] acGridLine = GridSettings.Instance.GetGridLine(m_cDragBuildStartGridInfo, m_cDragBuildFinishGridInfo);
@@ -574,15 +592,13 @@ public class BuildMode : BaseMode
 		{
 			for (int nGridInfo = 0; nGridInfo < acGridLine.Length; nGridInfo++)
 			{
-				CreateBlockOnGrid(GetCurrentBlockSetEntry(), acGridLine[nGridInfo], m_eBuildDirection, m_eDragBuildLayer);
+				ValidateAndCreateBlock(GetCurrentBlockSetEntry(), acGridLine[nGridInfo], m_eBuildDirection, m_eDragBuildLayer);
 			}
 		}
 	}
 
 	void CancelDragBuild()
 	{
-		Debug.Log("Cancelling Drag Build");
-
 		m_eState = State.Build;
 	}
 }

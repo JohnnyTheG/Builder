@@ -3,25 +3,32 @@ using System.Linq;
 
 public class BlockSetEntry : MonoBehaviour
 {
-	[SerializeField]
+	public BlockInfo BlockInfo;
+
+	[Space(10)]
+	[Header("Block Settings")]
+    [SerializeField]
 	bool BlockUnlocked = true;
 
 	public int BlockCost;
 
-	public bool CanDragBuild = false;
-
-	public BlockInfo BlockInfo;
+	[Space(10)]
+	[Header("Build Settings")]
+    public bool CanDragBuild = false;
+	public bool AutomaticCorners = false;
+	public BlockSetEntry Corner;
 
 	[HideInInspector]
-	public GridInfo.BuildSlots[] BlockBuildSlots;
+	public GridInfo.BuildSlot[] BlockBuildSlots;
 
 	[HideInInspector]
 	public GridInfo.BuildLayer[] BlockBuildLayers;
 
+	[Space(10)]
 	public BlockInfo OppositeBlockInfo;
 
 	[HideInInspector]
-	public GridInfo.BuildSlots[] OppositeBlockBuildSlots;
+	public GridInfo.BuildSlot[] OppositeBlockBuildSlots;
 
 	[HideInInspector]
 	public GridInfo.BuildLayer[] OppositeBlockBuildLayers;
@@ -51,7 +58,7 @@ public class BlockSetEntry : MonoBehaviour
 		return BlockUnlocked;
 	}
 
-	public bool CanBeBuilt(GridInfo.BuildSlots eBuildSlot, GridInfo.BuildLayer eBuildLayer)
+	public bool CanBeBuilt(GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer)
 	{
 		bool bCanBeBuilt = false;
 		// If there is no opposite block, this goes to true just to allow final return to be true.
@@ -89,7 +96,7 @@ public class BlockSetEntry : MonoBehaviour
 
 	public bool IsCentreOnly()
 	{
-		if (BlockBuildSlots.Length == 1 && BlockBuildSlots[0] == GridInfo.BuildSlots.Centre)
+		if (BlockBuildSlots.Length == 1 && BlockBuildSlots[0] == GridInfo.BuildSlot.Centre)
 		{
 			return true;
 		}

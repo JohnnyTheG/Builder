@@ -126,4 +126,9 @@ public class RoomInfo
 
 		return lstGridEdge.ToArray();
 	}
+
+	public bool IsCompleteRoom()
+	{
+		return false;
+	}
 }

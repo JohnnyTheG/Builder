@@ -18,7 +18,7 @@ public class GridInfo : MonoBehaviour
 	bool Occupiable = true;
 
 	// Order of this is important.
-	public enum BuildSlots
+	public enum BuildSlot
 	{
 		North,
 		East,
@@ -35,13 +35,13 @@ public class GridInfo : MonoBehaviour
 
 	class BuildLayerInfo
 	{
-		public Dictionary<BuildSlots, BlockInfo> m_dictOccupiers = new Dictionary<BuildSlots, BlockInfo>()
+		public Dictionary<BuildSlot, BlockInfo> m_dictOccupiers = new Dictionary<BuildSlot, BlockInfo>()
 		{
-			{ BuildSlots.North, null },
-			{ BuildSlots.East, null },
-			{ BuildSlots.South, null },
-			{ BuildSlots.West, null },
-			{ BuildSlots.Centre, null },
+			{ BuildSlot.North, null },
+			{ BuildSlot.East, null },
+			{ BuildSlot.South, null },
+			{ BuildSlot.West, null },
+			{ BuildSlot.Centre, null },
 		};
 	}
 
@@ -49,6 +49,14 @@ public class GridInfo : MonoBehaviour
 	{
 		{ BuildLayer.Top, new BuildLayerInfo() },
 		{ BuildLayer.Bottom, new BuildLayerInfo() },
+	};
+
+	Dictionary<BuildSlot, List<BuildSlot>> m_dictBuildCorners = new Dictionary<BuildSlot, List<BuildSlot>>()
+	{
+		{BuildSlot.North, new List<BuildSlot>() { BuildSlot.East, BuildSlot.West } },
+		{BuildSlot.East, new List<BuildSlot>() { BuildSlot.North, BuildSlot.South } },
+		{BuildSlot.South, new List<BuildSlot>() { BuildSlot.East, BuildSlot.West } },
+		{BuildSlot.West, new List<BuildSlot>() { BuildSlot.North, BuildSlot.South } }
 	};
 
 	MeshRenderer m_cMeshRenderer;
@@ -60,7 +68,7 @@ public class GridInfo : MonoBehaviour
 		m_cOriginalColor = m_cMeshRenderer.material.color;
 	}
 
-	public void SetOccupied(BuildSlots eBuildSlot, BuildLayer eBuildLayer, BlockInfo cBlockInfo)
+	public void SetOccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockInfo cBlockInfo)
 	{
 		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
 		{
@@ -73,7 +81,7 @@ public class GridInfo : MonoBehaviour
 		}
 	}
 
-	public void SetUnoccupied(BuildSlots eBuildSlot, BuildLayer eBuildLayer)
+	public void SetUnoccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
 	{
 		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
 		{
@@ -86,7 +94,7 @@ public class GridInfo : MonoBehaviour
 		}
 	}
 
-	public bool CanBeOccupied(BuildSlots eBuildSlot, BuildLayer eBuildLayer, bool bCheckOpposite)
+	public bool CanBeOccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer, bool bCheckOpposite)
 	{
 		bool bCanBeOccupied = CanBeOccupiedInternal(eBuildSlot, eBuildLayer);
 
@@ -99,7 +107,7 @@ public class GridInfo : MonoBehaviour
 		return bCanBeOccupied;
 	}
 
-	public bool CanBeOccupiedInternal(BuildSlots eBuildSlot, BuildLayer eBuildLayer)
+	public bool CanBeOccupiedInternal(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
 	{
 		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
 		{
@@ -114,7 +122,7 @@ public class GridInfo : MonoBehaviour
 		return false;
 	}
 
-	public bool IsOccupied(BuildSlots eBuildSlot, BuildLayer eBuildLayer)
+	public bool IsOccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
 	{
 		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
 		{
@@ -129,7 +137,7 @@ public class GridInfo : MonoBehaviour
 		return true;
 	}
 
-	public BlockInfo GetOccupier(BuildSlots eBuildSlot, BuildLayer eBuildLayer)
+	public BlockInfo GetOccupier(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
 	{
 		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
 		{
@@ -184,5 +192,26 @@ public class GridInfo : MonoBehaviour
 	public void MappedHighlight()
 	{
 		m_cMeshRenderer.material.color = Color.cyan;
+	}
+
+	public List<BuildSlot> GetCornerBuildSlots(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
+	{
+		List<BuildSlot> lstCornerBuildSlots = new List<BuildSlot>();
+
+		if (m_dictBuildLayers.ContainsKey(eBuildLayer) && m_dictBuildCorners.ContainsKey(eBuildSlot))
+		{
+			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
+			List<BuildSlot> lstBuildCorners = m_dictBuildCorners[eBuildSlot];
+
+			for (int nBuildSlot = 0; nBuildSlot < lstBuildCorners.Count; nBuildSlot++)
+			{
+				if (IsOccupied(lstBuildCorners[nBuildSlot], eBuildLayer))
+				{
+					lstCornerBuildSlots.Add(lstBuildCorners[nBuildSlot]);
+				}
+			}
+		}
+
+		return lstCornerBuildSlots;
 	}
 }
