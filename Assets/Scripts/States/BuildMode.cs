@@ -28,7 +28,7 @@ public class BuildMode : BaseMode
 		{GridInfo.BuildSlot.West,      Quaternion.Euler(new Vector3(0.0f, 270.0f, 0.0f))},
 	};
 
-	GridInfo.BuildSlot m_eBuildDirection = GridInfo.BuildSlot.North;
+	GridInfo.BuildSlot m_eBuildSlot = GridInfo.BuildSlot.North;
 
 	BlockInfo m_cBlockInfoBuildHighlight;
 	List<BlockInfo> m_lstDragBuildHighlights = new List<BlockInfo>();
@@ -128,7 +128,7 @@ public class BuildMode : BaseMode
 
 							BlockInfo cBlockInfo = GetSelectedBlock();
 
-							GridInfo.BuildSlot eBuildSlot = m_eBuildDirection;
+							GridInfo.BuildSlot eBuildSlot = m_eBuildSlot;
 
 							if (cBlockInfo.IsCentreOnly())
 							{
@@ -185,12 +185,12 @@ public class BuildMode : BaseMode
 
 			if (InputActions.Instance.RotateAnticlockwise())
 			{
-				m_eBuildDirection = Utils.GetArrayEntry<GridInfo.BuildSlot>(m_dictBuildDirections.Keys.ToArray(), (int)m_eBuildDirection, -1);
+				m_eBuildSlot = Utils.GetArrayEntry<GridInfo.BuildSlot>(m_dictBuildDirections.Keys.ToArray(), (int)m_eBuildSlot, -1);
 			}
 
 			if (InputActions.Instance.RotateClockwise())
 			{
-				m_eBuildDirection = Utils.GetArrayEntry<GridInfo.BuildSlot>(m_dictBuildDirections.Keys.ToArray(), (int)m_eBuildDirection, 1);
+				m_eBuildSlot = Utils.GetArrayEntry<GridInfo.BuildSlot>(m_dictBuildDirections.Keys.ToArray(), (int)m_eBuildSlot, 1);
 			}
 
 			switch (m_eState)
@@ -463,13 +463,13 @@ public class BuildMode : BaseMode
 
 			if (m_cBlockInfoBuildHighlight != null)
 			{
-				m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildDirection, cGridLayer.Layer, true);
+				m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildSlot, cGridLayer.Layer, true);
 
-				m_cBlockInfoBuildHighlight.transform.rotation = GetBlockRotation(m_eBuildDirection, cGridLayer.Layer);
+				m_cBlockInfoBuildHighlight.transform.rotation = GetBlockRotation(m_eBuildSlot, cGridLayer.Layer);
 
 				if (m_cBlockInfoBuildHighlight.HasOppositeBlock())
 				{
-					m_cBlockInfoBuildHighlight.m_cOppositeBlockInfo.transform.rotation = GetBlockRotation(m_eBuildDirection, GridUtilities.GetOppositeBuildLayer(cGridLayer.Layer));
+					m_cBlockInfoBuildHighlight.m_cOppositeBlockInfo.transform.rotation = GetBlockRotation(m_eBuildSlot, GridUtilities.GetOppositeBuildLayer(cGridLayer.Layer));
 				}
 
 				// Only creating a single block, hence the 1.
@@ -504,7 +504,7 @@ public class BuildMode : BaseMode
 
 	GridInfo.BuildSlot GetBuildDirection(BlockSetEntry cBlockSetEntry)
 	{
-		GridInfo.BuildSlot eBuildSlot = m_eBuildDirection;
+		GridInfo.BuildSlot eBuildSlot = m_eBuildSlot;
 
 		if (cBlockSetEntry.IsCentreOnly())
 		{
@@ -592,7 +592,7 @@ public class BuildMode : BaseMode
 		{
 			for (int nGridInfo = 0; nGridInfo < acGridLine.Length; nGridInfo++)
 			{
-				ValidateAndCreateBlock(GetCurrentBlockSetEntry(), acGridLine[nGridInfo], m_eBuildDirection, m_eDragBuildLayer);
+				ValidateAndCreateBlock(GetCurrentBlockSetEntry(), acGridLine[nGridInfo], m_eBuildSlot, m_eDragBuildLayer);
 			}
 		}
 	}
