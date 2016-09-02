@@ -58,6 +58,7 @@ public class DayNightCycleSun : MonoBehaviour
 		Debug.Log(GetStage().ToString());
 
 		transform.RotateAround(FocusPoint.transform.position, Vector3.right, (Time.deltaTime / RevolutionDuration) * m_fRevolutionAngle);
+		transform.LookAt(FocusPoint.transform, Vector3.up);
 	}
 
 	void SetRevolutionEndTime()
