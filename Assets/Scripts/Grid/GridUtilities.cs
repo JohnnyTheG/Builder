@@ -35,7 +35,25 @@ public class GridUtilities : MonoBehaviour
 		return Physics.Raycast(cRay, out cRaycastHit, Mathf.Infinity, PhysicsLayers.GetPhysicsLayerMask(PhysicsLayers.Grid));
 	}
 
-	public static GridInfo.BuildSlot GetCornerBuildSlot(GridInfo.BuildSlot eBuildSlotA, GridInfo.BuildSlot eBuildSlotB)
+	public class CornerInfo
+	{
+		public GridInfo.BuildSlot m_eLeftCornerBuildSlot;
+		public GridInfo.BuildSlot m_eRightCornerBuildSlot;
+
+		public CornerInfo()
+		{
+			m_eLeftCornerBuildSlot = GridInfo.BuildSlot.Centre;
+			m_eRightCornerBuildSlot = GridInfo.BuildSlot.Centre;
+		}
+
+		public CornerInfo(GridInfo.BuildSlot eLeftCornerBuildSlot, GridInfo.BuildSlot eRightCornerBuildSlot)
+		{
+			m_eLeftCornerBuildSlot = eLeftCornerBuildSlot;
+			m_eRightCornerBuildSlot = eRightCornerBuildSlot;
+		}
+	}
+
+	public static CornerInfo GetCornerInfo(GridInfo.BuildSlot eBuildSlotA, GridInfo.BuildSlot eBuildSlotB)
 	{
 		Debug.Log("GridUtilities: GetCornerBuildSlot for " + eBuildSlotA.ToString() + " and " + eBuildSlotB.ToString());
 
@@ -47,11 +65,13 @@ public class GridUtilities : MonoBehaviour
 				{
 					case GridInfo.BuildSlot.East:
 
-						return GridInfo.BuildSlot.East;
+						//return GridInfo.BuildSlot.East;
+
+						return new CornerInfo(GridInfo.BuildSlot.East, GridInfo.BuildSlot.North);
 
 					case GridInfo.BuildSlot.West:
 
-						return GridInfo.BuildSlot.North;
+						return new CornerInfo(GridInfo.BuildSlot.North, GridInfo.BuildSlot.West);
 				}
 
 				break;
@@ -62,11 +82,11 @@ public class GridUtilities : MonoBehaviour
 				{
 					case GridInfo.BuildSlot.North:
 
-						return GridInfo.BuildSlot.East;
+						return new CornerInfo(GridInfo.BuildSlot.East, GridInfo.BuildSlot.North);
 
 					case GridInfo.BuildSlot.South:
 
-						return GridInfo.BuildSlot.South;
+						return new CornerInfo(GridInfo.BuildSlot.South, GridInfo.BuildSlot.East);
 				}
 
 				break;
@@ -77,11 +97,11 @@ public class GridUtilities : MonoBehaviour
 				{
 					case GridInfo.BuildSlot.East:
 
-						return GridInfo.BuildSlot.South;
+						return new CornerInfo(GridInfo.BuildSlot.South, GridInfo.BuildSlot.East);
 
 					case GridInfo.BuildSlot.West:
 
-						return GridInfo.BuildSlot.West;
+						return new CornerInfo(GridInfo.BuildSlot.West, GridInfo.BuildSlot.South);
 				}
 
 				break;
@@ -92,16 +112,16 @@ public class GridUtilities : MonoBehaviour
 				{
 					case GridInfo.BuildSlot.North:
 
-						return GridInfo.BuildSlot.North;
+						return new CornerInfo(GridInfo.BuildSlot.North, GridInfo.BuildSlot.West);
 
 					case GridInfo.BuildSlot.South:
 
-						return GridInfo.BuildSlot.West;
+						return new CornerInfo(GridInfo.BuildSlot.West, GridInfo.BuildSlot.South);
 				}
 
 				break;
 		}
 
-		return GridInfo.BuildSlot.Centre;
+		return new CornerInfo();
 	}
 }

@@ -25,12 +25,16 @@ public class GridInfo : MonoBehaviour
 		South,
 		West,
 		Centre,
+
+		Undefined,
 	}
 
 	public enum BuildLayer
 	{
 		Top,
 		Bottom,
+
+		Undefined,
 	}
 
 	class BuildLayerInfo
@@ -203,6 +207,7 @@ public class GridInfo : MonoBehaviour
 			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
 			List<BuildSlot> lstBuildCorners = m_dictBuildCorners[eBuildSlot];
 
+			// For each slot that can make a corner, if its occupied, then add it to the list to be turned into a corner.
 			for (int nBuildSlot = 0; nBuildSlot < lstBuildCorners.Count; nBuildSlot++)
 			{
 				if (IsOccupied(lstBuildCorners[nBuildSlot], eBuildLayer))

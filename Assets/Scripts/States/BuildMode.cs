@@ -92,7 +92,7 @@ public class BuildMode : BaseMode
 			}
 			else
 			{
-				Application.Instance.TrySetMode(Application.Mode.BuildMenu);
+				//Application.Instance.TrySetMode(Application.Mode.BuildMenu);
 			}
 		}
 		else if (KeyboardInput.Instance.KeyDown(KeyCode.BackQuote))
@@ -297,10 +297,47 @@ public class BuildMode : BaseMode
 
 				if (lstCornerBuildSlots.Count > 0)
 				{
-					GridInfo.BuildSlot eCornerBuildSlot = GridUtilities.GetCornerBuildSlot(eBuildSlot, lstCornerBuildSlots[0]);
+					//GridInfo.BuildSlot eCornerBuildSlot = GridUtilities.GetCornerInfo(eBuildSlot, lstCornerBuildSlots[0]);
 
-					// Swap out for the corner.
-					cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.Corner.BlockInfo.gameObject, cGridInfo, eCornerBuildSlot, eBuildLayer, bIsGhost);
+					// Get the orientation of the left and right corner segments.
+					GridUtilities.CornerInfo cCornerInfo = GridUtilities.GetCornerInfo(eBuildSlot, lstCornerBuildSlots[0]);
+
+					GridInfo.BuildSlot eOtherCornerBuildSlot = GridInfo.BuildSlot.Undefined;
+					GameObject cOtherCornerBlock = null;
+
+					// Create the corner piece for the slot that the user has actually selected.
+					if (cCornerInfo.m_eLeftCornerBuildSlot == eBuildSlot)
+					{
+						cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.LeftCorner.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
+
+						eOtherCornerBuildSlot = cCornerInfo.m_eRightCornerBuildSlot;
+
+						cOtherCornerBlock = cCurrentBlockSetEntry.RightCorner.BlockInfo.gameObject;
+					}
+					else if (cCornerInfo.m_eRightCornerBuildSlot == eBuildSlot)
+					{
+						cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.RightCorner.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
+
+						eOtherCornerBuildSlot = cCornerInfo.m_eLeftCornerBuildSlot;
+
+						cOtherCornerBlock = cCurrentBlockSetEntry.LeftCorner.BlockInfo.gameObject;
+					}
+					else
+					{
+						Debug.Log("BuildMode: Automatic Corner Building Error");
+					}
+
+					if (!bIsGhost)
+					{
+						BlockInfo cMatchingBuildSlotOccupier = cGridInfo.GetOccupier(eOtherCornerBuildSlot, eBuildLayer);
+
+						if (cMatchingBuildSlotOccupier != null)
+						{
+							cMatchingBuildSlotOccupier.DestroyBlockInfo(true);
+
+							CreateBlockGameObject(cOtherCornerBlock, cGridInfo, eOtherCornerBuildSlot, eBuildLayer, bIsGhost);
+						}
+					}
 				}
 				else
 				{

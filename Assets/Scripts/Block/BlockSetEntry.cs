@@ -16,7 +16,8 @@ public class BlockSetEntry : MonoBehaviour
 	[Header("Build Settings")]
     public bool CanDragBuild = false;
 	public bool AutomaticCorners = false;
-	public BlockSetEntry Corner;
+	public BlockSetEntry LeftCorner;
+	public BlockSetEntry RightCorner;
 
 	[HideInInspector]
 	public GridInfo.BuildSlot[] BlockBuildSlots;
