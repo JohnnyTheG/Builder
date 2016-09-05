@@ -297,8 +297,6 @@ public class BuildMode : BaseMode
 
 				if (lstCornerBuildSlots.Count > 0)
 				{
-					//GridInfo.BuildSlot eCornerBuildSlot = GridUtilities.GetCornerInfo(eBuildSlot, lstCornerBuildSlots[0]);
-
 					// Get the orientation of the left and right corner segments.
 					GridUtilities.CornerInfo cCornerInfo = GridUtilities.GetCornerInfo(eBuildSlot, lstCornerBuildSlots[0]);
 
@@ -485,7 +483,7 @@ public class BuildMode : BaseMode
 			BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
 			// If the build type has changed, then get rid of the current highlight. Then further down new one is spawned.
-			if ((cBlockSetEntry == null) || (m_cBlockInfoBuildHighlight != null && (m_cBlockInfoBuildHighlight.Name != cBlockSetEntry.BlockInfo.Name)))
+			//if ((cBlockSetEntry == null) || (m_cBlockInfoBuildHighlight != null && (m_cBlockInfoBuildHighlight.Name != cBlockSetEntry.BlockInfo.Name)))
 			{
 				DestroyBlockBuildHighlight();
 				m_cBlockInfoBuildHighlight = null;

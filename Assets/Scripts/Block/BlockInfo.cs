@@ -55,6 +55,7 @@ public class BlockInfo : MonoBehaviour
 
 			for (int nCollider = 0; nCollider < acColliders.Length; nCollider++)
 			{
+				acColliders[nCollider].enabled = false;
 				Destroy(acColliders[nCollider]);
 			}
 		}
