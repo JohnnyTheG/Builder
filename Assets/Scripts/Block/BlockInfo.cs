@@ -84,6 +84,11 @@ public class BlockInfo : MonoBehaviour
 			m_cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, this);
 
 			// TODO: Get touching grid info here and occupy that as well.
+			GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(m_cGridInfo, eBuildSlot, eBuildLayer);
+
+			GridInfo.BuildSlot eTouchingBuildSlot = GridUtilities.GetOppositeBuildSlot(eBuildSlot);
+
+			cTouchingGridInfo.SetOccupied(eTouchingBuildSlot, eBuildLayer, this);
 		}
 
 		Vector3 vecPosition = Vector3.zero;

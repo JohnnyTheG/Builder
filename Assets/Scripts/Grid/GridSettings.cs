@@ -122,25 +122,25 @@ public class GridSettings : Singleton<GridSettings>
 			{
 				case GridInfo.BuildSlot.North:
 
-					nXIncrement += 1;
+					nYIncrement -= 1;
 
 					break;
 
 				case GridInfo.BuildSlot.East:
 
-					nYIncrement += 1;
+					nXIncrement += 1;
 
 					break;
 
 				case GridInfo.BuildSlot.South:
 
-					nXIncrement -= 1;
+					nYIncrement += 1;
 
 					break;
 
 				case GridInfo.BuildSlot.West:
 
-					nYIncrement -= 1;
+					nXIncrement -= 1;
 
 					break;
 			}

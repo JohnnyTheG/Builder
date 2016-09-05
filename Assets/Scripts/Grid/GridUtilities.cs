@@ -124,4 +124,34 @@ public class GridUtilities : MonoBehaviour
 
 		return new CornerInfo();
 	}
+
+	public static GridInfo.BuildSlot GetOppositeBuildSlot(GridInfo.BuildSlot eBuildSlot)
+	{
+		switch (eBuildSlot)
+		{
+			case GridInfo.BuildSlot.North:
+
+				return GridInfo.BuildSlot.South;
+
+			case GridInfo.BuildSlot.East:
+
+				return GridInfo.BuildSlot.West;
+
+			case GridInfo.BuildSlot.South:
+
+				return GridInfo.BuildSlot.North;
+
+			case GridInfo.BuildSlot.West:
+
+				return GridInfo.BuildSlot.East;
+
+			case GridInfo.BuildSlot.Centre:
+
+				return GridInfo.BuildSlot.Centre;
+
+			default:
+
+				return GridInfo.BuildSlot.Undefined;
+		}
+	}
 }
