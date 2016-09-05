@@ -67,29 +67,14 @@ public class BlockInfo : MonoBehaviour
 
 	public void Move(GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer, bool bMoveOppositeBlock)
 	{
-		if (!m_bIsGhost)
-		{
-			if (m_cGridInfo != null)
-			{
-				m_cGridInfo.SetUnoccupied(eBuildSlot, eBuildLayer);
-			}
-		}
+		// Clear the previous occupation.
+		SetUnoccupation();
 
 		m_cGridInfo = cGridInfo;
 		m_eBuildSlot = eBuildSlot;
 		m_eBuildLayer = eBuildLayer;
 
-		if (!m_bIsGhost)
-		{
-			m_cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, this);
-
-			// TODO: Get touching grid info here and occupy that as well.
-			GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(m_cGridInfo, eBuildSlot, eBuildLayer);
-
-			GridInfo.BuildSlot eTouchingBuildSlot = GridUtilities.GetOppositeBuildSlot(eBuildSlot);
-
-			cTouchingGridInfo.SetOccupied(eTouchingBuildSlot, eBuildLayer, this);
-		}
+		SetOccupation();
 
 		Vector3 vecPosition = Vector3.zero;
 
@@ -122,6 +107,43 @@ public class BlockInfo : MonoBehaviour
 		}
 	}
 
+	void SetUnoccupation()
+	{
+		if (!m_bIsGhost)
+		{
+			if (m_cGridInfo != null)
+			{
+				m_cGridInfo.SetUnoccupied(m_eBuildSlot, m_eBuildLayer);
+
+				GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(m_cGridInfo, m_eBuildSlot, m_eBuildLayer);
+
+				if (cTouchingGridInfo != null)
+				{
+					GridInfo.BuildSlot eTouchingBuildSlot = GridUtilities.GetOppositeBuildSlot(m_eBuildSlot);
+
+					cTouchingGridInfo.SetUnoccupied(eTouchingBuildSlot, m_eBuildLayer);
+				}
+			}
+		}
+	}
+
+	void SetOccupation()
+	{
+		if (!m_bIsGhost)
+		{
+			m_cGridInfo.SetOccupied(m_eBuildSlot, m_eBuildLayer, this);
+
+			GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(m_cGridInfo, m_eBuildSlot, m_eBuildLayer);
+
+			if (cTouchingGridInfo != null)
+			{
+				GridInfo.BuildSlot eTouchingBuildSlot = GridUtilities.GetOppositeBuildSlot(m_eBuildSlot);
+
+				cTouchingGridInfo.SetOccupied(eTouchingBuildSlot, m_eBuildLayer, this);
+			}
+		}
+	}
+
 	public void Rotate(Vector3 vecAngle)
 	{
 		Vector3 vecRotation = transform.rotation.eulerAngles;
@@ -135,10 +157,7 @@ public class BlockInfo : MonoBehaviour
 	{
 		if (!m_bIsGhost)
 		{
-			if (m_cGridInfo != null)
-			{
-				m_cGridInfo.SetUnoccupied(m_eBuildSlot, m_eBuildLayer);
-			}
+			SetUnoccupation();
 
 			BlockManager.Instance.DeregisterBlock(this);
 		}

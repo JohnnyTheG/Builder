@@ -139,9 +139,9 @@ public class BuildMode : BaseMode
 							{
 								// Snap to grid.
 								GetSelectedBlock().Move(cGridInfo, eBuildSlot, cGridLayer.Layer, true);
-
-								SetSelectedBlock(null);
 							}
+
+							SetSelectedBlock(null);
 						}
 					}
 					else if (cRaycastHit.collider.gameObject.layer == PhysicsLayers.Block)
