@@ -105,6 +105,59 @@ public class GridSettings : Singleton<GridSettings>
 		return lstGridSelection.ToArray();
 	}
 
+	public GridInfo GetTouchingGridInfo(GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer)
+	{
+		int nX = cGridInfo.GridX;
+		int nY = cGridInfo.GridY;
+
+		GridInfo cTouchingGridInfo = null;
+
+		// Ensure the grid info exists itself.
+		if (Grid[nX, nY] != null)
+		{
+			int nXIncrement = 0;
+			int nYIncrement = 0;
+
+			switch (eBuildSlot)
+			{
+				case GridInfo.BuildSlot.North:
+
+					nXIncrement += 1;
+
+					break;
+
+				case GridInfo.BuildSlot.East:
+
+					nYIncrement += 1;
+
+					break;
+
+				case GridInfo.BuildSlot.South:
+
+					nXIncrement -= 1;
+
+					break;
+
+				case GridInfo.BuildSlot.West:
+
+					nYIncrement -= 1;
+
+					break;
+			}
+
+			try
+			{
+				cTouchingGridInfo = Grid[nX + nXIncrement, nY + nYIncrement];
+			}
+			catch
+			{
+				cTouchingGridInfo = null;
+			}
+		}
+
+		return cTouchingGridInfo;
+	}
+
 	public void Flip()
 	{
 		//transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles + new Vector3(0.0f, 0.0f, 180.0f));
