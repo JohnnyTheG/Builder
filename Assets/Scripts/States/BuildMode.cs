@@ -482,12 +482,9 @@ public class BuildMode : BaseMode
 
 			BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
-			// If the build type has changed, then get rid of the current highlight. Then further down new one is spawned.
-			//if ((cBlockSetEntry == null) || (m_cBlockInfoBuildHighlight != null && (m_cBlockInfoBuildHighlight.Name != cBlockSetEntry.BlockInfo.Name)))
-			{
-				DestroyBlockBuildHighlight();
-				m_cBlockInfoBuildHighlight = null;
-			}
+			// Always get rid of the block.
+			DestroyBlockBuildHighlight();
+			m_cBlockInfoBuildHighlight = null;
 
 			if (cBlockSetEntry != null && m_cBlockInfoBuildHighlight == null)
 			{
