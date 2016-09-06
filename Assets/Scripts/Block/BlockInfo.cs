@@ -4,11 +4,16 @@ using System;
 public class BlockInfo : MonoBehaviour
 {
 	// Attach to any spawned block.
-
+	[Space(10)]
 	public string Name = "";
-
 	public BlockManager.Category Type;
+	public bool IsCorner = false;
+	[NonSerialized]
+	[HideInInspector]
+	// If this is a corner, when created this should be set to the corresponding corner piece.
+	public BlockInfo PairedCorner = null;
 
+	[Space(10)]
 	// Default to edging.
 	// This is set in editor to show the possible build slots for this block.
 	public GridInfo.BuildSlot[] BuildSlots = new GridInfo.BuildSlot[4] { GridInfo.BuildSlot.North, GridInfo.BuildSlot.East, GridInfo.BuildSlot.South, GridInfo.BuildSlot.West };

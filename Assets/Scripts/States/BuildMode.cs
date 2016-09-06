@@ -211,6 +211,17 @@ public class BuildMode : BaseMode
 
 								if (cBlockInfo != null)
 								{
+									// If this block is a corner.
+									if (cBlockInfo.IsCorner)
+									{
+										// Get the paired corner piece and revert it back to a normal wall piece.
+										BlockInfo cPairedCorner = cBlockInfo.PairedCorner;
+
+										// Get rid of the paired corner piece.
+										cPairedCorner.DestroyBlockInfo(true);
+									}
+
+									// Destroy the clicked block.
 									cBlockInfo.DestroyBlockInfo(true);
 								}
 							}
@@ -291,13 +302,16 @@ public class BuildMode : BaseMode
 
 			BlockInfo cBlock = null;
 
+			// If this block generates automatic corners.
 			if (cCurrentBlockSetEntry.AutomaticCorners)
 			{
+				// Get any build slots which would form a corner if this build slot is built upon.
 				List<GridInfo.BuildSlot> lstCornerBuildSlots = cGridInfo.GetCornerBuildSlots(eBuildSlot, eBuildLayer);
 
+				// If there is a slot which would form a corner.
 				if (lstCornerBuildSlots.Count > 0)
 				{
-					// Get the orientation of the left and right corner segments.
+					// Get the slots of the left and right corner segments.
 					GridUtilities.CornerInfo cCornerInfo = GridUtilities.GetCornerInfo(eBuildSlot, lstCornerBuildSlots[0]);
 
 					GridInfo.BuildSlot eOtherCornerBuildSlot = GridInfo.BuildSlot.Undefined;
@@ -325,15 +339,21 @@ public class BuildMode : BaseMode
 						Debug.Log("BuildMode: Automatic Corner Building Error");
 					}
 
+					// Only create the matching corner if this isnt a ghost (i.e. a highlight).
 					if (!bIsGhost)
 					{
+						// Get the block in the other corner slot.
 						BlockInfo cMatchingBuildSlotOccupier = cGridInfo.GetOccupier(eOtherCornerBuildSlot, eBuildLayer);
 
 						if (cMatchingBuildSlotOccupier != null)
 						{
+							// Delete the current block.
 							cMatchingBuildSlotOccupier.DestroyBlockInfo(true);
 
-							CreateBlockGameObject(cOtherCornerBlock, cGridInfo, eOtherCornerBuildSlot, eBuildLayer, bIsGhost);
+							// Create the corner half which will complete the corner.
+							BlockInfo cPairedCorner = CreateBlockGameObject(cOtherCornerBlock, cGridInfo, eOtherCornerBuildSlot, eBuildLayer, bIsGhost);
+
+							PairCorner(cBlock, cPairedCorner);
 						}
 					}
 				}
@@ -632,5 +652,11 @@ public class BuildMode : BaseMode
 	void CancelDragBuild()
 	{
 		m_eState = State.Build;
+	}
+
+	void PairCorner(BlockInfo cBlockA, BlockInfo cBlockB)
+	{
+		cBlockA.PairedCorner = cBlockB;
+		cBlockB.PairedCorner = cBlockA;
 	}
 }
