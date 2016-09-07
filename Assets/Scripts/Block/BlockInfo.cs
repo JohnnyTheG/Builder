@@ -30,11 +30,16 @@ public class BlockInfo : MonoBehaviour
 
 	[NonSerialized]
 	[HideInInspector]
-	public GridInfo m_cGridInfo;
-	GridInfo.BuildSlot m_eBuildSlot;
+	public GridInfo GridInfo;
+	public GridInfo.BuildSlot BuildSlot;
 	[NonSerialized]
 	[HideInInspector]
-	public GridInfo.BuildLayer m_eBuildLayer;
+	public GridInfo.BuildLayer BuildLayer;
+
+	[NonSerialized]
+	[HideInInspector]
+	// The block set entry which owns the prefab which created this.
+	public BlockSetEntry BlockSetEntryCreatedFrom;
 
 	protected bool m_bIsGhost = false;
 
@@ -75,9 +80,9 @@ public class BlockInfo : MonoBehaviour
 		// Clear the previous occupation.
 		SetUnoccupation();
 
-		m_cGridInfo = cGridInfo;
-		m_eBuildSlot = eBuildSlot;
-		m_eBuildLayer = eBuildLayer;
+		GridInfo = cGridInfo;
+		BuildSlot = eBuildSlot;
+		BuildLayer = eBuildLayer;
 
 		SetOccupation();
 
@@ -116,17 +121,17 @@ public class BlockInfo : MonoBehaviour
 	{
 		if (!m_bIsGhost)
 		{
-			if (m_cGridInfo != null)
+			if (GridInfo != null)
 			{
-				m_cGridInfo.SetUnoccupied(m_eBuildSlot, m_eBuildLayer);
+				GridInfo.SetUnoccupied(BuildSlot, BuildLayer);
 
-				GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(m_cGridInfo, m_eBuildSlot, m_eBuildLayer);
+				GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(GridInfo, BuildSlot, BuildLayer);
 
 				if (cTouchingGridInfo != null)
 				{
-					GridInfo.BuildSlot eTouchingBuildSlot = GridUtilities.GetOppositeBuildSlot(m_eBuildSlot);
+					GridInfo.BuildSlot eTouchingBuildSlot = GridUtilities.GetOppositeBuildSlot(BuildSlot);
 
-					cTouchingGridInfo.SetUnoccupied(eTouchingBuildSlot, m_eBuildLayer);
+					cTouchingGridInfo.SetUnoccupied(eTouchingBuildSlot, BuildLayer);
 				}
 			}
 		}
@@ -136,15 +141,15 @@ public class BlockInfo : MonoBehaviour
 	{
 		if (!m_bIsGhost)
 		{
-			m_cGridInfo.SetOccupied(m_eBuildSlot, m_eBuildLayer, this);
+			GridInfo.SetOccupied(BuildSlot, BuildLayer, this);
 
-			GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(m_cGridInfo, m_eBuildSlot, m_eBuildLayer);
+			GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(GridInfo, BuildSlot, BuildLayer);
 
 			if (cTouchingGridInfo != null)
 			{
-				GridInfo.BuildSlot eTouchingBuildSlot = GridUtilities.GetOppositeBuildSlot(m_eBuildSlot);
+				GridInfo.BuildSlot eTouchingBuildSlot = GridUtilities.GetOppositeBuildSlot(BuildSlot);
 
-				cTouchingGridInfo.SetOccupied(eTouchingBuildSlot, m_eBuildLayer, this);
+				cTouchingGridInfo.SetOccupied(eTouchingBuildSlot, BuildLayer, this);
 			}
 		}
 	}

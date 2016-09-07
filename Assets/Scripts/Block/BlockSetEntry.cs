@@ -25,7 +25,6 @@ public class BlockSetEntry : MonoBehaviour
 	[HideInInspector]
 	public GridInfo.BuildLayer[] BlockBuildLayers;
 
-	[Space(10)]
 	public BlockInfo OppositeBlockInfo;
 
 	[HideInInspector]

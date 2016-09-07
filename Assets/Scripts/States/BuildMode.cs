@@ -211,18 +211,27 @@ public class BuildMode : BaseMode
 
 								if (cBlockInfo != null)
 								{
+									BlockInfo cPairedCorner = null;
+
 									// If this block is a corner.
 									if (cBlockInfo.IsCorner)
 									{
 										// Get the paired corner piece and revert it back to a normal wall piece.
-										BlockInfo cPairedCorner = cBlockInfo.PairedCorner;
-
-										// Get rid of the paired corner piece.
-										cPairedCorner.DestroyBlockInfo(true);
+										cPairedCorner = cBlockInfo.PairedCorner;
 									}
 
 									// Destroy the clicked block.
 									cBlockInfo.DestroyBlockInfo(true);
+
+									// Must do this after deleting the block on the line above to ensure the grid is free to prevent another corner!
+									if (cPairedCorner != null)
+									{
+										CreateBlock(cPairedCorner.GridInfo, cPairedCorner.BuildSlot, cPairedCorner.BuildLayer, false, cPairedCorner.BlockSetEntryCreatedFrom);
+
+										// Get rid of the paired corner piece.
+										// Straight up destroy it so that the grid doesnt become unoccupied.
+										Destroy(cPairedCorner.gameObject);
+									}
 								}
 							}
 						}
@@ -289,9 +298,20 @@ public class BuildMode : BaseMode
 		}
 	}
 
-	BlockInfo CreateBlock(GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer, bool bIsGhost = false)
+	BlockInfo CreateBlock(GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer, bool bIsGhost = false, BlockSetEntry cBlockSetEntry = null)
 	{
-		BlockSetEntry cCurrentBlockSetEntry = GetCurrentBlockSetEntry();
+		BlockSetEntry cCurrentBlockSetEntry;
+
+		// If there is a force block set passed as a parameter, this must be the BlockSetEntry we create from.
+		if (cBlockSetEntry != null)
+		{
+			cCurrentBlockSetEntry = cBlockSetEntry;
+		}
+		else
+		{
+			// No passed block set, use the menu based one.
+			cCurrentBlockSetEntry = GetCurrentBlockSetEntry();
+		}
 
 		if (cCurrentBlockSetEntry != null)
 		{
@@ -337,6 +357,8 @@ public class BuildMode : BaseMode
 					else
 					{
 						Debug.Log("BuildMode: Automatic Corner Building Error");
+
+						return null;
 					}
 
 					// Only create the matching corner if this isnt a ghost (i.e. a highlight).
@@ -352,6 +374,9 @@ public class BuildMode : BaseMode
 
 							// Create the corner half which will complete the corner.
 							BlockInfo cPairedCorner = CreateBlockGameObject(cOtherCornerBlock, cGridInfo, eOtherCornerBuildSlot, eBuildLayer, bIsGhost);
+
+							// Set the block set entry which created this block so it has a reference to it for further operations.
+							cPairedCorner.BlockSetEntryCreatedFrom = cCurrentBlockSetEntry;
 
 							PairCorner(cBlock, cPairedCorner);
 						}
@@ -377,6 +402,9 @@ public class BuildMode : BaseMode
 				cOpposite = CreateBlockGameObject(cCurrentBlockSetEntry.OppositeBlockInfo.gameObject, cGridInfo, eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), bIsGhost);
 				cBlock.m_cOppositeBlockInfo = cOpposite;
 			}
+
+			// Set the block set entry which created this block so it has a reference to it for further operations.
+			cBlock.BlockSetEntryCreatedFrom = cCurrentBlockSetEntry;
 
 			cBlock.m_cOppositeBlockInfo = cOpposite;
 
