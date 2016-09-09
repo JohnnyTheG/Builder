@@ -158,19 +158,25 @@ public class GridSettings : Singleton<GridSettings>
 		return cTouchingGridInfo;
 	}
 
+	public GridInfo[] GetAllTouchingGridInfo(GridInfo cGridInfo, GridInfo.BuildLayer eBuildLayer)
+	{
+		List<GridInfo> lstTouchingGridInfo = new List<GridInfo>();
+
+		lstTouchingGridInfo.Add(GetTouchingGridInfo(cGridInfo, GridInfo.BuildSlot.North, eBuildLayer));
+		lstTouchingGridInfo.Add(GetTouchingGridInfo(cGridInfo, GridInfo.BuildSlot.East, eBuildLayer));
+		lstTouchingGridInfo.Add(GetTouchingGridInfo(cGridInfo, GridInfo.BuildSlot.South, eBuildLayer));
+		lstTouchingGridInfo.Add(GetTouchingGridInfo(cGridInfo, GridInfo.BuildSlot.West, eBuildLayer));
+
+		return lstTouchingGridInfo.ToArray();
+	}
+
 	public void Flip()
 	{
-		//transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles + new Vector3(0.0f, 0.0f, 180.0f));
-
 		if (!m_bGridFlipInProgress)
 		{
 			m_bGridFlipInProgress = true;
 
 			m_fFlipTime = 0.0f;
-
-			/*m_quatStart = transform.rotation;
-
-			m_quatFinish = Quaternion.Euler(transform.rotation.eulerAngles + new Vector3(0.0f, 0.0f, 180.0f));*/
 
 			switch (m_eUpBuildLayer)
 			{
