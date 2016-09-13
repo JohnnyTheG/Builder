@@ -119,7 +119,7 @@ public class BlockInfo : MonoBehaviour
 
 	void SetUnoccupation()
 	{
-		if (!m_bIsGhost)
+		/*if (!m_bIsGhost)
 		{
 			if (GridInfo != null)
 			{
@@ -134,14 +134,14 @@ public class BlockInfo : MonoBehaviour
 					cTouchingGridInfo.SetUnoccupied(eTouchingBuildSlot, BuildLayer);
 				}
 			}
-		}
+		}*/
 	}
 
 	void SetOccupation()
 	{
-		if (!m_bIsGhost)
+		/*if (!m_bIsGhost)
 		{
-			GridInfo.SetOccupied(BuildSlot, BuildLayer, this);
+			GridInfo.SetOccupied(BuildSlot, BuildLayer, BlockSetEntryCreatedFrom);
 
 			GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(GridInfo, BuildSlot, BuildLayer);
 
@@ -149,9 +149,9 @@ public class BlockInfo : MonoBehaviour
 			{
 				GridInfo.BuildSlot eTouchingBuildSlot = GridUtilities.GetOppositeBuildSlot(BuildSlot);
 
-				cTouchingGridInfo.SetOccupied(eTouchingBuildSlot, BuildLayer, this);
+				cTouchingGridInfo.SetOccupied(eTouchingBuildSlot, BuildLayer, BlockSetEntryCreatedFrom);
 			}
-		}
+		}*/
 	}
 
 	public void Rotate(Vector3 vecAngle)

@@ -10,6 +10,8 @@ public class GridSettings : Singleton<GridSettings>
 
 	bool m_bGridFlipInProgress = false;
 
+	bool m_bGridRefresh = false;
+
 	[SerializeField]
 	float GridFlipDuration = 1.0f;
 
@@ -228,5 +230,23 @@ public class GridSettings : Singleton<GridSettings>
 				transform.rotation = Quaternion.Lerp(m_quatStart, m_quatFinish, Easing.EaseInOut(m_fFlipTime / GridFlipDuration, EasingType.Cubic, EasingType.Cubic));
 			}
 		}
+
+		if (m_bGridRefresh)
+		{
+			m_bGridRefresh = false;
+
+			for (int nGridX = 0; nGridX < Grid.GetLength(0); nGridX++)
+			{
+				for (int nGridY = 0; nGridY < Grid.GetLength(1); nGridY++)
+				{
+					Grid[nGridX, nGridY].Refresh();
+				}
+			}
+		}
+	}
+
+	public void RefreshGrid()
+	{
+		m_bGridRefresh = true;
 	}
 }

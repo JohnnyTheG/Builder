@@ -197,7 +197,7 @@ public class BuildMode : BaseMode
 			{
 				case State.Build:
 
-					if (InputActions.Instance.Delete())
+					/*if (InputActions.Instance.Delete())
 					{
 						RaycastHit cRaycastHit;
 
@@ -235,7 +235,7 @@ public class BuildMode : BaseMode
 								}
 							}
 						}
-					}
+					}*/
 
 					if (InputActions.Instance.Focus())
 					{
@@ -313,7 +313,18 @@ public class BuildMode : BaseMode
 			cCurrentBlockSetEntry = GetCurrentBlockSetEntry();
 		}
 
+		// If there is a block set entry to be built.
 		if (cCurrentBlockSetEntry != null)
+		{
+			GridSettings.Instance.RefreshGrid();
+
+			cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, cCurrentBlockSetEntry);
+
+			// This is for debugging.
+			//CreateBlockGameObject(cCurrentBlockSetEntry.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
+        }
+
+		/*if (cCurrentBlockSetEntry != null)
 		{
 			if (!bIsGhost)
 			{
@@ -409,7 +420,7 @@ public class BuildMode : BaseMode
 			cBlock.m_cOppositeBlockInfo = cOpposite;
 
 			return cBlock;
-		}
+		}*/
 
 		return null;
 	}
@@ -508,11 +519,11 @@ public class BuildMode : BaseMode
 
 		for (int nGridInfo = 0; nGridInfo < acGridLine.Length; nGridInfo++)
 		{
-			BlockInfo cBlockInfo = CreateBlock(acGridLine[nGridInfo], eBuildSlot, m_eDragBuildLayer, true);
+			//BlockInfo cBlockInfo = CreateBlock(acGridLine[nGridInfo], eBuildSlot, m_eDragBuildLayer, true);
 
-			SetHighlightColour(cBlockInfo, bCanAffordBuild);
+			//SetHighlightColour(cBlockInfo, bCanAffordBuild);
 
-			m_lstDragBuildHighlights.Add(cBlockInfo);
+			//m_lstDragBuildHighlights.Add(cBlockInfo);
 		}
 	}
 
@@ -536,9 +547,9 @@ public class BuildMode : BaseMode
 
 			if (cBlockSetEntry != null && m_cBlockInfoBuildHighlight == null)
 			{
-				GridInfo.BuildSlot eBuildSlot = GetBuildDirection(cBlockSetEntry);
+				//GridInfo.BuildSlot eBuildSlot = GetBuildDirection(cBlockSetEntry);
 
-				m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, eBuildSlot, cGridLayer.Layer, true);
+				//m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, eBuildSlot, cGridLayer.Layer, true);
 			}
 
 			if (m_cBlockInfoBuildHighlight != null)
