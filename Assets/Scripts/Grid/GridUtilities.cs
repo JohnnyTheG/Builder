@@ -55,7 +55,7 @@ public class GridUtilities : MonoBehaviour
 
 	public static CornerInfo GetCornerInfo(GridInfo.BuildSlot eBuildSlotA, GridInfo.BuildSlot eBuildSlotB)
 	{
-		Debug.Log("GridUtilities: GetCornerBuildSlot for " + eBuildSlotA.ToString() + " and " + eBuildSlotB.ToString());
+		//Debug.Log("GridUtilities: GetCornerBuildSlot for " + eBuildSlotA.ToString() + " and " + eBuildSlotB.ToString());
 
 		switch (eBuildSlotA)
 		{

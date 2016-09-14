@@ -41,23 +41,24 @@ public class GridInfo : MonoBehaviour
 		Undefined,
 	}
 
-	// Information about block build on a certain BuildSlot.
-	class GridBuildInfo
+	// Information about a build slot.
+	class BuildSlotInfo
 	{
 		public BlockInfo m_cBlockInfo = null;
 		public bool m_bOccupied = false;
+		public BlockSetEntry m_cBlockSetEntry = null;
 	}
 
 	// Information about a BuildLayer and what slots are occupied on that layer.
 	class BuildLayerInfo
 	{
-		public Dictionary<BuildSlot, GridBuildInfo> m_dictOccupiers = new Dictionary<BuildSlot, GridBuildInfo>()
+		public Dictionary<BuildSlot, BuildSlotInfo> m_dictBuildSlotOccupiers = new Dictionary<BuildSlot, BuildSlotInfo>()
 		{
-			{ BuildSlot.North, new GridBuildInfo() },
-			{ BuildSlot.East, new GridBuildInfo() },
-			{ BuildSlot.South, new GridBuildInfo() },
-			{ BuildSlot.West, new GridBuildInfo() },
-			{ BuildSlot.Centre, new GridBuildInfo() },
+			{ BuildSlot.North, new BuildSlotInfo() },
+			{ BuildSlot.East, new BuildSlotInfo() },
+			{ BuildSlot.South, new BuildSlotInfo() },
+			{ BuildSlot.West, new BuildSlotInfo() },
+			{ BuildSlot.Centre, new BuildSlotInfo() },
 		};
 	}
 
@@ -94,10 +95,10 @@ public class GridInfo : MonoBehaviour
 		{
 			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
 
-			if (cBuildLayerInfo.m_dictOccupiers.ContainsKey(eBuildSlot))
+			if (cBuildLayerInfo.m_dictBuildSlotOccupiers.ContainsKey(eBuildSlot))
 			{
 				// Set the slot to occupied, the block will generate itself later.
-				cBuildLayerInfo.m_dictOccupiers[eBuildSlot].m_bOccupied = true;
+				cBuildLayerInfo.m_dictBuildSlotOccupiers[eBuildSlot].m_bOccupied = true;
 			}
 		}
 	}
@@ -108,9 +109,9 @@ public class GridInfo : MonoBehaviour
 		{
 			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
 
-			if (cBuildLayerInfo.m_dictOccupiers.ContainsKey(eBuildSlot))
+			if (cBuildLayerInfo.m_dictBuildSlotOccupiers.ContainsKey(eBuildSlot))
 			{
-				cBuildLayerInfo.m_dictOccupiers[eBuildSlot].m_bOccupied = false;
+				cBuildLayerInfo.m_dictBuildSlotOccupiers[eBuildSlot].m_bOccupied = false;
 			}
 		}
 	}
@@ -134,9 +135,9 @@ public class GridInfo : MonoBehaviour
 		{
 			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
 
-			if (cBuildLayerInfo.m_dictOccupiers.ContainsKey(eBuildSlot))
+			if (cBuildLayerInfo.m_dictBuildSlotOccupiers.ContainsKey(eBuildSlot))
 			{
-				return cBuildLayerInfo.m_dictOccupiers[eBuildSlot].m_bOccupied == false && Occupiable;
+				return cBuildLayerInfo.m_dictBuildSlotOccupiers[eBuildSlot].m_bOccupied == false && Occupiable;
 			}
 		}
 
@@ -149,9 +150,9 @@ public class GridInfo : MonoBehaviour
 		{
 			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
 
-			if (cBuildLayerInfo.m_dictOccupiers.ContainsKey(eBuildSlot))
+			if (cBuildLayerInfo.m_dictBuildSlotOccupiers.ContainsKey(eBuildSlot))
 			{
-				return cBuildLayerInfo.m_dictOccupiers[eBuildSlot].m_bOccupied;
+				return cBuildLayerInfo.m_dictBuildSlotOccupiers[eBuildSlot].m_bOccupied;
 			}
 		}
 
@@ -164,9 +165,9 @@ public class GridInfo : MonoBehaviour
 		{
 			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
 
-			if (cBuildLayerInfo.m_dictOccupiers.ContainsKey(eBuildSlot))
+			if (cBuildLayerInfo.m_dictBuildSlotOccupiers.ContainsKey(eBuildSlot))
 			{
-				return cBuildLayerInfo.m_dictOccupiers[eBuildSlot].m_cBlockInfo;
+				return cBuildLayerInfo.m_dictBuildSlotOccupiers[eBuildSlot].m_cBlockInfo;
 			}
 		}
 
@@ -240,7 +241,7 @@ public class GridInfo : MonoBehaviour
 
 	// NICKED FROM BUILDMODE.CS START
 
-	BlockInfo CreateBlockGameObject(GameObject cBlockToCreate, GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eGridLayer, bool bIsGhost)
+	BlockInfo CreateBlockInfo(GameObject cBlockToCreate, GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eGridLayer, bool bIsGhost)
 	{
 		GameObject cBlock = Instantiate(cBlockToCreate);
 
@@ -258,7 +259,7 @@ public class GridInfo : MonoBehaviour
 		return cBlockInfo;
 	}
 
-	Dictionary<GridInfo.BuildSlot, Quaternion> m_dictBuildDirections = new Dictionary<GridInfo.BuildSlot, Quaternion>()
+	Dictionary<GridInfo.BuildSlot, Quaternion> m_dictBuildRotations = new Dictionary<GridInfo.BuildSlot, Quaternion>()
 	{
 		{GridInfo.BuildSlot.North,     Quaternion.Euler(new Vector3(0.0f, 0.0f, 0.0f))},
 		{GridInfo.BuildSlot.East,      Quaternion.Euler(new Vector3(0.0f, 90.0f, 0.0f))},
@@ -275,13 +276,13 @@ public class GridInfo : MonoBehaviour
 			case GridInfo.BuildSlot.Centre:
 
 				// Just default centre blocks to north for now.
-				vecRotation = m_dictBuildDirections[GridInfo.BuildSlot.North].eulerAngles;
+				vecRotation = m_dictBuildRotations[GridInfo.BuildSlot.North].eulerAngles;
 
 				break;
 
 			default:
 
-				vecRotation = m_dictBuildDirections[eBuildSlot].eulerAngles;
+				vecRotation = m_dictBuildRotations[eBuildSlot].eulerAngles;
 
 				break;
 		}
@@ -375,10 +376,16 @@ public class GridInfo : MonoBehaviour
 					else if (nConnectionCount == 2)
 					{
 						// U Shaped corner.
+
+						Debug.Log("GridInfo: Skipping build of U Corner.");
+
+						continue;
 					}
 					else
 					{
 						// Something else.
+
+						continue;
 					}
 				}
 				else
@@ -386,7 +393,27 @@ public class GridInfo : MonoBehaviour
 					cBlockToCreate = m_cBlockSetEntry.BlockInfo.gameObject;
 				}
 
-				CreateBlockGameObject(cBlockToCreate, this, eBuildSlot, eBuildLayer, false);
+				BuildSlotInfo cBuildSlotInfo = null;
+
+				// If the dictionary of layers contains the build layer.
+                if (m_dictBuildLayers.ContainsKey(eBuildLayer))
+				{
+					// And has a build slot related to current.
+					if (m_dictBuildLayers[eBuildLayer].m_dictBuildSlotOccupiers.ContainsKey(eBuildSlot))
+					{
+						cBuildSlotInfo = m_dictBuildLayers[eBuildLayer].m_dictBuildSlotOccupiers[eBuildSlot];
+                    }
+				}
+
+				// If there is already a block info spawned on this grid info.
+				if (cBuildSlotInfo.m_cBlockInfo != null)
+				{
+					// Destroy it.
+					Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
+				}
+
+				// Create new block info of the correct type.
+				cBuildSlotInfo.m_cBlockInfo = CreateBlockInfo(cBlockToCreate, this, eBuildSlot, eBuildLayer, false);
 			}
 		}
 
