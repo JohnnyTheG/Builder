@@ -42,7 +42,7 @@ public class GridInfo : MonoBehaviour
 	}
 
 	// Information about a build slot.
-	class BuildSlotInfo
+	public class BuildSlotInfo
 	{
 		public BlockInfo m_cBlockInfo = null;
 		public bool m_bOccupied = false;
@@ -87,23 +87,7 @@ public class GridInfo : MonoBehaviour
 		m_cOriginalColor = m_cMeshRenderer.material.color;
 	}
 
-	public void SetOccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry)
-	{
-		m_cBlockSetEntry = cBlockSetEntry;
-
-        if (m_dictBuildLayers.ContainsKey(eBuildLayer))
-		{
-			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
-
-			if (cBuildLayerInfo.m_dictBuildSlotOccupiers.ContainsKey(eBuildSlot))
-			{
-				// Set the slot to occupied, the block will generate itself later.
-				cBuildLayerInfo.m_dictBuildSlotOccupiers[eBuildSlot].m_bOccupied = true;
-			}
-		}
-	}
-
-	public void SetUnoccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
+	BuildSlotInfo GetBuildSlotInfo(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
 	{
 		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
 		{
@@ -111,8 +95,63 @@ public class GridInfo : MonoBehaviour
 
 			if (cBuildLayerInfo.m_dictBuildSlotOccupiers.ContainsKey(eBuildSlot))
 			{
-				cBuildLayerInfo.m_dictBuildSlotOccupiers[eBuildSlot].m_bOccupied = false;
+				BuildSlotInfo cBuildSlotInfo = cBuildLayerInfo.m_dictBuildSlotOccupiers[eBuildSlot];
+
+				return cBuildSlotInfo;
 			}
+		}
+
+		return null;
+	}
+
+	public void SetOccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry)
+	{
+		GridSettings.Instance.RefreshGrid();
+
+		m_cBlockSetEntry = cBlockSetEntry;
+
+		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
+
+		if (cBuildSlotInfo != null)
+		{
+			// Set the slot to occupied, the block will generate itself later.
+			cBuildSlotInfo.m_bOccupied = true;
+			cBuildSlotInfo.m_cBlockSetEntry = cBlockSetEntry;
+		}
+
+		if (cBlockSetEntry.HasOppositeBlock())
+		{
+			BuildSlotInfo cOppositeBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer));
+
+			if (cOppositeBuildSlotInfo != null)
+			{
+				cBuildSlotInfo.m_bOccupied = true;
+				cBuildSlotInfo.m_cBlockSetEntry = cBlockSetEntry;
+			}
+		}
+	}
+
+	public void SetUnoccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
+	{
+		GridSettings.Instance.RefreshGrid();
+
+		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
+
+		if (cBuildSlotInfo.m_cBlockSetEntry.HasOppositeBlock())
+		{
+			BuildSlotInfo cOppositeBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer));
+
+			if (cOppositeBuildSlotInfo != null)
+			{
+				cOppositeBuildSlotInfo.m_bOccupied = false;
+				cOppositeBuildSlotInfo.m_cBlockSetEntry = null;
+			}
+		}
+
+		if (cBuildSlotInfo != null)
+		{
+			cBuildSlotInfo.m_bOccupied = false;
+			cBuildSlotInfo.m_cBlockSetEntry = null;
 		}
 	}
 
@@ -131,14 +170,11 @@ public class GridInfo : MonoBehaviour
 
 	public bool CanBeOccupiedInternal(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
 	{
-		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
-		{
-			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
+		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
 
-			if (cBuildLayerInfo.m_dictBuildSlotOccupiers.ContainsKey(eBuildSlot))
-			{
-				return cBuildLayerInfo.m_dictBuildSlotOccupiers[eBuildSlot].m_bOccupied == false && Occupiable;
-			}
+		if (cBuildSlotInfo != null)
+		{
+			return cBuildSlotInfo.m_bOccupied == false && Occupiable;
 		}
 
 		return false;
@@ -146,32 +182,14 @@ public class GridInfo : MonoBehaviour
 
 	public bool IsOccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
 	{
-		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
-		{
-			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
+		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
 
-			if (cBuildLayerInfo.m_dictBuildSlotOccupiers.ContainsKey(eBuildSlot))
-			{
-				return cBuildLayerInfo.m_dictBuildSlotOccupiers[eBuildSlot].m_bOccupied;
-			}
+		if (cBuildSlotInfo != null)
+		{
+			return cBuildSlotInfo.m_bOccupied;
 		}
 
 		return true;
-	}
-
-	public BlockInfo GetOccupier(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
-	{
-		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
-		{
-			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
-
-			if (cBuildLayerInfo.m_dictBuildSlotOccupiers.ContainsKey(eBuildSlot))
-			{
-				return cBuildLayerInfo.m_dictBuildSlotOccupiers[eBuildSlot].m_cBlockInfo;
-			}
-		}
-
-		return null;
 	}
 
 	public bool InRoom
@@ -351,7 +369,7 @@ public class GridInfo : MonoBehaviour
 						// Flat wall.
 
 						cBlockToCreate = m_cBlockSetEntry.BlockInfo.gameObject;
-                    }
+					}
 					else if (nConnectionCount == 1)
 					{
 						// L shaped corner.
@@ -393,27 +411,36 @@ public class GridInfo : MonoBehaviour
 					cBlockToCreate = m_cBlockSetEntry.BlockInfo.gameObject;
 				}
 
-				BuildSlotInfo cBuildSlotInfo = null;
+				BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
 
-				// If the dictionary of layers contains the build layer.
-                if (m_dictBuildLayers.ContainsKey(eBuildLayer))
+				if (cBuildSlotInfo != null)
 				{
-					// And has a build slot related to current.
-					if (m_dictBuildLayers[eBuildLayer].m_dictBuildSlotOccupiers.ContainsKey(eBuildSlot))
+					// If there is already a block info spawned on this grid info.
+					if (cBuildSlotInfo.m_cBlockInfo != null)
 					{
-						cBuildSlotInfo = m_dictBuildLayers[eBuildLayer].m_dictBuildSlotOccupiers[eBuildSlot];
-                    }
-				}
+						// Destroy it.
+						Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
+					}
 
-				// If there is already a block info spawned on this grid info.
-				if (cBuildSlotInfo.m_cBlockInfo != null)
+					// Create new block info of the correct type.
+					cBuildSlotInfo.m_cBlockInfo = CreateBlockInfo(cBlockToCreate, this, eBuildSlot, eBuildLayer, false);
+				}
+			}
+			else
+			{
+				// If this section is hit, the slot is unoccupied, so should have no block on it.
+				BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
+
+				if (cBuildSlotInfo != null)
 				{
-					// Destroy it.
-					Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
-				}
+					if (cBuildSlotInfo.m_cBlockInfo != null)
+					{
+						// Destroy any existing object on unoccupied slot.
+						Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
+					}
 
-				// Create new block info of the correct type.
-				cBuildSlotInfo.m_cBlockInfo = CreateBlockInfo(cBlockToCreate, this, eBuildSlot, eBuildLayer, false);
+					cBuildSlotInfo.m_cBlockSetEntry = null;
+				}
 			}
 		}
 

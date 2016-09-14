@@ -197,7 +197,7 @@ public class BuildMode : BaseMode
 			{
 				case State.Build:
 
-					/*if (InputActions.Instance.Delete())
+					if (InputActions.Instance.Delete())
 					{
 						RaycastHit cRaycastHit;
 
@@ -211,7 +211,9 @@ public class BuildMode : BaseMode
 
 								if (cBlockInfo != null)
 								{
-									BlockInfo cPairedCorner = null;
+									cBlockInfo.GridInfo.SetUnoccupied(cBlockInfo.BuildSlot, cBlockInfo.BuildLayer);
+
+									/*BlockInfo cPairedCorner = null;
 
 									// If this block is a corner.
 									if (cBlockInfo.IsCorner)
@@ -231,11 +233,11 @@ public class BuildMode : BaseMode
 										// Get rid of the paired corner piece.
 										// Straight up destroy it so that the grid doesnt become unoccupied.
 										Destroy(cPairedCorner.gameObject);
-									}
+									}*/
 								}
 							}
 						}
-					}*/
+					}
 
 					if (InputActions.Instance.Focus())
 					{
@@ -316,13 +318,19 @@ public class BuildMode : BaseMode
 		// If there is a block set entry to be built.
 		if (cCurrentBlockSetEntry != null)
 		{
-			GridSettings.Instance.RefreshGrid();
-
 			cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, cCurrentBlockSetEntry);
+
+			if (cCurrentBlockSetEntry.HasOppositeBlock())
+			{
+				cGridInfo.SetOccupied(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), cCurrentBlockSetEntry);
+
+				// Create any opposite it needs.
+				//cOpposite = CreateBlockGameObject(cCurrentBlockSetEntry.OppositeBlockInfo.gameObject, cGridInfo, eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), bIsGhost);
+			}
 
 			// This is for debugging.
 			//CreateBlockGameObject(cCurrentBlockSetEntry.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
-        }
+		}
 
 		/*if (cCurrentBlockSetEntry != null)
 		{
