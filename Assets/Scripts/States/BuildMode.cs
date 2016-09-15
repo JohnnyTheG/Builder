@@ -278,7 +278,7 @@ public class BuildMode : BaseMode
 		GridSettings.Instance.OnGridFlipComplete -= OnGridFlipComplete;
 
 		// Exit.
-		DestroyBlockBuildHighlight();
+		DestroyBuildHighlights();
 	}
 
 	void ValidateAndCreateBlock(BlockSetEntry cBlockSetEntry, GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer)
@@ -507,38 +507,40 @@ public class BuildMode : BaseMode
 
 	void UpdateMouseHighlightDragBuild()
 	{
-		// Ensure there are no highlights from a normal build.
-		DestroyBlockBuildHighlight();
-
 		// Get rid of existing highlights.
-		DestroyDragBuildHighlights();
+		DestroyBuildHighlights();
 
 		// Hide the ground square icon.
 		GameGlobals.Instance.MouseHighlight.SetActive(false);
 
 		BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
-		GridInfo[] acGridLine = GridSettings.Instance.GetGridLine(m_cDragBuildStartGridInfo, m_cDragBuildFinishGridInfo);
-
-		// Block cost times number of blocks in line.
-		bool bCanAffordBuild = CanAffordBlocks(GetCurrentBlockSetEntry().BlockCost, acGridLine.Length);
-
-		GridInfo.BuildSlot eBuildSlot = GetBuildDirection(cBlockSetEntry);
-
-		for (int nGridInfo = 0; nGridInfo < acGridLine.Length; nGridInfo++)
+		if (cBlockSetEntry != null)
 		{
-			//BlockInfo cBlockInfo = CreateBlock(acGridLine[nGridInfo], eBuildSlot, m_eDragBuildLayer, true);
+			GridInfo[] acGridLine = GridSettings.Instance.GetGridLine(m_cDragBuildStartGridInfo, m_cDragBuildFinishGridInfo);
 
-			//SetHighlightColour(cBlockInfo, bCanAffordBuild);
+			// Block cost times number of blocks in line.
+			bool bCanAffordBuild = CanAffordBlocks(cBlockSetEntry.BlockCost, acGridLine.Length);
 
-			//m_lstDragBuildHighlights.Add(cBlockInfo);
+			GridInfo.BuildSlot eBuildSlot = GetBuildDirection(cBlockSetEntry);
+
+			for (int nGridInfo = 0; nGridInfo < acGridLine.Length; nGridInfo++)
+			{
+				acGridLine[nGridInfo].SetHighlighted(eBuildSlot, m_eDragBuildLayer, cBlockSetEntry);
+
+				//BlockInfo cBlockInfo = CreateBlock(acGridLine[nGridInfo], eBuildSlot, m_eDragBuildLayer, true);
+
+				//SetHighlightColour(cBlockInfo, bCanAffordBuild);
+
+				//m_lstDragBuildHighlights.Add(cBlockInfo);
+			}
 		}
 	}
 
 	void UpdateMouseHighlightBuild()
 	{
 		// Ensure there are no highlights from a drag build.
-		DestroyDragBuildHighlights();
+		DestroyBuildHighlights();
 
 		RaycastHit cRaycastHit;
 
@@ -549,8 +551,16 @@ public class BuildMode : BaseMode
 
 			BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
+			if (cBlockSetEntry != null)
+			{
+				GridInfo.BuildSlot eBuildSlot = GetBuildDirection(cBlockSetEntry);
+				GridInfo.BuildLayer eBuildLayer = cGridLayer.Layer;
+
+				cGridInfo.SetHighlighted(eBuildSlot, eBuildLayer, cBlockSetEntry);
+			}
+
 			// Always get rid of the block.
-			DestroyBlockBuildHighlight();
+			/*DestroyBlockBuildHighlight();
 			m_cBlockInfoBuildHighlight = null;
 
 			if (cBlockSetEntry != null && m_cBlockInfoBuildHighlight == null)
@@ -573,7 +583,7 @@ public class BuildMode : BaseMode
 
 				// Only creating a single block, hence the 1.
 				SetHighlightColour(m_cBlockInfoBuildHighlight, CanAffordBlocks(cBlockSetEntry.BlockCost, 1));
-			}
+			}*/
 
 			GameGlobals.Instance.MouseHighlight.SetActive(true);
 			GameGlobals.Instance.MouseHighlight.transform.position = cRaycastHit.collider.transform.position + new Vector3(0.0f, (cGridInfo.Height * 0.5f) + (GameGlobals.Instance.MouseHighlight.transform.localScale.y * 0.5f), 0.0f);
@@ -615,28 +625,21 @@ public class BuildMode : BaseMode
 
 	void DisableHighlights()
 	{
-		DestroyBlockBuildHighlight();
-
-		DestroyDragBuildHighlights();
+		DestroyBuildHighlights();
 
 		GameGlobals.Instance.MouseHighlight.SetActive(false);
 	}
 
-	void DestroyBlockBuildHighlight()
+	void DestroyBuildHighlights()
 	{
-		if (m_cBlockInfoBuildHighlight != null)
-		{
-			m_cBlockInfoBuildHighlight.DestroyBlockInfo(true);
-		}
-	}
+		GridInfo[,] acGrid = GridSettings.Instance.Grid;
 
-	void DestroyDragBuildHighlights()
-	{
-		for (int nHighlight = m_lstDragBuildHighlights.Count - 1; nHighlight >= 0; nHighlight--)
+		for (int nGridX = 0; nGridX < acGrid.GetLength(0); nGridX++)
 		{
-			m_lstDragBuildHighlights[nHighlight].DestroyBlockInfo(true);
-
-			m_lstDragBuildHighlights.RemoveAt(nHighlight);
+			for (int nGridY = 0; nGridY < acGrid.GetLength(1); nGridY++)
+			{
+				acGrid[nGridX, nGridY].SetUnhighlighted();
+			}
 		}
 	}
 

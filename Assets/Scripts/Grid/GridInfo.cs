@@ -315,155 +315,244 @@ public class GridInfo : MonoBehaviour
 
 	// NICKED FROM BUILDMODE.CS END
 
+	public void RefreshHighlight()
+	{
+		if (IsOccupied(m_eHighlightBuildSlot, m_eHighlightBuildLayer))
+		{
+			// Cant highlight existing blocks!
+
+			return;
+		}
+
+		// Ensure the old slot isnt occupied and check if it the highlight direction has changed.
+		if (!IsOccupied(m_eHighlightPreviousBuildSlot, m_eHighlightPreviousBuildLayer) && (m_eHighlightPreviousBuildLayer != m_eHighlightBuildLayer || m_eHighlightPreviousBuildSlot != m_eHighlightBuildSlot))
+		{
+			// Destroy any old highlight.
+			BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(m_eHighlightPreviousBuildSlot, m_eHighlightPreviousBuildLayer);
+
+			if (cBuildSlotInfo != null)
+			{
+				if (cBuildSlotInfo.m_cBlockInfo != null)
+				{
+					// Get rid of highlight.
+					Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
+				}
+
+				// Get rid of the reference to the ghost currently in the slot.
+				cBuildSlotInfo.m_cBlockInfo = null;
+			}
+		}
+
+		// Create highlight.
+		if (m_bHighlighted)
+		{
+			Dictionary<BuildSlot, List<BuildSlot>> dictActualCorners = new Dictionary<BuildSlot, List<BuildSlot>>()
+			{
+				{BuildSlot.North, new List<BuildSlot>() },
+				{BuildSlot.East, new List<BuildSlot>() },
+				{BuildSlot.South, new List<BuildSlot>() },
+				{BuildSlot.West, new List<BuildSlot>() },
+			};
+
+			List<BuildSlot> lstCornerPairs = null;
+
+			if (m_dictBuildCorners.ContainsKey(m_eHighlightBuildSlot))
+			{
+				lstCornerPairs = m_dictBuildCorners[m_eHighlightBuildSlot];
+			}
+
+			if (lstCornerPairs != null)
+			{
+				RefreshBlockInfo(m_eHighlightBuildSlot, m_eHighlightBuildLayer, m_cHighlightBlockSetEntry, lstCornerPairs, ref dictActualCorners, true);
+			}
+		}
+		else
+		{
+			BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(m_eHighlightBuildSlot, m_eHighlightBuildLayer);
+
+			if (cBuildSlotInfo != null)
+			{
+				if (cBuildSlotInfo.m_cBlockInfo != null)
+				{
+					// Get rid of highlight.
+					Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
+				}
+
+				// Get rid of the reference to the ghost currently in the slot.
+				cBuildSlotInfo.m_cBlockInfo = null;
+			}
+
+			m_eHighlightBuildSlot = BuildSlot.Undefined;
+			m_eHighlightBuildLayer = BuildLayer.Undefined;
+		}
+	}
 
 	public void Refresh()
 	{
 		// Get number of connections on own grid slot.
 
-		BuildLayer eBuildLayer = BuildLayer.Top;
-
-		// This is the dictionary which is populated with actual corners which 100% exist.
-		Dictionary<BuildSlot, List<BuildSlot>> dictActualCorners = new Dictionary<BuildSlot, List<BuildSlot>>()
+		foreach (KeyValuePair<BuildLayer, BuildLayerInfo> cPairLayer in m_dictBuildLayers)
 		{
-			{BuildSlot.North, new List<BuildSlot>() },
-			{BuildSlot.East, new List<BuildSlot>() },
-			{BuildSlot.South, new List<BuildSlot>() },
-			{BuildSlot.West, new List<BuildSlot>() },
-		};
+			BuildLayer eBuildLayer = cPairLayer.Key;
 
-		// For each build slot that a corner is possible.
-		foreach (KeyValuePair<BuildSlot, List<BuildSlot>> cPair in m_dictBuildCorners)
-		{
-			BuildSlot eBuildSlot = cPair.Key;
-
-			// If that slot is occupied.
-			if (IsOccupied(eBuildSlot, eBuildLayer))
+			// This is the dictionary which is populated with actual corners which 100% exist.
+			Dictionary<BuildSlot, List<BuildSlot>> dictActualCorners = new Dictionary<BuildSlot, List<BuildSlot>>()
 			{
-				// Then for each other slot which can form a corner with the current slot.
-				for (int nPossibleCorner = 0; nPossibleCorner < cPair.Value.Count; nPossibleCorner++)
-				{
-					BuildSlot ePossibleCornerBuildSlot = cPair.Value[nPossibleCorner];
+				{BuildSlot.North, new List<BuildSlot>() },
+				{BuildSlot.East, new List<BuildSlot>() },
+				{BuildSlot.South, new List<BuildSlot>() },
+				{BuildSlot.West, new List<BuildSlot>() },
+			};
 
-					// If any of the other slots are filled, we know there is a corner.
-					if (IsOccupied(ePossibleCornerBuildSlot, eBuildLayer))
+			// For each build slot that a corner is possible.
+			foreach (KeyValuePair<BuildSlot, List<BuildSlot>> cPair in m_dictBuildCorners)
+			{
+				BuildSlot eBuildSlot = cPair.Key;
+				List<BuildSlot> lstCornerPairs = cPair.Value;
+
+				RefreshBlockInfo(eBuildSlot, eBuildLayer, m_cBlockSetEntry, lstCornerPairs, ref dictActualCorners, false);
+			}
+		}
+	}
+
+	void RefreshBlockInfo(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry, List<BuildSlot> lstCornerPairs, ref Dictionary<BuildSlot, List<BuildSlot>> dictActualCorners, bool bIsGhost)
+	{
+		// Good for debugging when looking for a block which should exist.
+		bool bOccupied = IsOccupied(eBuildSlot, eBuildLayer);
+
+		// If that slot is occupied or this is a ghost highlight.
+		if (bOccupied || bIsGhost)
+		{
+			// Then for each other slot which can form a corner with the current slot.
+			for (int nPossibleCorner = 0; nPossibleCorner < lstCornerPairs.Count; nPossibleCorner++)
+			{
+				BuildSlot ePossibleCornerBuildSlot = lstCornerPairs[nPossibleCorner];
+
+				// If any of the other slots are filled, we know there is a corner.
+				if (IsOccupied(ePossibleCornerBuildSlot, eBuildLayer))
+				{
+					// Make sure its in the dictionary.
+					if (dictActualCorners.ContainsKey(eBuildSlot))
 					{
-						// Make sure its in the dictionary.
-						if (dictActualCorners.ContainsKey(eBuildSlot))
-						{
-							// Add the possible corner to the slot being examined as we know there is a corner.
-							dictActualCorners[eBuildSlot].Add(ePossibleCornerBuildSlot);
-						}
+						// Add the possible corner to the slot being examined as we know there is a corner.
+						dictActualCorners[eBuildSlot].Add(ePossibleCornerBuildSlot);
 					}
 				}
+			}
 
-				// BlockSetEntry BlockInfo to be created for occupation.
-				GameObject cBlockToCreate = null;
+			// BlockSetEntry BlockInfo to be created for occupation.
+			GameObject cBlockToCreate = null;
 
-				// If this block generates automatic corners.
-				if (m_cBlockSetEntry.AutomaticCorners)
+			// If this block generates automatic corners.
+			if (cBlockSetEntry.AutomaticCorners)
+			{
+				int nConnectionCount = dictActualCorners[eBuildSlot].Count;
+
+				if (nConnectionCount == 0)
 				{
-					int nConnectionCount = dictActualCorners[eBuildSlot].Count;
+					// Flat wall.
 
-					if (nConnectionCount == 0)
+					cBlockToCreate = cBlockSetEntry.BlockInfo.gameObject;
+				}
+				else if (nConnectionCount == 1)
+				{
+					// L shaped corner.
+
+					// Get the slots of the left and right corner segments.
+					GridUtilities.CornerInfo cCornerInfo = GridUtilities.GetCornerInfo(eBuildSlot, dictActualCorners[eBuildSlot][0]);
+
+					// Create the corner piece for the slot that the user has actually selected.
+					if (cCornerInfo.m_eLeftCornerBuildSlot == eBuildSlot)
 					{
-						// Flat wall.
-
-						cBlockToCreate = m_cBlockSetEntry.BlockInfo.gameObject;
+						cBlockToCreate = cBlockSetEntry.LeftCorner.BlockInfo.gameObject;
 					}
-					else if (nConnectionCount == 1)
+					else if (cCornerInfo.m_eRightCornerBuildSlot == eBuildSlot)
 					{
-						// L shaped corner.
-
-						// Get the slots of the left and right corner segments.
-						GridUtilities.CornerInfo cCornerInfo = GridUtilities.GetCornerInfo(eBuildSlot, dictActualCorners[eBuildSlot][0]);
-
-						// Create the corner piece for the slot that the user has actually selected.
-						if (cCornerInfo.m_eLeftCornerBuildSlot == eBuildSlot)
-						{
-							cBlockToCreate = m_cBlockSetEntry.LeftCorner.BlockInfo.gameObject;
-						}
-						else if (cCornerInfo.m_eRightCornerBuildSlot == eBuildSlot)
-						{
-							cBlockToCreate = m_cBlockSetEntry.RightCorner.BlockInfo.gameObject;
-						}
-						else
-						{
-							Debug.Log("BuildMode: Automatic Corner Building Error");
-						}
-					}
-					else if (nConnectionCount == 2)
-					{
-						// U Shaped corner.
-
-						Debug.Log("GridInfo: Skipping build of U Corner.");
-
-						continue;
+						cBlockToCreate = cBlockSetEntry.RightCorner.BlockInfo.gameObject;
 					}
 					else
 					{
-						// Something else.
-
-						continue;
+						Debug.Log("BuildMode: Automatic Corner Building Error");
 					}
+				}
+				else if (nConnectionCount == 2)
+				{
+					// U Shaped corner.
+
+					Debug.Log("GridInfo: Skipping build of U Corner.");
+
+					return;
 				}
 				else
 				{
-					cBlockToCreate = m_cBlockSetEntry.BlockInfo.gameObject;
-				}
+					// Something else.
 
-				BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
-
-				if (cBuildSlotInfo != null)
-				{
-					// If there is already a block info spawned on this grid info.
-					if (cBuildSlotInfo.m_cBlockInfo != null)
-					{
-						// Destroy it.
-						Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
-					}
-
-					// Create new block info of the correct type.
-					cBuildSlotInfo.m_cBlockInfo = CreateBlockInfo(cBlockToCreate, this, eBuildSlot, eBuildLayer, false);
+					return;
 				}
 			}
 			else
 			{
-				// If this section is hit, the slot is unoccupied, so should have no block on it.
-				BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
+				cBlockToCreate = cBlockSetEntry.BlockInfo.gameObject;
+			}
 
-				if (cBuildSlotInfo != null)
+			BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
+
+			if (cBuildSlotInfo != null)
+			{
+				// If there is already a block info spawned on this grid info.
+				if (cBuildSlotInfo.m_cBlockInfo != null)
 				{
-					if (cBuildSlotInfo.m_cBlockInfo != null)
-					{
-						// Destroy any existing object on unoccupied slot.
-						Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
-					}
-
-					cBuildSlotInfo.m_cBlockSetEntry = null;
+					// Destroy it.
+					Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
 				}
+
+				// Create new block info of the correct type.
+				cBuildSlotInfo.m_cBlockInfo = CreateBlockInfo(cBlockToCreate, this, eBuildSlot, eBuildLayer, bIsGhost);
 			}
 		}
-
-
-
-
-		// Get number of connections made with other grid slots.
-
-		/*GridInfo cNorthGridInfo = GridSettings.Instance.GetTouchingGridInfo(this, BuildSlot.North, BuildLayer.Top);
-
-		// Get the slots which can form a corner with north.
-		List<BuildSlot> lstPossibleCorners = m_dictBuildCorners[BuildSlot.North];
-
-		GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(this, BuildSlot.North, BuildLayer.Top);
-
-		int nNorthConnection = 0;
-
-		for (int nPossibleCorner = 0; nPossibleCorner < lstPossibleCorners.Count; nPossibleCorner++)
+		else
 		{
-			if (cTouchingGridInfo.IsOccupied(lstPossibleCorners[nPossibleCorner], BuildLayer.Top))
+			// If this section is hit, the slot is unoccupied, so should have no block on it.
+			BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
+
+			if (cBuildSlotInfo != null)
 			{
-				nNorthConnection++;
+				if (cBuildSlotInfo.m_cBlockInfo != null)
+				{
+					// Destroy any existing object on unoccupied slot.
+					Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
+				}
+
+				cBuildSlotInfo.m_cBlockSetEntry = null;
 			}
-		}*/
+		}
+	}
+
+	bool m_bHighlighted = false;
+	BuildSlot m_eHighlightBuildSlot = BuildSlot.Undefined;
+	BuildLayer m_eHighlightBuildLayer = BuildLayer.Undefined;
+
+	BuildSlot m_eHighlightPreviousBuildSlot = BuildSlot.Undefined;
+	BuildLayer m_eHighlightPreviousBuildLayer = BuildLayer.Undefined;
+
+	BlockSetEntry m_cHighlightBlockSetEntry = null;
+	BlockInfo m_cHighlightBlockInfo = null;
+
+	public void SetHighlighted(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cHighlightBlockSetEntry)
+	{
+		m_bHighlighted = true;
+
+		// Store these so when we know it changes.
+		m_eHighlightPreviousBuildSlot = m_eHighlightBuildSlot;
+		m_eHighlightPreviousBuildLayer = m_eHighlightBuildLayer;
+
+		m_eHighlightBuildSlot = eBuildSlot;
+		m_eHighlightBuildLayer = eBuildLayer;
+		m_cHighlightBlockSetEntry = cHighlightBlockSetEntry;
+	}
+
+	public void SetUnhighlighted()
+	{
+		m_bHighlighted = false;
 	}
 }
