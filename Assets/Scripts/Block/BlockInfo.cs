@@ -25,9 +25,6 @@ public class BlockInfo : MonoBehaviour
 	public float Height = 1.0f;
 	public float Width = 1.0f;
 
-	[HideInInspector]
-	public BlockInfo m_cOppositeBlockInfo = null;
-
 	[NonSerialized]
 	[HideInInspector]
 	public GridInfo GridInfo;
@@ -107,14 +104,6 @@ public class BlockInfo : MonoBehaviour
 
 		// Attach to the grid info holding it.
 		transform.parent = cGridInfo.transform;
-
-		if (bMoveOppositeBlock)
-		{
-			if (m_cOppositeBlockInfo != null)
-			{
-				m_cOppositeBlockInfo.Move(cGridInfo, eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), false);
-			}
-		}
 	}
 
 	void SetUnoccupation()
@@ -172,14 +161,6 @@ public class BlockInfo : MonoBehaviour
 			BlockManager.Instance.DeregisterBlock(this);
 		}
 
-		if (bDestroyOpposite)
-		{
-			if (m_cOppositeBlockInfo != null)
-			{
-				m_cOppositeBlockInfo.DestroyBlockInfo(false);
-			}
-		}
-
 		Destroy(gameObject);
 	}
 
@@ -203,10 +184,5 @@ public class BlockInfo : MonoBehaviour
 		}
 
 		return false;
-	}
-
-	public bool HasOppositeBlock()
-	{
-		return m_cOppositeBlockInfo != null;
 	}
 }

@@ -135,11 +135,11 @@ public class BuildMode : BaseMode
 								eBuildSlot = GridInfo.BuildSlot.Centre;
 							}
 
-							if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer, cBlockInfo.HasOppositeBlock()))
+							/*if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer, cBlockInfo.HasOppositeBlock()))
 							{
 								// Snap to grid.
 								GetSelectedBlock().Move(cGridInfo, eBuildSlot, cGridLayer.Layer, true);
-							}
+							}*/
 
 							SetSelectedBlock(null);
 						}
@@ -213,27 +213,11 @@ public class BuildMode : BaseMode
 								{
 									cBlockInfo.GridInfo.SetUnoccupied(cBlockInfo.BuildSlot, cBlockInfo.BuildLayer);
 
-									/*BlockInfo cPairedCorner = null;
-
-									// If this block is a corner.
-									if (cBlockInfo.IsCorner)
+									// If this block has an opposite, then clear its opposite too.
+									if(cBlockInfo.GridInfo.HasOpposite(cBlockInfo.BuildSlot, cBlockInfo.BuildLayer))
 									{
-										// Get the paired corner piece and revert it back to a normal wall piece.
-										cPairedCorner = cBlockInfo.PairedCorner;
+										cBlockInfo.GridInfo.SetUnoccupied(cBlockInfo.BuildSlot, GridUtilities.GetOppositeBuildLayer(cBlockInfo.BuildLayer));
 									}
-
-									// Destroy the clicked block.
-									cBlockInfo.DestroyBlockInfo(true);
-
-									// Must do this after deleting the block on the line above to ensure the grid is free to prevent another corner!
-									if (cPairedCorner != null)
-									{
-										CreateBlock(cPairedCorner.GridInfo, cPairedCorner.BuildSlot, cPairedCorner.BuildLayer, false, cPairedCorner.BlockSetEntryCreatedFrom);
-
-										// Get rid of the paired corner piece.
-										// Straight up destroy it so that the grid doesnt become unoccupied.
-										Destroy(cPairedCorner.gameObject);
-									}*/
 								}
 							}
 						}
@@ -327,52 +311,6 @@ public class BuildMode : BaseMode
 		}
 
 		return null;
-	}
-
-	BlockInfo CreateBlockGameObject(GameObject cBlockToCreate, GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eGridLayer, bool bIsGhost)
-	{
-		GameObject cBlock = Instantiate(cBlockToCreate);
-
-		BlockInfo cBlockInfo = cBlock.GetComponent<BlockInfo>();
-
-		cBlockInfo.Initialise(bIsGhost);
-
-		cBlock.transform.rotation = GetBlockRotation(eBuildSlot, eGridLayer);
-
-		if (cBlockInfo != null)
-		{
-			cBlockInfo.Move(cGridInfo, eBuildSlot, eGridLayer, false);
-		}
-
-		return cBlockInfo;
-	}
-
-	Quaternion GetBlockRotation(GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer)
-	{
-		Vector3 vecRotation = Vector3.zero;
-
-		switch (eBuildSlot)
-		{
-			case GridInfo.BuildSlot.Centre:
-
-				// Just default centre blocks to north for now.
-				vecRotation = m_dictBuildDirections[GridInfo.BuildSlot.North].eulerAngles;
-
-				break;
-
-			default:
-
-				vecRotation = m_dictBuildDirections[eBuildSlot].eulerAngles;
-
-				break;
-		}
-
-		if (GridSettings.Instance.UpBuildLayer != eBuildLayer)
-		{
-			vecRotation += new Vector3(0.0f, 180.0f, 180.0f);
-		}
-
-		return Quaternion.Euler(vecRotation);
 	}
 
 	public void UpdateMouseHighlight()
