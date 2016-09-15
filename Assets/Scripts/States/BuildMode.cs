@@ -135,11 +135,13 @@ public class BuildMode : BaseMode
 								eBuildSlot = GridInfo.BuildSlot.Centre;
 							}
 
-							/*if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer, cBlockInfo.HasOppositeBlock()))
+							if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer, cGridInfo.HasOpposite(eBuildSlot, cGridLayer.Layer)))
 							{
 								// Snap to grid.
-								GetSelectedBlock().Move(cGridInfo, eBuildSlot, cGridLayer.Layer, true);
-							}*/
+								BlockInfo cMovingBlockInfo = GetSelectedBlock();
+
+								cMovingBlockInfo.GridInfo.Move(cGridInfo, cMovingBlockInfo.BuildSlot, cMovingBlockInfo.BuildLayer, eBuildSlot, cGridLayer.Layer);
+							}
 
 							SetSelectedBlock(null);
 						}

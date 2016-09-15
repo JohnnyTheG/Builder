@@ -89,7 +89,7 @@ public class GridInfo : MonoBehaviour
 		m_cOriginalColor = m_cMeshRenderer.material.color;
 	}
 
-	BuildSlotInfo GetBuildSlotInfo(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
+	public BuildSlotInfo GetBuildSlotInfo(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
 	{
 		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
 		{
@@ -174,6 +174,18 @@ public class GridInfo : MonoBehaviour
 		return true;
 	}
 
+	public bool HasOpposite(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
+	{
+		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer));
+
+		if (cBuildSlotInfo != null)
+		{
+			return cBuildSlotInfo.m_bIsOpposite;
+		}
+
+		return false;
+	}
+
 	public bool InRoom
 	{
 		get;
@@ -241,20 +253,42 @@ public class GridInfo : MonoBehaviour
 
 	// NICKED FROM BUILDMODE.CS START
 
-	BlockInfo CreateBlockInfo(GameObject cBlockToCreate, GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eGridLayer, bool bIsGhost)
+	BlockInfo CreateBlockInfo(GameObject cBlockToCreate, BuildSlot eBuildSlot, BuildLayer eBuildLayer, bool bIsGhost)
 	{
 		GameObject cBlock = Instantiate(cBlockToCreate);
 
 		BlockInfo cBlockInfo = cBlock.GetComponent<BlockInfo>();
 
-		cBlockInfo.Initialise(bIsGhost);
+		cBlockInfo.Initialise(this, eBuildSlot, eBuildLayer, bIsGhost);
 
-		cBlock.transform.rotation = GetBlockRotation(eBuildSlot, eGridLayer);
+		cBlock.transform.rotation = GetBlockRotation(eBuildSlot, eBuildLayer);
 
-		if (cBlockInfo != null)
+		Vector3 vecPosition = Vector3.zero;
+
+		switch (eBuildLayer)
 		{
-			cBlockInfo.Move(cGridInfo, eBuildSlot, eGridLayer, false);
+			case GridInfo.BuildLayer.Top:
+
+				vecPosition = TopBuildTarget.transform.position;
+
+				break;
+
+			case GridInfo.BuildLayer.Bottom:
+
+				vecPosition = BottomBuildTarget.transform.position;
+
+				break;
 		}
+
+		cBlock.transform.position = vecPosition;
+
+		// Attach to the grid info holding it.
+		cBlock.transform.parent = transform;
+
+		/*if (cBlockInfo != null)
+		{
+			//cBlockInfo.Move(cGridInfo, eBuildSlot, eGridLayer, false);
+		}*/
 
 		return cBlockInfo;
 	}
@@ -504,7 +538,10 @@ public class GridInfo : MonoBehaviour
 				}
 
 				// Create new block info of the correct type.
-				cBuildSlotInfo.m_cBlockInfo = CreateBlockInfo(cBlockToCreate, this, eBuildSlot, eBuildLayer, bIsGhost);
+				cBuildSlotInfo.m_cBlockInfo = CreateBlockInfo(cBlockToCreate, eBuildSlot, eBuildLayer, bIsGhost);
+
+				// Set the block set on the block itself. So that when it moves, it knows what to assign to the new GridInfo!
+				cBuildSlotInfo.m_cBlockInfo.BlockSetEntryCreatedFrom = cBlockSetEntry;
 			}
 		}
 		else
@@ -523,6 +560,24 @@ public class GridInfo : MonoBehaviour
 				cBuildSlotInfo.m_cBlockSetEntry = null;
 			}
 		}
+	}
+
+	public void Move(GridInfo cDestinationGridInfo, BuildSlot eOriginBuildSlot, BuildLayer eOriginBuildLayer, BuildSlot eDestinationBuildSlot, BuildLayer eDestinationBuildLayer)
+	{
+		// Get the details for the slot being moved.
+		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eOriginBuildSlot, eOriginBuildLayer);
+
+		if (cBuildSlotInfo != null)
+		{
+			if (cDestinationGridInfo != null)
+			{
+				// Set the destination to be occupied with the details from the slot being moved.
+				cDestinationGridInfo.SetOccupied(eDestinationBuildSlot, eDestinationBuildLayer, cBuildSlotInfo.m_cBlockSetEntry, cBuildSlotInfo.m_bIsOpposite);
+	        }
+		}
+
+		// Set this gridinfo to be unoccupied in the original slot as it has been moved.
+		SetUnoccupied(eOriginBuildSlot, eOriginBuildLayer);
 	}
 
 	bool m_bHighlighted = false;
