@@ -662,23 +662,26 @@ public class BuildMode : BaseMode
 	{
 		BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
-		// If the block can be drag built.
-		if (cBlockSetEntry.CanDragBuild)
+		if (cBlockSetEntry != null)
 		{
-			RaycastHit cRaycastHit;
-
-			// Find the grid and then set that as the finish position.
-			if (GridUtilities.RaycastForGridFromMouse(out cRaycastHit))
+			// If the block can be drag built.
+			if (cBlockSetEntry.CanDragBuild)
 			{
-				GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+				RaycastHit cRaycastHit;
 
-				m_cDragBuildFinishGridInfo = cGridInfo;
+				// Find the grid and then set that as the finish position.
+				if (GridUtilities.RaycastForGridFromMouse(out cRaycastHit))
+				{
+					GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+
+					m_cDragBuildFinishGridInfo = cGridInfo;
+				}
 			}
-		}
-		else
-		{
-			// Cant drag build this block. It should be spawned on the start position only when key is released.
-			m_cDragBuildFinishGridInfo = m_cDragBuildStartGridInfo;
+			else
+			{
+				// Cant drag build this block. It should be spawned on the start position only when key is released.
+				m_cDragBuildFinishGridInfo = m_cDragBuildStartGridInfo;
+			}
 		}
 	}
 

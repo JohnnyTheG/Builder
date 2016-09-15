@@ -75,7 +75,8 @@ public class GridInfo : MonoBehaviour
 		{BuildSlot.North, new List<BuildSlot>() { BuildSlot.East, BuildSlot.West } },
 		{BuildSlot.East, new List<BuildSlot>() { BuildSlot.North, BuildSlot.South } },
 		{BuildSlot.South, new List<BuildSlot>() { BuildSlot.East, BuildSlot.West } },
-		{BuildSlot.West, new List<BuildSlot>() { BuildSlot.North, BuildSlot.South } }
+		{BuildSlot.West, new List<BuildSlot>() { BuildSlot.North, BuildSlot.South } },
+		{BuildSlot.Centre, new List<BuildSlot>() { } },
 	};
 
 	MeshRenderer m_cMeshRenderer;
@@ -402,6 +403,7 @@ public class GridInfo : MonoBehaviour
 				{BuildSlot.East, new List<BuildSlot>() },
 				{BuildSlot.South, new List<BuildSlot>() },
 				{BuildSlot.West, new List<BuildSlot>() },
+				{BuildSlot.Centre, new List<BuildSlot>() },
 			};
 
 			// For each build slot that a corner is possible.
@@ -423,76 +425,83 @@ public class GridInfo : MonoBehaviour
 		// If that slot is occupied or this is a ghost highlight.
 		if (bOccupied || bIsGhost)
 		{
-			// Then for each other slot which can form a corner with the current slot.
-			for (int nPossibleCorner = 0; nPossibleCorner < lstCornerPairs.Count; nPossibleCorner++)
-			{
-				BuildSlot ePossibleCornerBuildSlot = lstCornerPairs[nPossibleCorner];
-
-				// If any of the other slots are filled, we know there is a corner.
-				if (IsOccupied(ePossibleCornerBuildSlot, eBuildLayer))
-				{
-					// Make sure its in the dictionary.
-					if (dictActualCorners.ContainsKey(eBuildSlot))
-					{
-						// Add the possible corner to the slot being examined as we know there is a corner.
-						dictActualCorners[eBuildSlot].Add(ePossibleCornerBuildSlot);
-					}
-				}
-			}
-
 			// BlockSetEntry BlockInfo to be created for occupation.
 			GameObject cBlockToCreate = null;
 
-			// If this block generates automatic corners.
-			if (cBlockSetEntry.AutomaticCorners)
+			if (eBuildSlot == BuildSlot.Centre)
 			{
-				int nConnectionCount = dictActualCorners[eBuildSlot].Count;
-
-				if (nConnectionCount == 0)
-				{
-					// Flat wall.
-
-					cBlockToCreate = cBlockSetEntry.BlockInfo.gameObject;
-				}
-				else if (nConnectionCount == 1)
-				{
-					// L shaped corner.
-
-					// Get the slots of the left and right corner segments.
-					GridUtilities.CornerInfo cCornerInfo = GridUtilities.GetCornerInfo(eBuildSlot, dictActualCorners[eBuildSlot][0]);
-
-					// Create the corner piece for the slot that the user has actually selected.
-					if (cCornerInfo.m_eLeftCornerBuildSlot == eBuildSlot)
-					{
-						cBlockToCreate = cBlockSetEntry.LeftCorner.BlockInfo.gameObject;
-					}
-					else if (cCornerInfo.m_eRightCornerBuildSlot == eBuildSlot)
-					{
-						cBlockToCreate = cBlockSetEntry.RightCorner.BlockInfo.gameObject;
-					}
-					else
-					{
-						Debug.Log("BuildMode: Automatic Corner Building Error");
-					}
-				}
-				else if (nConnectionCount == 2)
-				{
-					// U Shaped corner.
-
-					Debug.Log("GridInfo: Skipping build of U Corner.");
-
-					return;
-				}
-				else
-				{
-					// Something else.
-
-					return;
-				}
+				cBlockToCreate = cBlockSetEntry.BlockInfo.gameObject;
 			}
 			else
 			{
-				cBlockToCreate = cBlockSetEntry.BlockInfo.gameObject;
+				// Then for each other slot which can form a corner with the current slot.
+				for (int nPossibleCorner = 0; nPossibleCorner < lstCornerPairs.Count; nPossibleCorner++)
+				{
+					BuildSlot ePossibleCornerBuildSlot = lstCornerPairs[nPossibleCorner];
+
+					// If any of the other slots are filled, we know there is a corner.
+					if (IsOccupied(ePossibleCornerBuildSlot, eBuildLayer))
+					{
+						// Make sure its in the dictionary.
+						if (dictActualCorners.ContainsKey(eBuildSlot))
+						{
+							// Add the possible corner to the slot being examined as we know there is a corner.
+							dictActualCorners[eBuildSlot].Add(ePossibleCornerBuildSlot);
+						}
+					}
+				}
+
+				// If this block generates automatic corners.
+				if (cBlockSetEntry.AutomaticCorners)
+				{
+					int nConnectionCount = dictActualCorners[eBuildSlot].Count;
+
+					if (nConnectionCount == 0)
+					{
+						// Flat wall.
+
+						cBlockToCreate = cBlockSetEntry.BlockInfo.gameObject;
+					}
+					else if (nConnectionCount == 1)
+					{
+						// L shaped corner.
+
+						// Get the slots of the left and right corner segments.
+						GridUtilities.CornerInfo cCornerInfo = GridUtilities.GetCornerInfo(eBuildSlot, dictActualCorners[eBuildSlot][0]);
+
+						// Create the corner piece for the slot that the user has actually selected.
+						if (cCornerInfo.m_eLeftCornerBuildSlot == eBuildSlot)
+						{
+							cBlockToCreate = cBlockSetEntry.LeftCorner.BlockInfo.gameObject;
+						}
+						else if (cCornerInfo.m_eRightCornerBuildSlot == eBuildSlot)
+						{
+							cBlockToCreate = cBlockSetEntry.RightCorner.BlockInfo.gameObject;
+						}
+						else
+						{
+							Debug.Log("BuildMode: Automatic Corner Building Error");
+						}
+					}
+					else if (nConnectionCount == 2)
+					{
+						// U Shaped corner.
+
+						Debug.Log("GridInfo: Skipping build of U Corner.");
+
+						return;
+					}
+					else
+					{
+						// Something else.
+
+						return;
+					}
+				}
+				else
+				{
+					cBlockToCreate = cBlockSetEntry.BlockInfo.gameObject;
+				}
 			}
 
 			BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
