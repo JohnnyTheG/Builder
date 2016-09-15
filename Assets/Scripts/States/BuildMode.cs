@@ -318,117 +318,13 @@ public class BuildMode : BaseMode
 		// If there is a block set entry to be built.
 		if (cCurrentBlockSetEntry != null)
 		{
-			cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, cCurrentBlockSetEntry);
+			cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, cCurrentBlockSetEntry, false);
 
 			if (cCurrentBlockSetEntry.HasOppositeBlock())
 			{
-				cGridInfo.SetOccupied(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), cCurrentBlockSetEntry);
-
-				// Create any opposite it needs.
-				//cOpposite = CreateBlockGameObject(cCurrentBlockSetEntry.OppositeBlockInfo.gameObject, cGridInfo, eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), bIsGhost);
+				cGridInfo.SetOccupied(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), cCurrentBlockSetEntry, true);
 			}
-
-			// This is for debugging.
-			//CreateBlockGameObject(cCurrentBlockSetEntry.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
 		}
-
-		/*if (cCurrentBlockSetEntry != null)
-		{
-			if (!bIsGhost)
-			{
-				cCurrentBlockSetEntry.Build();
-			}
-
-			BlockInfo cBlock = null;
-
-			// If this block generates automatic corners.
-			if (cCurrentBlockSetEntry.AutomaticCorners)
-			{
-				// Get any build slots which would form a corner if this build slot is built upon.
-				List<GridInfo.BuildSlot> lstCornerBuildSlots = cGridInfo.GetCornerBuildSlots(eBuildSlot, eBuildLayer);
-
-				// If there is a slot which would form a corner.
-				if (lstCornerBuildSlots.Count > 0)
-				{
-					// Get the slots of the left and right corner segments.
-					GridUtilities.CornerInfo cCornerInfo = GridUtilities.GetCornerInfo(eBuildSlot, lstCornerBuildSlots[0]);
-
-					GridInfo.BuildSlot eOtherCornerBuildSlot = GridInfo.BuildSlot.Undefined;
-					GameObject cOtherCornerBlock = null;
-
-					// Create the corner piece for the slot that the user has actually selected.
-					if (cCornerInfo.m_eLeftCornerBuildSlot == eBuildSlot)
-					{
-						cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.LeftCorner.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
-
-						eOtherCornerBuildSlot = cCornerInfo.m_eRightCornerBuildSlot;
-
-						cOtherCornerBlock = cCurrentBlockSetEntry.RightCorner.BlockInfo.gameObject;
-					}
-					else if (cCornerInfo.m_eRightCornerBuildSlot == eBuildSlot)
-					{
-						cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.RightCorner.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
-
-						eOtherCornerBuildSlot = cCornerInfo.m_eLeftCornerBuildSlot;
-
-						cOtherCornerBlock = cCurrentBlockSetEntry.LeftCorner.BlockInfo.gameObject;
-					}
-					else
-					{
-						Debug.Log("BuildMode: Automatic Corner Building Error");
-
-						return null;
-					}
-
-					// Only create the matching corner if this isnt a ghost (i.e. a highlight).
-					if (!bIsGhost)
-					{
-						// Get the block in the other corner slot.
-						BlockInfo cMatchingBuildSlotOccupier = cGridInfo.GetOccupier(eOtherCornerBuildSlot, eBuildLayer);
-
-						if (cMatchingBuildSlotOccupier != null)
-						{
-							// Delete the current block.
-							cMatchingBuildSlotOccupier.DestroyBlockInfo(true);
-
-							// Create the corner half which will complete the corner.
-							BlockInfo cPairedCorner = CreateBlockGameObject(cOtherCornerBlock, cGridInfo, eOtherCornerBuildSlot, eBuildLayer, bIsGhost);
-
-							// Set the block set entry which created this block so it has a reference to it for further operations.
-							cPairedCorner.BlockSetEntryCreatedFrom = cCurrentBlockSetEntry;
-
-							PairCorner(cBlock, cPairedCorner);
-						}
-					}
-				}
-				else
-				{
-					// Create the block itself.
-					cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
-				}
-			}
-			else
-			{
-				// Create the block itself.
-				cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
-			}
-
-			BlockInfo cOpposite = null;
-
-			if (cCurrentBlockSetEntry.HasOppositeBlock())
-			{
-				// Create any opposite it needs.
-				cOpposite = CreateBlockGameObject(cCurrentBlockSetEntry.OppositeBlockInfo.gameObject, cGridInfo, eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), bIsGhost);
-				cBlock.m_cOppositeBlockInfo = cOpposite;
-			}
-
-			// Set the block set entry which created this block so it has a reference to it for further operations.
-			cBlock.BlockSetEntryCreatedFrom = cCurrentBlockSetEntry;
-
-			cBlock.m_cOppositeBlockInfo = cOpposite;
-
-			return cBlock;
-		}*/
 
 		return null;
 	}

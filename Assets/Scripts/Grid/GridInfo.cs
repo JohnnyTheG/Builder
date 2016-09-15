@@ -47,6 +47,7 @@ public class GridInfo : MonoBehaviour
 		public BlockInfo m_cBlockInfo = null;
 		public bool m_bOccupied = false;
 		public BlockSetEntry m_cBlockSetEntry = null;
+		public bool m_bIsOpposite = false;
 	}
 
 	// Information about a BuildLayer and what slots are occupied on that layer.
@@ -105,7 +106,7 @@ public class GridInfo : MonoBehaviour
 		return null;
 	}
 
-	public void SetOccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry)
+	public void SetOccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry, bool bIsOpposite)
 	{
 		GridSettings.Instance.RefreshGrid();
 
@@ -118,17 +119,8 @@ public class GridInfo : MonoBehaviour
 			// Set the slot to occupied, the block will generate itself later.
 			cBuildSlotInfo.m_bOccupied = true;
 			cBuildSlotInfo.m_cBlockSetEntry = cBlockSetEntry;
-		}
-
-		if (cBlockSetEntry.HasOppositeBlock())
-		{
-			BuildSlotInfo cOppositeBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer));
-
-			if (cOppositeBuildSlotInfo != null)
-			{
-				cBuildSlotInfo.m_bOccupied = true;
-				cBuildSlotInfo.m_cBlockSetEntry = cBlockSetEntry;
-			}
+			// Is this an opposite.
+			cBuildSlotInfo.m_bIsOpposite = bIsOpposite;
 		}
 	}
 
@@ -137,17 +129,6 @@ public class GridInfo : MonoBehaviour
 		GridSettings.Instance.RefreshGrid();
 
 		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
-
-		if (cBuildSlotInfo.m_cBlockSetEntry.HasOppositeBlock())
-		{
-			BuildSlotInfo cOppositeBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer));
-
-			if (cOppositeBuildSlotInfo != null)
-			{
-				cOppositeBuildSlotInfo.m_bOccupied = false;
-				cOppositeBuildSlotInfo.m_cBlockSetEntry = null;
-			}
-		}
 
 		if (cBuildSlotInfo != null)
 		{
@@ -428,9 +409,18 @@ public class GridInfo : MonoBehaviour
 			// BlockSetEntry BlockInfo to be created for occupation.
 			GameObject cBlockToCreate = null;
 
+			BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
+
 			if (eBuildSlot == BuildSlot.Centre)
 			{
-				cBlockToCreate = cBlockSetEntry.BlockInfo.gameObject;
+				if (cBuildSlotInfo.m_bIsOpposite)
+				{
+					cBlockToCreate = cBlockSetEntry.OppositeBlockInfo.gameObject;
+				}
+				else
+				{
+					cBlockToCreate = cBlockSetEntry.BlockInfo.gameObject;
+				}
 			}
 			else
 			{
@@ -503,8 +493,6 @@ public class GridInfo : MonoBehaviour
 					cBlockToCreate = cBlockSetEntry.BlockInfo.gameObject;
 				}
 			}
-
-			BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
 
 			if (cBuildSlotInfo != null)
 			{
