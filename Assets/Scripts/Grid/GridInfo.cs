@@ -285,11 +285,6 @@ public class GridInfo : MonoBehaviour
 		// Attach to the grid info holding it.
 		cBlock.transform.parent = transform;
 
-		/*if (cBlockInfo != null)
-		{
-			//cBlockInfo.Move(cGridInfo, eBuildSlot, eGridLayer, false);
-		}*/
-
 		return cBlockInfo;
 	}
 
@@ -573,6 +568,15 @@ public class GridInfo : MonoBehaviour
 			{
 				// Set the destination to be occupied with the details from the slot being moved.
 				cDestinationGridInfo.SetOccupied(eDestinationBuildSlot, eDestinationBuildLayer, cBuildSlotInfo.m_cBlockSetEntry, cBuildSlotInfo.m_bIsOpposite);
+
+				if (HasOpposite(eOriginBuildSlot, eOriginBuildLayer))
+				{
+					BuildSlotInfo cOppositeBuildSlotInfo = GetBuildSlotInfo(eOriginBuildSlot, GridUtilities.GetOppositeBuildLayer(eOriginBuildLayer));
+
+					cDestinationGridInfo.SetOccupied(eDestinationBuildSlot, GridUtilities.GetOppositeBuildLayer(eDestinationBuildLayer), cOppositeBuildSlotInfo.m_cBlockSetEntry, cOppositeBuildSlotInfo.m_bIsOpposite);
+
+					SetUnoccupied(eOriginBuildSlot, GridUtilities.GetOppositeBuildLayer(eOriginBuildLayer));
+                }
 	        }
 		}
 
