@@ -304,12 +304,33 @@ public class BuildMode : BaseMode
 		// If there is a block set entry to be built.
 		if (cCurrentBlockSetEntry != null)
 		{
-			cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, cCurrentBlockSetEntry, false);
+			cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, cCurrentBlockSetEntry);
 
-			if (cCurrentBlockSetEntry.HasOppositeBlock())
-			{
-				cGridInfo.SetOccupied(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), cCurrentBlockSetEntry, true);
-			}
+			//cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, cCurrentBlockSetEntry, false);
+
+			//if (cCurrentBlockSetEntry.HasOppositeBlock())
+			//{
+			//	cGridInfo.SetOccupied(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), cCurrentBlockSetEntry, true);
+			//}
+
+			//// Fill in the corresponding blocks on touching grid squares but only if not centre (as centre isnt shared).
+			//if (eBuildSlot != GridInfo.BuildSlot.Centre)
+			//{
+			//	// Fill the opposite grid info as both are "occupied".
+			//	GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(cGridInfo, eBuildSlot, eBuildLayer);
+
+			//	GridInfo.BuildSlot eOppositeBuildSlot = GridUtilities.GetOppositeBuildSlot(eBuildSlot);
+
+			//	if (cTouchingGridInfo != null)
+			//	{
+			//		cTouchingGridInfo.SetOccupied(eOppositeBuildSlot, eBuildLayer, cCurrentBlockSetEntry, false);
+			//	}
+
+			//	if (cCurrentBlockSetEntry.HasOppositeBlock())
+			//	{
+			//		cTouchingGridInfo.SetOccupied(eOppositeBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), cCurrentBlockSetEntry, true);
+   //             }
+			//}
 		}
 
 		return null;

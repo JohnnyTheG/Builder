@@ -114,7 +114,36 @@ public class GridInfo : MonoBehaviour
 		return null;
 	}
 
-	public void SetOccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry, bool bIsOpposite)
+	public void SetOccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry)
+	{
+		SetOccupiedInternal(eBuildSlot, eBuildLayer, cBlockSetEntry, false);
+
+		if (cBlockSetEntry.HasOppositeBlock())
+		{
+			SetOccupiedInternal(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), cBlockSetEntry, true);
+		}
+
+		// Fill in the corresponding blocks on touching grid squares but only if not centre (as centre isnt shared).
+		if (eBuildSlot != GridInfo.BuildSlot.Centre)
+		{
+			// Fill the opposite grid info as both are "occupied".
+			GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(this, eBuildSlot, eBuildLayer);
+
+			GridInfo.BuildSlot eOppositeBuildSlot = GridUtilities.GetOppositeBuildSlot(eBuildSlot);
+
+			if (cTouchingGridInfo != null)
+			{
+				cTouchingGridInfo.SetOccupiedInternal(eOppositeBuildSlot, eBuildLayer, cBlockSetEntry, false);
+			}
+
+			if (cBlockSetEntry.HasOppositeBlock())
+			{
+				cTouchingGridInfo.SetOccupiedInternal(eOppositeBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), cBlockSetEntry, true);
+			}
+		}
+	}
+
+	void SetOccupiedInternal(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry, bool bIsOpposite)
 	{
 		GridSettings.Instance.RefreshGrid();
 
@@ -603,13 +632,13 @@ public class GridInfo : MonoBehaviour
 			if (cDestinationGridInfo != null)
 			{
 				// Set the destination to be occupied with the details from the slot being moved.
-				cDestinationGridInfo.SetOccupied(eDestinationBuildSlot, eDestinationBuildLayer, cBuildSlotInfo.m_cBlockSetEntry, cBuildSlotInfo.m_bIsOpposite);
+				cDestinationGridInfo.SetOccupiedInternal(eDestinationBuildSlot, eDestinationBuildLayer, cBuildSlotInfo.m_cBlockSetEntry, cBuildSlotInfo.m_bIsOpposite);
 
 				if (HasOpposite(eOriginBuildSlot, eOriginBuildLayer))
 				{
 					BuildSlotInfo cOppositeBuildSlotInfo = GetBuildSlotInfo(eOriginBuildSlot, GridUtilities.GetOppositeBuildLayer(eOriginBuildLayer));
 
-					cDestinationGridInfo.SetOccupied(eDestinationBuildSlot, GridUtilities.GetOppositeBuildLayer(eDestinationBuildLayer), cOppositeBuildSlotInfo.m_cBlockSetEntry, cOppositeBuildSlotInfo.m_bIsOpposite);
+					cDestinationGridInfo.SetOccupiedInternal(eDestinationBuildSlot, GridUtilities.GetOppositeBuildLayer(eDestinationBuildLayer), cOppositeBuildSlotInfo.m_cBlockSetEntry, cOppositeBuildSlotInfo.m_bIsOpposite);
 
 					SetUnoccupied(eOriginBuildSlot, GridUtilities.GetOppositeBuildLayer(eOriginBuildLayer));
                 }
