@@ -305,32 +305,6 @@ public class BuildMode : BaseMode
 		if (cCurrentBlockSetEntry != null)
 		{
 			cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, cCurrentBlockSetEntry);
-
-			//cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, cCurrentBlockSetEntry, false);
-
-			//if (cCurrentBlockSetEntry.HasOppositeBlock())
-			//{
-			//	cGridInfo.SetOccupied(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), cCurrentBlockSetEntry, true);
-			//}
-
-			//// Fill in the corresponding blocks on touching grid squares but only if not centre (as centre isnt shared).
-			//if (eBuildSlot != GridInfo.BuildSlot.Centre)
-			//{
-			//	// Fill the opposite grid info as both are "occupied".
-			//	GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(cGridInfo, eBuildSlot, eBuildLayer);
-
-			//	GridInfo.BuildSlot eOppositeBuildSlot = GridUtilities.GetOppositeBuildSlot(eBuildSlot);
-
-			//	if (cTouchingGridInfo != null)
-			//	{
-			//		cTouchingGridInfo.SetOccupied(eOppositeBuildSlot, eBuildLayer, cCurrentBlockSetEntry, false);
-			//	}
-
-			//	if (cCurrentBlockSetEntry.HasOppositeBlock())
-			//	{
-			//		cTouchingGridInfo.SetOccupied(eOppositeBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), cCurrentBlockSetEntry, true);
-   //             }
-			//}
 		}
 
 		return null;
