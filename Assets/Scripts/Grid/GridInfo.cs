@@ -17,10 +17,6 @@ public class GridInfo : MonoBehaviour
 
 	bool Occupiable = true;
 
-	// The block set entry spawned on this grid slot.
-	// Its up to this grid info to select the correct piece from that block set.
-	BlockSetEntry m_cBlockSetEntry;
-
 	// Order of this is important.
 	public enum BuildSlot
 	{
@@ -51,20 +47,20 @@ public class GridInfo : MonoBehaviour
 	}
 
 	// Information about a BuildLayer and what slots are occupied on that layer.
-	class BuildLayerInfo
+	public class BuildLayerInfo
 	{
 		public Dictionary<BuildSlot, BuildSlotInfo> m_dictBuildSlotOccupiers = new Dictionary<BuildSlot, BuildSlotInfo>()
 		{
-			{ BuildSlot.North, new BuildSlotInfo() },
-			{ BuildSlot.East, new BuildSlotInfo() },
-			{ BuildSlot.South, new BuildSlotInfo() },
-			{ BuildSlot.West, new BuildSlotInfo() },
-			{ BuildSlot.Centre, new BuildSlotInfo() },
+			{ BuildSlot.North, null },
+			{ BuildSlot.East, null },
+			{ BuildSlot.South, null },
+			{ BuildSlot.West, null },
+			{ BuildSlot.Centre, null },
 		};
 	}
 
 	// Information about this GridInfo as a whole, from both layers downwards.
-	Dictionary<BuildLayer, BuildLayerInfo> m_dictBuildLayers = new Dictionary<BuildLayer, BuildLayerInfo>()
+	public Dictionary<BuildLayer, BuildLayerInfo> m_dictBuildLayers = new Dictionary<BuildLayer, BuildLayerInfo>()
 	{
 		{ BuildLayer.Top, new BuildLayerInfo() },
 		{ BuildLayer.Bottom, new BuildLayerInfo() },
@@ -97,6 +93,19 @@ public class GridInfo : MonoBehaviour
 		m_cOriginalColor = m_cMeshRenderer.material.color;
 	}
 
+	public void SetBuildSlotInfo(BuildSlotInfo cBuildSlotInfo, BuildSlot eBuildSlot, BuildLayer eBuildLayer)
+	{
+		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
+		{
+			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
+
+			if (cBuildLayerInfo.m_dictBuildSlotOccupiers.ContainsKey(eBuildSlot))
+			{
+				cBuildLayerInfo.m_dictBuildSlotOccupiers[eBuildSlot] = cBuildSlotInfo;
+			}
+		}
+	}
+
 	public BuildSlotInfo GetBuildSlotInfo(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
 	{
 		if (m_dictBuildLayers.ContainsKey(eBuildLayer))
@@ -124,7 +133,7 @@ public class GridInfo : MonoBehaviour
 		}
 
 		// Fill in the corresponding blocks on touching grid squares but only if not centre (as centre isnt shared).
-		if (eBuildSlot != GridInfo.BuildSlot.Centre)
+		/*if (eBuildSlot != GridInfo.BuildSlot.Centre)
 		{
 			// Fill the opposite grid info as both are "occupied".
 			GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(this, eBuildSlot, eBuildLayer);
@@ -140,14 +149,12 @@ public class GridInfo : MonoBehaviour
 			{
 				cTouchingGridInfo.SetOccupiedInternal(eOppositeBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), cBlockSetEntry, true);
 			}
-		}
+		}*/
 	}
 
 	void SetOccupiedInternal(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry, bool bIsOpposite)
 	{
 		GridSettings.Instance.RefreshGrid();
-
-		m_cBlockSetEntry = cBlockSetEntry;
 
 		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
 
@@ -436,7 +443,7 @@ public class GridInfo : MonoBehaviour
 		}
 	}
 
-	public void Refresh()
+	public void RefreshStep1()
 	{
 		// Get number of connections on own grid slot.
 
@@ -460,15 +467,25 @@ public class GridInfo : MonoBehaviour
 				BuildSlot eBuildSlot = cPair.Key;
 				List<BuildSlot> lstCornerPairs = cPair.Value;
 
-				RefreshBlockInfo(eBuildSlot, eBuildLayer, m_cBlockSetEntry, lstCornerPairs, ref dictActualCorners, false);
+				// Block set entry is null as it should use whatever is stored in the BuildSlotInfo.
+				RefreshBlockInfo(eBuildSlot, eBuildLayer, null, lstCornerPairs, ref dictActualCorners, false);
 			}
 		}
+	}
+
+	public void RefreshStep2()
+	{
 	}
 
 	void RefreshBlockInfo(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry, List<BuildSlot> lstCornerPairs, ref Dictionary<BuildSlot, List<CornerInfo>> dictActualCorners, bool bIsGhost)
 	{
 		// Good for debugging when looking for a block which should exist.
 		bool bOccupied = IsOccupied(eBuildSlot, eBuildLayer);
+
+		if (bOccupied)
+		{
+			Debug.Log("");
+		}
 
 		// If that slot is occupied or this is a ghost highlight.
 		if (bOccupied || bIsGhost)
@@ -477,6 +494,11 @@ public class GridInfo : MonoBehaviour
 			GameObject cBlockToCreate = null;
 
 			BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
+
+			if (cBlockSetEntry == null)
+			{
+				cBlockSetEntry = cBuildSlotInfo.m_cBlockSetEntry;
+			}
 
 			// If the block is in the centre slot, its easy as there are no corners or anything.
 			if (eBuildSlot == BuildSlot.Centre)
@@ -492,7 +514,7 @@ public class GridInfo : MonoBehaviour
 			}
 			else
 			{
-				GridInfo cTouching = GridSettings.Instance.GetTouchingGridInfo(this, eBuildSlot, eBuildLayer);
+				GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(this, eBuildSlot, eBuildLayer);
 
 				// Then for each other slot which can form a corner with the current slot.
 				for (int nPossibleCorner = 0; nPossibleCorner < lstCornerPairs.Count; nPossibleCorner++)
@@ -501,9 +523,9 @@ public class GridInfo : MonoBehaviour
 
 					CheckForCorner(this, eBuildSlot, eBuildLayer, ePossibleCornerBuildSlot, ref dictActualCorners);
 
-					if (cTouching != null)
+					if (cTouchingGridInfo != null)
 					{
-						CheckForCorner(cTouching, eBuildSlot, eBuildLayer, ePossibleCornerBuildSlot, ref dictActualCorners);
+						CheckForCorner(cTouchingGridInfo, eBuildSlot, eBuildLayer, ePossibleCornerBuildSlot, ref dictActualCorners);
 					}
 				}
 
