@@ -766,6 +766,10 @@ public class GridInfo : MonoBehaviour
 						}
 						else
 						{
+							// This will be executed when a block exists with a B connection.
+							// B connection means its on a different grid info.
+							// This B connection is picked up when that grid info is processed
+							// (at which point it is an A connection as it belongs to that grid info).
 							return;
 						}
 					}
