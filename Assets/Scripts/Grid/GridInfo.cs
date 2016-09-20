@@ -67,7 +67,7 @@ public class GridInfo : MonoBehaviour
 	};
 
 	// Dictionary of slots which make up corners.
-	Dictionary<BuildSlot, List<BuildSlot>> m_dictCornerPairs = new Dictionary<BuildSlot, List<BuildSlot>>()
+	readonly Dictionary<BuildSlot, List<BuildSlot>> m_dictCornerPairs = new Dictionary<BuildSlot, List<BuildSlot>>()
 	{
 		{BuildSlot.North, new List<BuildSlot>() { BuildSlot.East, BuildSlot.West } },
 		{BuildSlot.East, new List<BuildSlot>() { BuildSlot.North, BuildSlot.South } },
@@ -82,6 +82,14 @@ public class GridInfo : MonoBehaviour
 		{BuildLayer.Top, new BuildLayerBuiltCornerInfo() },
 		{BuildLayer.Bottom, new BuildLayerBuiltCornerInfo() }
 	};
+
+	// This is used during Refresh call to hold information about actual corners which exist.
+	struct CornerInfo
+	{
+		public GridInfo m_cGridInfo;
+		public BuildSlot m_eBuildSlot;
+		public BuildLayer m_eBuildLayer;
+	}
 
 	class BuildLayerBuiltCornerInfo
 	{
@@ -105,13 +113,57 @@ public class GridInfo : MonoBehaviour
 		};
 	}
 
-	// This is used during Refresh call to hold information about actual corners which exist.
-	struct CornerInfo
+	class CornerConnectionInfo
 	{
-		public GridInfo m_cGridInfo;
-		public BuildSlot m_eBuildSlot;
-		public BuildLayer m_eBuildLayer;
+		public bool OneAExists = false;
+		public bool OneBExists = false;
+		public bool TwoAExists = false;
+		public bool TwoBExists = false;
+
+		public int GetConnectionCount()
+		{
+			int nConnection = 0;
+			if (OneAExists)
+			{
+				nConnection++;
+			}
+
+			if (OneBExists)
+			{
+				nConnection++;
+			}
+
+			if (TwoAExists)
+			{
+				nConnection++;
+			}
+
+			if (TwoBExists)
+			{
+				nConnection++;
+			}
+
+			return nConnection;
+		}
 	}
+
+	class Corners
+	{
+		public Dictionary<BuildSlot, CornerConnectionInfo> dictCorners = new Dictionary<BuildSlot, CornerConnectionInfo>()
+		{
+			{BuildSlot.North, new CornerConnectionInfo() },
+			{BuildSlot.East, new CornerConnectionInfo() },
+			{BuildSlot.South, new CornerConnectionInfo() },
+			{BuildSlot.West, new CornerConnectionInfo() },
+			{BuildSlot.Centre, new CornerConnectionInfo() },
+		};
+	}
+
+	Dictionary<BuildLayer, Corners> m_dictCorners = new Dictionary<BuildLayer, Corners>()
+	{
+		{BuildLayer.Top, new Corners() },
+		{BuildLayer.Bottom, new Corners() },
+	};
 
 	MeshRenderer m_cMeshRenderer;
 	Color m_cOriginalColor;
@@ -508,58 +560,6 @@ public class GridInfo : MonoBehaviour
 		}
 	}
 
-	class CornerConnectionInfo
-	{
-		public bool OneAExists = false;
-		public bool OneBExists = false;
-		public bool TwoAExists = false;
-		public bool TwoBExists = false;
-
-		public int GetConnectionCount()
-		{
-			int nConnection = 0;
-			if (OneAExists)
-			{
-				nConnection++;
-			}
-
-			if (OneBExists)
-			{
-				nConnection++;
-			}
-
-			if (TwoAExists)
-			{
-				nConnection++;
-			}
-
-			if (TwoBExists)
-			{
-				nConnection++;
-			}
-
-			return nConnection;
-		}
-	}
-
-	class Corners
-	{
-		public Dictionary<BuildSlot, CornerConnectionInfo> dictCorners = new Dictionary<BuildSlot, CornerConnectionInfo>()
-		{
-			{BuildSlot.North, new CornerConnectionInfo() },
-			{BuildSlot.East, new CornerConnectionInfo() },
-			{BuildSlot.South, new CornerConnectionInfo() },
-			{BuildSlot.West, new CornerConnectionInfo() },
-			{BuildSlot.Centre, new CornerConnectionInfo() },
-		};
-	}
-
-	Dictionary<BuildLayer, Corners> dictCorners = new Dictionary<BuildLayer, Corners>()
-	{
-		{BuildLayer.Top, new Corners() },
-		{BuildLayer.Bottom, new Corners() },
-	};
-
 	public void RefreshStep2()
 	{
 		// For each layer.
@@ -645,9 +645,7 @@ public class GridInfo : MonoBehaviour
 					}
 				}
 
-				dictCorners[eBuildLayer].dictCorners[eBuildSlot] = cCornerConnectionInfo;
-
-				Debug.Log("GridInfo:\nOneAExists: " + cCornerConnectionInfo.OneAExists + "\nOneBExists: " + cCornerConnectionInfo.OneBExists + "\nTwoAExists: " + cCornerConnectionInfo.TwoAExists + "\nTwoBExists: " + cCornerConnectionInfo.TwoBExists);
+				m_dictCorners[eBuildLayer].dictCorners[eBuildSlot] = cCornerConnectionInfo;
 			}
 		}
 	}
@@ -710,7 +708,7 @@ public class GridInfo : MonoBehaviour
 						//Debug.Log("");
 					}
 
-					int nConnectionCount = dictCorners[eBuildLayer].dictCorners[eBuildSlot].GetConnectionCount();
+					int nConnectionCount = m_dictCorners[eBuildLayer].dictCorners[eBuildSlot].GetConnectionCount();
 
 					if (nConnectionCount == 0)
 					{
