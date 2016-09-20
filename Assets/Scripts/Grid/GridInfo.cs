@@ -120,6 +120,11 @@ public class GridInfo : MonoBehaviour
 		public bool TwoAExists = false;
 		public bool TwoBExists = false;
 
+		// This should only contain 2 entries.
+		// The first is A, the second is B.
+		// e.g. If this connection info is stored against North key, then this will contain East and West.
+		public List<BuildSlot> m_lstAB;
+
 		public int GetConnectionCount()
 		{
 			int nConnection = 0;
@@ -584,6 +589,8 @@ public class GridInfo : MonoBehaviour
 					lstCornerPair.AddRange(m_dictCornerPairs[eBuildSlot]);
 				}
 
+				cCornerConnectionInfo.m_lstAB = lstCornerPair;
+
 				for (int nCornerPair = 0; nCornerPair < lstCornerPair.Count; nCornerPair++)
 				{
 					// The matching corner we are trying to confirm exists.
@@ -708,7 +715,9 @@ public class GridInfo : MonoBehaviour
 						//Debug.Log("");
 					}
 
-					int nConnectionCount = m_dictCorners[eBuildLayer].dictCorners[eBuildSlot].GetConnectionCount();
+					CornerConnectionInfo cCornerConnectionInfo = m_dictCorners[eBuildLayer].dictCorners[eBuildSlot];
+
+					int nConnectionCount = cCornerConnectionInfo.GetConnectionCount();
 
 					if (nConnectionCount == 0)
 					{
@@ -725,28 +734,46 @@ public class GridInfo : MonoBehaviour
 							//Debug.Log("Getting corner for " + eBuildSlot + " and " + dictCorners[eBuildSlot][0].m_eBuildSlot);
 						}
 
-						// Get the slots of the left and right corner segments.
-						//GridUtilities.CornerInfo cCornerInfo = GridUtilities.GetCornerInfo(eBuildSlot, dictCorners[eBuildSlot][0].m_eBuildSlot);
+						BuildSlot eCornerPairBuildSlot = BuildSlot.Undefined;
 
-						// Create the corner piece for the slot that the user has actually selected.
-						//if (cCornerInfo.m_eLeftCornerBuildSlot == eBuildSlot)
+						if (cCornerConnectionInfo.OneAExists)
 						{
-							cBlockToCreate = cBlockSetEntry.LeftCorner.BlockInfo.gameObject;
+							eCornerPairBuildSlot = cCornerConnectionInfo.m_lstAB[0];
 						}
-						//else if (cCornerInfo.m_eRightCornerBuildSlot == eBuildSlot)
-						//{
-							//cBlockToCreate = cBlockSetEntry.RightCorner.BlockInfo.gameObject;
-						//}
-						//else
-						//{
-							//Debug.Log("BuildMode: Automatic Corner Building Error");
-						//}
+						else if (cCornerConnectionInfo.OneBExists)
+						{
+							eCornerPairBuildSlot = cCornerConnectionInfo.m_lstAB[1];
+						}
+
+						if (eCornerPairBuildSlot != BuildSlot.Undefined)
+						{
+							// Get the slots of the left and right corner segments.
+							GridUtilities.CornerInfo cCornerInfo = GridUtilities.GetCornerInfo(eBuildSlot, eCornerPairBuildSlot);
+
+							// Create the corner piece for the slot that the user has actually selected.
+							if (cCornerInfo.m_eLeftCornerBuildSlot == eBuildSlot)
+							{
+								cBlockToCreate = cBlockSetEntry.LeftCorner.BlockInfo.gameObject;
+							}
+							else if (cCornerInfo.m_eRightCornerBuildSlot == eBuildSlot)
+							{
+								cBlockToCreate = cBlockSetEntry.RightCorner.BlockInfo.gameObject;
+							}
+							else
+							{
+								Debug.Log("BuildMode: Automatic Corner Building Error");
+							}
+						}
+						else
+						{
+							return;
+						}
 					}
 					else if (nConnectionCount == 2)
 					{
 						// U or T corner.
 
-						Debug.Log("GridInfo: Skipping build of U or T Corner.");
+						Debug.Log("GridInfo: Skipping build of U, T or Z Corner.");
 
 						return;
 					}
