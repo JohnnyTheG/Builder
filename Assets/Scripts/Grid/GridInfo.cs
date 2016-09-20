@@ -67,7 +67,7 @@ public class GridInfo : MonoBehaviour
 	};
 
 	// Dictionary of slots which make up corners.
-	Dictionary<BuildSlot, List<BuildSlot>> m_dictBuildCorners = new Dictionary<BuildSlot, List<BuildSlot>>()
+	Dictionary<BuildSlot, List<BuildSlot>> m_dictCornerPairs = new Dictionary<BuildSlot, List<BuildSlot>>()
 	{
 		{BuildSlot.North, new List<BuildSlot>() { BuildSlot.East, BuildSlot.West } },
 		{BuildSlot.East, new List<BuildSlot>() { BuildSlot.North, BuildSlot.South } },
@@ -75,6 +75,35 @@ public class GridInfo : MonoBehaviour
 		{BuildSlot.West, new List<BuildSlot>() { BuildSlot.North, BuildSlot.South } },
 		{BuildSlot.Centre, new List<BuildSlot>() { } },
 	};
+
+	// Dictionary containing information about corners for each build layer.
+	Dictionary<BuildLayer, BuildLayerBuiltCornerInfo> m_dictBuildLayerBuiltCorners = new Dictionary<BuildLayer, BuildLayerBuiltCornerInfo>()
+	{
+		{BuildLayer.Top, new BuildLayerBuiltCornerInfo() },
+		{BuildLayer.Bottom, new BuildLayerBuiltCornerInfo() }
+	};
+
+	class BuildLayerBuiltCornerInfo
+	{
+		// This is the dictionary which is populated with actual corners which 100% exist.
+		public Dictionary<BuildSlot, List<CornerInfo>> m_dictBuiltCorners = new Dictionary<BuildSlot, List<CornerInfo>>()
+		{
+			{BuildSlot.North, new List<CornerInfo>() },
+			{BuildSlot.East, new List<CornerInfo>() },
+			{BuildSlot.South, new List<CornerInfo>() },
+			{BuildSlot.West, new List<CornerInfo>() },
+			{BuildSlot.Centre, new List<CornerInfo>() },
+		};
+	}
+
+	void InitialiseCornerDictionary(ref Dictionary<BuildLayer, BuildLayerBuiltCornerInfo> dictCorners)
+	{
+		dictCorners = new Dictionary<BuildLayer, BuildLayerBuiltCornerInfo>()
+		{
+			{BuildLayer.Top, new BuildLayerBuiltCornerInfo() },
+			{BuildLayer.Bottom, new BuildLayerBuiltCornerInfo() }
+		};
+	}
 
 	// This is used during Refresh call to hold information about actual corners which exist.
 	struct CornerInfo
@@ -131,25 +160,6 @@ public class GridInfo : MonoBehaviour
 		{
 			SetOccupiedInternal(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), cBlockSetEntry, true);
 		}
-
-		// Fill in the corresponding blocks on touching grid squares but only if not centre (as centre isnt shared).
-		/*if (eBuildSlot != GridInfo.BuildSlot.Centre)
-		{
-			// Fill the opposite grid info as both are "occupied".
-			GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(this, eBuildSlot, eBuildLayer);
-
-			GridInfo.BuildSlot eOppositeBuildSlot = GridUtilities.GetOppositeBuildSlot(eBuildSlot);
-
-			if (cTouchingGridInfo != null)
-			{
-				cTouchingGridInfo.SetOccupiedInternal(eOppositeBuildSlot, eBuildLayer, cBlockSetEntry, false);
-			}
-
-			if (cBlockSetEntry.HasOppositeBlock())
-			{
-				cTouchingGridInfo.SetOccupiedInternal(eOppositeBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), cBlockSetEntry, true);
-			}
-		}*/
 	}
 
 	void SetOccupiedInternal(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry, bool bIsOpposite)
@@ -276,10 +286,10 @@ public class GridInfo : MonoBehaviour
 	{
 		List<BuildSlot> lstCornerBuildSlots = new List<BuildSlot>();
 
-		if (m_dictBuildLayers.ContainsKey(eBuildLayer) && m_dictBuildCorners.ContainsKey(eBuildSlot))
+		if (m_dictBuildLayers.ContainsKey(eBuildLayer) && m_dictCornerPairs.ContainsKey(eBuildSlot))
 		{
 			BuildLayerInfo cBuildLayerInfo = m_dictBuildLayers[eBuildLayer];
-			List<BuildSlot> lstBuildCorners = m_dictBuildCorners[eBuildSlot];
+			List<BuildSlot> lstBuildCorners = m_dictCornerPairs[eBuildSlot];
 
 			// For each slot that can make a corner, if its occupied, then add it to the list to be turned into a corner.
 			for (int nBuildSlot = 0; nBuildSlot < lstBuildCorners.Count; nBuildSlot++)
@@ -332,7 +342,7 @@ public class GridInfo : MonoBehaviour
 		return cBlockInfo;
 	}
 
-	Dictionary<GridInfo.BuildSlot, Quaternion> m_dictBuildRotations = new Dictionary<GridInfo.BuildSlot, Quaternion>()
+	Dictionary<BuildSlot, Quaternion> m_dictBuildRotations = new Dictionary<GridInfo.BuildSlot, Quaternion>()
 	{
 		{GridInfo.BuildSlot.North,     Quaternion.Euler(new Vector3(0.0f, 0.0f, 0.0f))},
 		{GridInfo.BuildSlot.East,      Quaternion.Euler(new Vector3(0.0f, 90.0f, 0.0f))},
@@ -412,14 +422,14 @@ public class GridInfo : MonoBehaviour
 
 			List<BuildSlot> lstCornerPairs = null;
 
-			if (m_dictBuildCorners.ContainsKey(m_eHighlightBuildSlot))
+			if (m_dictCornerPairs.ContainsKey(m_eHighlightBuildSlot))
 			{
-				lstCornerPairs = m_dictBuildCorners[m_eHighlightBuildSlot];
+				lstCornerPairs = m_dictCornerPairs[m_eHighlightBuildSlot];
 			}
 
 			if (lstCornerPairs != null)
 			{
-				RefreshBlockInfo(m_eHighlightBuildSlot, m_eHighlightBuildLayer, m_cHighlightBlockSetEntry, lstCornerPairs, ref dictActualCorners, true);
+				RefreshBlockInfo(m_eHighlightBuildSlot, m_eHighlightBuildLayer, m_cHighlightBlockSetEntry, lstCornerPairs, true);
 			}
 		}
 		else
@@ -445,47 +455,225 @@ public class GridInfo : MonoBehaviour
 
 	public void RefreshStep1()
 	{
-		// Get number of connections on own grid slot.
+		InitialiseCornerDictionary(ref m_dictBuildLayerBuiltCorners);
 
+		// For each build layer.
 		foreach (KeyValuePair<BuildLayer, BuildLayerInfo> cPairLayer in m_dictBuildLayers)
 		{
 			BuildLayer eBuildLayer = cPairLayer.Key;
 
-			// This is the dictionary which is populated with actual corners which 100% exist.
-			Dictionary<BuildSlot, List<CornerInfo>> dictActualCorners = new Dictionary<BuildSlot, List<CornerInfo>>()
+			BuildLayerInfo cBuildLayerInfo = cPairLayer.Value;
+
+			// For each slot in the dictionary of occupiers on the layer.
+			foreach (KeyValuePair<BuildSlot, BuildSlotInfo> cSlotPair in cBuildLayerInfo.m_dictBuildSlotOccupiers)
 			{
-				{BuildSlot.North, new List<CornerInfo>() },
-				{BuildSlot.East, new List<CornerInfo>() },
-				{BuildSlot.South, new List<CornerInfo>() },
-				{BuildSlot.West, new List<CornerInfo>() },
-				{BuildSlot.Centre, new List<CornerInfo>() },
-			};
+				BuildSlot eBuildSlot = cSlotPair.Key;
+
+				// If the build slot is occupied.
+				if (IsOccupied(eBuildSlot, eBuildLayer))
+				{
+					// Get the other slots which make a corner with this build slot.
+					if (m_dictCornerPairs.ContainsKey(eBuildSlot))
+					{
+						List<BuildSlot> lstCornerPairs = m_dictCornerPairs[eBuildSlot];
+
+						// For each corner pair, if the corresponding corner is also occupied, there is a corner.
+						for (int nCornerPair = 0; nCornerPair < lstCornerPairs.Count; nCornerPair++)
+						{
+							if (IsOccupied(lstCornerPairs[nCornerPair], eBuildLayer))
+							{
+								// We have a corner.
+
+								if (m_dictBuildLayerBuiltCorners.ContainsKey(eBuildLayer))
+								{
+									BuildLayerBuiltCornerInfo cBuildLayerBuiltCornerInfo = m_dictBuildLayerBuiltCorners[eBuildLayer];
+
+									// Add corner info to the original build slots entry, so we know its a pair.
+									if (cBuildLayerBuiltCornerInfo.m_dictBuiltCorners.ContainsKey(eBuildSlot))
+									{
+										CornerInfo cCornerInfo = new CornerInfo();
+
+										cCornerInfo.m_cGridInfo = this;
+										cCornerInfo.m_eBuildLayer = eBuildLayer;
+										cCornerInfo.m_eBuildSlot = lstCornerPairs[nCornerPair];
+
+										cBuildLayerBuiltCornerInfo.m_dictBuiltCorners[eBuildSlot].Add(cCornerInfo);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	class CornerConnectionInfo
+	{
+		public bool OneAExists = false;
+		public bool OneBExists = false;
+		public bool TwoAExists = false;
+		public bool TwoBExists = false;
+
+		public int GetConnectionCount()
+		{
+			int nConnection = 0;
+			if (OneAExists)
+			{
+				nConnection++;
+			}
+
+			if (OneBExists)
+			{
+				nConnection++;
+			}
+
+			if (TwoAExists)
+			{
+				nConnection++;
+			}
+
+			if (TwoBExists)
+			{
+				nConnection++;
+			}
+
+			return nConnection;
+		}
+	}
+
+	class Corners
+	{
+		public Dictionary<BuildSlot, CornerConnectionInfo> dictCorners = new Dictionary<BuildSlot, CornerConnectionInfo>()
+		{
+			{BuildSlot.North, new CornerConnectionInfo() },
+			{BuildSlot.East, new CornerConnectionInfo() },
+			{BuildSlot.South, new CornerConnectionInfo() },
+			{BuildSlot.West, new CornerConnectionInfo() },
+			{BuildSlot.Centre, new CornerConnectionInfo() },
+		};
+	}
+
+	Dictionary<BuildLayer, Corners> dictCorners = new Dictionary<BuildLayer, Corners>()
+	{
+		{BuildLayer.Top, new Corners() },
+		{BuildLayer.Bottom, new Corners() },
+	};
+
+	public void RefreshStep2()
+	{
+		// For each layer.
+		foreach (KeyValuePair<BuildLayer, BuildLayerBuiltCornerInfo> cLayerPair in m_dictBuildLayerBuiltCorners)
+		{
+			BuildLayer eBuildLayer = cLayerPair.Key;
+
+			BuildLayerBuiltCornerInfo cBuildLayerBuiltCornerInfo = m_dictBuildLayerBuiltCorners[eBuildLayer];
+
+			foreach (KeyValuePair<BuildSlot, List<CornerInfo>> cSlotPair in cBuildLayerBuiltCornerInfo.m_dictBuiltCorners)
+			{
+				CornerConnectionInfo cCornerConnectionInfo = new CornerConnectionInfo();
+
+				BuildSlot eBuildSlot = cSlotPair.Key;
+
+				List<CornerInfo> lstCornerInfo = cSlotPair.Value;
+
+				List<BuildSlot> lstCornerPair = new List<BuildSlot>();
+
+				if (m_dictCornerPairs.ContainsKey(eBuildSlot))
+				{
+					lstCornerPair.AddRange(m_dictCornerPairs[eBuildSlot]);
+				}
+
+				for (int nCornerPair = 0; nCornerPair < lstCornerPair.Count; nCornerPair++)
+				{
+					// The matching corner we are trying to confirm exists.
+					BuildSlot eCornerBuildSlot = lstCornerPair[nCornerPair];
+
+					// Iterate the existing corners.
+					for (int nExistingCornerInfo = 0; nExistingCornerInfo < lstCornerInfo.Count; nExistingCornerInfo++)
+					{
+						// If there is one which matches layer and corner, then con
+						if (lstCornerInfo[nExistingCornerInfo].m_eBuildLayer == eBuildLayer && lstCornerInfo[nExistingCornerInfo].m_eBuildSlot == eCornerBuildSlot)
+						{
+							if (nCornerPair == 0)
+							{
+								cCornerConnectionInfo.OneAExists = true;
+							}
+							else
+							{
+								cCornerConnectionInfo.OneBExists = true;
+							}
+
+							break;
+						}
+					}
+				}
+
+				GridInfo cTouching = GridSettings.Instance.GetTouchingGridInfo(this, eBuildSlot, eBuildLayer);
+
+				if (cTouching)
+				{
+					if (cTouching.m_dictBuildLayerBuiltCorners.ContainsKey(eBuildLayer))
+					{
+						BuildLayerBuiltCornerInfo cBuildLayerBuiltCornerInfoTouching = cTouching.m_dictBuildLayerBuiltCorners[eBuildLayer];
+
+						if (cBuildLayerBuiltCornerInfoTouching.m_dictBuiltCorners.ContainsKey(GridUtilities.GetOppositeBuildSlot(eBuildSlot)))
+						{
+							List<CornerInfo> lstCornerInfoTouching = cBuildLayerBuiltCornerInfoTouching.m_dictBuiltCorners[GridUtilities.GetOppositeBuildSlot(eBuildSlot)];
+
+							for (int nCornerPair = 0; nCornerPair < lstCornerPair.Count; nCornerPair++)
+							{
+								BuildSlot eCornerBuildSlot = lstCornerPair[nCornerPair];
+
+								// Iterate the existing corners.
+								for (int nExistingCornerInfo = 0; nExistingCornerInfo < lstCornerInfoTouching.Count; nExistingCornerInfo++)
+								{
+									if (lstCornerInfoTouching[nExistingCornerInfo].m_eBuildLayer == eBuildLayer && lstCornerInfoTouching[nExistingCornerInfo].m_eBuildSlot == eCornerBuildSlot)
+									{
+										if (nCornerPair == 0)
+										{
+											cCornerConnectionInfo.TwoAExists = true;
+										}
+										else
+										{
+											cCornerConnectionInfo.TwoBExists = true;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+
+				dictCorners[eBuildLayer].dictCorners[eBuildSlot] = cCornerConnectionInfo;
+
+				Debug.Log("GridInfo:\nOneAExists: " + cCornerConnectionInfo.OneAExists + "\nOneBExists: " + cCornerConnectionInfo.OneBExists + "\nTwoAExists: " + cCornerConnectionInfo.TwoAExists + "\nTwoBExists: " + cCornerConnectionInfo.TwoBExists);
+			}
+		}
+	}
+
+	public void RefreshStep3()
+	{
+		foreach (KeyValuePair<BuildLayer, BuildLayerInfo> cPairLayer in m_dictBuildLayers)
+		{
+			BuildLayer eBuildLayer = cPairLayer.Key;
 
 			// For each build slot that a corner is possible.
-			foreach (KeyValuePair<BuildSlot, List<BuildSlot>> cPair in m_dictBuildCorners)
+			foreach (KeyValuePair<BuildSlot, List<BuildSlot>> cPair in m_dictCornerPairs)
 			{
 				BuildSlot eBuildSlot = cPair.Key;
 				List<BuildSlot> lstCornerPairs = cPair.Value;
 
 				// Block set entry is null as it should use whatever is stored in the BuildSlotInfo.
-				RefreshBlockInfo(eBuildSlot, eBuildLayer, null, lstCornerPairs, ref dictActualCorners, false);
+				RefreshBlockInfo(eBuildSlot, eBuildLayer, null, lstCornerPairs, false);
 			}
 		}
 	}
 
-	public void RefreshStep2()
-	{
-	}
-
-	void RefreshBlockInfo(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry, List<BuildSlot> lstCornerPairs, ref Dictionary<BuildSlot, List<CornerInfo>> dictActualCorners, bool bIsGhost)
+	void RefreshBlockInfo(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry, List<BuildSlot> lstCornerPairs, bool bIsGhost)
 	{
 		// Good for debugging when looking for a block which should exist.
 		bool bOccupied = IsOccupied(eBuildSlot, eBuildLayer);
-
-		if (bOccupied)
-		{
-			Debug.Log("");
-		}
 
 		// If that slot is occupied or this is a ghost highlight.
 		if (bOccupied || bIsGhost)
@@ -514,25 +702,15 @@ public class GridInfo : MonoBehaviour
 			}
 			else
 			{
-				GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(this, eBuildSlot, eBuildLayer);
-
-				// Then for each other slot which can form a corner with the current slot.
-				for (int nPossibleCorner = 0; nPossibleCorner < lstCornerPairs.Count; nPossibleCorner++)
-				{
-					BuildSlot ePossibleCornerBuildSlot = lstCornerPairs[nPossibleCorner];
-
-					CheckForCorner(this, eBuildSlot, eBuildLayer, ePossibleCornerBuildSlot, ref dictActualCorners);
-
-					if (cTouchingGridInfo != null)
-					{
-						CheckForCorner(cTouchingGridInfo, eBuildSlot, eBuildLayer, ePossibleCornerBuildSlot, ref dictActualCorners);
-					}
-				}
-
 				// If this block generates automatic corners.
 				if (cBlockSetEntry.AutomaticCorners)
 				{
-					int nConnectionCount = dictActualCorners[eBuildSlot].Count;
+					if (bOccupied)
+					{
+						//Debug.Log("");
+					}
+
+					int nConnectionCount = dictCorners[eBuildLayer].dictCorners[eBuildSlot].GetConnectionCount();
 
 					if (nConnectionCount == 0)
 					{
@@ -544,22 +722,27 @@ public class GridInfo : MonoBehaviour
 					{
 						// L shaped corner.
 
+						if (bOccupied)
+						{
+							//Debug.Log("Getting corner for " + eBuildSlot + " and " + dictCorners[eBuildSlot][0].m_eBuildSlot);
+						}
+
 						// Get the slots of the left and right corner segments.
-						GridUtilities.CornerInfo cCornerInfo = GridUtilities.GetCornerInfo(eBuildSlot, dictActualCorners[eBuildSlot][0].m_eBuildSlot);
+						//GridUtilities.CornerInfo cCornerInfo = GridUtilities.GetCornerInfo(eBuildSlot, dictCorners[eBuildSlot][0].m_eBuildSlot);
 
 						// Create the corner piece for the slot that the user has actually selected.
-						if (cCornerInfo.m_eLeftCornerBuildSlot == eBuildSlot)
+						//if (cCornerInfo.m_eLeftCornerBuildSlot == eBuildSlot)
 						{
 							cBlockToCreate = cBlockSetEntry.LeftCorner.BlockInfo.gameObject;
 						}
-						else if (cCornerInfo.m_eRightCornerBuildSlot == eBuildSlot)
-						{
-							cBlockToCreate = cBlockSetEntry.RightCorner.BlockInfo.gameObject;
-						}
-						else
-						{
-							Debug.Log("BuildMode: Automatic Corner Building Error");
-						}
+						//else if (cCornerInfo.m_eRightCornerBuildSlot == eBuildSlot)
+						//{
+							//cBlockToCreate = cBlockSetEntry.RightCorner.BlockInfo.gameObject;
+						//}
+						//else
+						//{
+							//Debug.Log("BuildMode: Automatic Corner Building Error");
+						//}
 					}
 					else if (nConnectionCount == 2)
 					{
@@ -574,7 +757,7 @@ public class GridInfo : MonoBehaviour
 						Debug.Log("GridInfo: Skipping build of J corner.");
 
 						return;
-                    }
+					}
 					else
 					{
 						// Something else.
@@ -624,26 +807,6 @@ public class GridInfo : MonoBehaviour
 		}
 	}
 
-	void CheckForCorner(GridInfo cGridInfo, BuildSlot eBuildSlot, BuildLayer eBuildLayer, BuildSlot ePossibleCornerBuildSlot, ref Dictionary<BuildSlot, List<CornerInfo>> dictActualCorners)
-	{
-		// If any of the other corner pair slots are filled, we know there is a corner.
-		if (cGridInfo.IsOccupied(ePossibleCornerBuildSlot, eBuildLayer))
-		{
-			// Make sure its in the dictionary.
-			if (dictActualCorners.ContainsKey(eBuildSlot))
-			{
-				CornerInfo cCornerInfo = new CornerInfo();
-
-				cCornerInfo.m_cGridInfo = cGridInfo;
-				cCornerInfo.m_eBuildSlot = ePossibleCornerBuildSlot;
-				cCornerInfo.m_eBuildLayer = eBuildLayer;
-
-				// Add the possible corner to the slot being examined as we know there is a corner.
-				dictActualCorners[eBuildSlot].Add(cCornerInfo);
-			}
-		}
-	}
-
 	public void Move(GridInfo cDestinationGridInfo, BuildSlot eOriginBuildSlot, BuildLayer eOriginBuildLayer, BuildSlot eDestinationBuildSlot, BuildLayer eDestinationBuildLayer)
 	{
 		// Get the details for the slot being moved.
@@ -663,8 +826,8 @@ public class GridInfo : MonoBehaviour
 					cDestinationGridInfo.SetOccupiedInternal(eDestinationBuildSlot, GridUtilities.GetOppositeBuildLayer(eDestinationBuildLayer), cOppositeBuildSlotInfo.m_cBlockSetEntry, cOppositeBuildSlotInfo.m_bIsOpposite);
 
 					SetUnoccupied(eOriginBuildSlot, GridUtilities.GetOppositeBuildLayer(eOriginBuildLayer));
-                }
-	        }
+				}
+			}
 		}
 
 		// Set this gridinfo to be unoccupied in the original slot as it has been moved.

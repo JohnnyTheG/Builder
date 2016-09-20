@@ -302,6 +302,19 @@ public class GridSettings : Singleton<GridSettings>
 			}
 		}
 
+		for (int nGridX = 0; nGridX < Grid.GetLength(0); nGridX++)
+		{
+			for (int nGridY = 0; nGridY < Grid.GetLength(1); nGridY++)
+			{
+				Grid[nGridX, nGridY].RefreshHighlight();
+
+				if (m_bGridRefresh)
+				{
+					Grid[nGridX, nGridY].RefreshStep3();
+				}
+			}
+		}
+
 		m_bGridRefresh = false;
 	}
 
