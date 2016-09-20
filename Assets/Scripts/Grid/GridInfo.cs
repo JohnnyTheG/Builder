@@ -44,6 +44,7 @@ public class GridInfo : MonoBehaviour
 		public bool m_bOccupied = false;
 		public BlockSetEntry m_cBlockSetEntry = null;
 		public bool m_bIsOpposite = false;
+		public bool m_bIsGhost = false;
 	}
 
 	// Information about a BuildLayer and what slots are occupied on that layer.
@@ -209,17 +210,17 @@ public class GridInfo : MonoBehaviour
 		return null;
 	}
 
-	public void SetOccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry)
+	public void SetOccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry, bool bIsGhost)
 	{
-		SetOccupiedInternal(eBuildSlot, eBuildLayer, cBlockSetEntry, false);
+		SetOccupiedInternal(eBuildSlot, eBuildLayer, cBlockSetEntry, false, bIsGhost);
 
 		if (cBlockSetEntry.HasOppositeBlock())
 		{
-			SetOccupiedInternal(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), cBlockSetEntry, true);
+			SetOccupiedInternal(eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), cBlockSetEntry, true, bIsGhost);
 		}
 	}
 
-	void SetOccupiedInternal(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry, bool bIsOpposite)
+	void SetOccupiedInternal(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry, bool bIsOpposite, bool bIsGhost)
 	{
 		GridSettings.Instance.RefreshGrid();
 
@@ -232,6 +233,7 @@ public class GridInfo : MonoBehaviour
 			cBuildSlotInfo.m_cBlockSetEntry = cBlockSetEntry;
 			// Is this an opposite.
 			cBuildSlotInfo.m_bIsOpposite = bIsOpposite;
+			cBuildSlotInfo.m_bIsGhost = bIsGhost;
 		}
 	}
 
@@ -245,6 +247,7 @@ public class GridInfo : MonoBehaviour
 		{
 			cBuildSlotInfo.m_bOccupied = false;
 			cBuildSlotInfo.m_cBlockSetEntry = null;
+			cBuildSlotInfo.m_bIsGhost = false;
 		}
 	}
 
@@ -267,7 +270,7 @@ public class GridInfo : MonoBehaviour
 
 		if (cBuildSlotInfo != null)
 		{
-			return cBuildSlotInfo.m_bOccupied == false && Occupiable;
+			return (!cBuildSlotInfo.m_bOccupied || cBuildSlotInfo.m_bIsGhost) && Occupiable;
 		}
 
 		return false;
@@ -437,79 +440,6 @@ public class GridInfo : MonoBehaviour
 
 	// NICKED FROM BUILDMODE.CS END
 
-	public void RefreshHighlight()
-	{
-		// Ensure the old slot isnt occupied and check if it the highlight direction has changed.
-		if (!IsOccupied(m_eHighlightPreviousBuildSlot, m_eHighlightPreviousBuildLayer) && (m_eHighlightPreviousBuildLayer != m_eHighlightBuildLayer || m_eHighlightPreviousBuildSlot != m_eHighlightBuildSlot))
-		{
-			// Destroy any old highlight.
-			BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(m_eHighlightPreviousBuildSlot, m_eHighlightPreviousBuildLayer);
-
-			if (cBuildSlotInfo != null)
-			{
-				if (cBuildSlotInfo.m_cBlockInfo != null)
-				{
-					// Get rid of highlight.
-					Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
-				}
-
-				// Get rid of the reference to the ghost currently in the slot.
-				cBuildSlotInfo.m_cBlockInfo = null;
-			}
-		}
-
-		if (IsOccupied(m_eHighlightBuildSlot, m_eHighlightBuildLayer))
-		{
-			// Cant highlight existing blocks!
-
-			return;
-		}
-
-		// Create highlight.
-		if (m_bHighlighted)
-		{
-			Dictionary<BuildSlot, List<CornerInfo>> dictActualCorners = new Dictionary<BuildSlot, List<CornerInfo>>()
-			{
-				{BuildSlot.North, new List<CornerInfo>() },
-				{BuildSlot.East, new List<CornerInfo>() },
-				{BuildSlot.South, new List<CornerInfo>() },
-				{BuildSlot.West, new List<CornerInfo>() },
-				{BuildSlot.Centre, new List<CornerInfo>() },
-			};
-
-			List<BuildSlot> lstCornerPairs = null;
-
-			if (m_dictCornerPairs.ContainsKey(m_eHighlightBuildSlot))
-			{
-				lstCornerPairs = m_dictCornerPairs[m_eHighlightBuildSlot];
-			}
-
-			if (lstCornerPairs != null)
-			{
-				RefreshBlockInfo(m_eHighlightBuildSlot, m_eHighlightBuildLayer, m_cHighlightBlockSetEntry, lstCornerPairs, true);
-			}
-		}
-		else
-		{
-			BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(m_eHighlightBuildSlot, m_eHighlightBuildLayer);
-
-			if (cBuildSlotInfo != null)
-			{
-				if (cBuildSlotInfo.m_cBlockInfo != null)
-				{
-					// Get rid of highlight.
-					Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
-				}
-
-				// Get rid of the reference to the ghost currently in the slot.
-				cBuildSlotInfo.m_cBlockInfo = null;
-			}
-
-			m_eHighlightBuildSlot = BuildSlot.Undefined;
-			m_eHighlightBuildLayer = BuildLayer.Undefined;
-		}
-	}
-
 	public void RefreshStep1()
 	{
 		InitialiseCornerDictionary(ref m_dictBuildLayerBuiltCorners);
@@ -667,21 +597,83 @@ public class GridInfo : MonoBehaviour
 			foreach (KeyValuePair<BuildSlot, List<BuildSlot>> cPair in m_dictCornerPairs)
 			{
 				BuildSlot eBuildSlot = cPair.Key;
-				List<BuildSlot> lstCornerPairs = cPair.Value;
 
 				// Block set entry is null as it should use whatever is stored in the BuildSlotInfo.
-				RefreshBlockInfo(eBuildSlot, eBuildLayer, null, lstCornerPairs, false);
+				RefreshBlockInfo(eBuildSlot, eBuildLayer, null);
 			}
 		}
 	}
 
-	void RefreshBlockInfo(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry, List<BuildSlot> lstCornerPairs, bool bIsGhost)
+	//public void RefreshHighlight()
+	//{
+	//	// Ensure the old slot isnt occupied and check if it the highlight direction has changed.
+	//	if (!IsOccupied(m_eHighlightPreviousBuildSlot, m_eHighlightPreviousBuildLayer) && (m_eHighlightPreviousBuildLayer != m_eHighlightBuildLayer || m_eHighlightPreviousBuildSlot != m_eHighlightBuildSlot))
+	//	{
+	//		// Destroy any old highlight.
+	//		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(m_eHighlightPreviousBuildSlot, m_eHighlightPreviousBuildLayer);
+
+	//		if (cBuildSlotInfo != null)
+	//		{
+	//			if (cBuildSlotInfo.m_cBlockInfo != null)
+	//			{
+	//				// Get rid of highlight.
+	//				Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
+	//			}
+
+	//			// Get rid of the reference to the ghost currently in the slot.
+	//			cBuildSlotInfo.m_cBlockInfo = null;
+	//		}
+	//	}
+
+	//	if (IsOccupied(m_eHighlightBuildSlot, m_eHighlightBuildLayer))
+	//	{
+	//		// Cant highlight existing blocks!
+
+	//		return;
+	//	}
+
+	//	// Create highlight.
+	//	if (m_bHighlighted)
+	//	{
+	//		Dictionary<BuildSlot, List<CornerInfo>> dictActualCorners = new Dictionary<BuildSlot, List<CornerInfo>>()
+	//		{
+	//			{BuildSlot.North, new List<CornerInfo>() },
+	//			{BuildSlot.East, new List<CornerInfo>() },
+	//			{BuildSlot.South, new List<CornerInfo>() },
+	//			{BuildSlot.West, new List<CornerInfo>() },
+	//			{BuildSlot.Centre, new List<CornerInfo>() },
+	//		};
+
+	//		RefreshBlockInfo(m_eHighlightBuildSlot, m_eHighlightBuildLayer, m_cHighlightBlockSetEntry);
+	//	}
+	//	else
+	//	{
+	//		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(m_eHighlightBuildSlot, m_eHighlightBuildLayer);
+
+	//		if (cBuildSlotInfo != null)
+	//		{
+	//			if (cBuildSlotInfo.m_cBlockInfo != null)
+	//			{
+	//				// Get rid of highlight.
+	//				Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
+	//			}
+
+	//			// Get rid of the reference to the ghost currently in the slot.
+	//			cBuildSlotInfo.m_cBlockInfo = null;
+	//		}
+
+	//		m_eHighlightBuildSlot = BuildSlot.Undefined;
+	//		m_eHighlightBuildLayer = BuildLayer.Undefined;
+	//	}
+	//}
+
+	void RefreshBlockInfo(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry)
 	{
 		// Good for debugging when looking for a block which should exist.
 		bool bOccupied = IsOccupied(eBuildSlot, eBuildLayer);
 
 		// If that slot is occupied or this is a ghost highlight.
-		if (bOccupied || bIsGhost)
+		if (bOccupied)
 		{
 			// BlockSetEntry BlockInfo to be created for occupation.
 			GameObject cBlockToCreate = null;
@@ -812,7 +804,7 @@ public class GridInfo : MonoBehaviour
 				}
 
 				// Create new block info of the correct type.
-				cBuildSlotInfo.m_cBlockInfo = CreateBlockInfo(cBlockToCreate, eBuildSlot, eBuildLayer, bIsGhost);
+				cBuildSlotInfo.m_cBlockInfo = CreateBlockInfo(cBlockToCreate, eBuildSlot, eBuildLayer, cBuildSlotInfo.m_bIsGhost);
 
 				// Set the block set on the block itself. So that when it moves, it knows what to assign to the new GridInfo!
 				cBuildSlotInfo.m_cBlockInfo.BlockSetEntryCreatedFrom = cBlockSetEntry;
@@ -846,13 +838,13 @@ public class GridInfo : MonoBehaviour
 			if (cDestinationGridInfo != null)
 			{
 				// Set the destination to be occupied with the details from the slot being moved.
-				cDestinationGridInfo.SetOccupiedInternal(eDestinationBuildSlot, eDestinationBuildLayer, cBuildSlotInfo.m_cBlockSetEntry, cBuildSlotInfo.m_bIsOpposite);
+				cDestinationGridInfo.SetOccupiedInternal(eDestinationBuildSlot, eDestinationBuildLayer, cBuildSlotInfo.m_cBlockSetEntry, cBuildSlotInfo.m_bIsOpposite, false);
 
 				if (HasOpposite(eOriginBuildSlot, eOriginBuildLayer))
 				{
 					BuildSlotInfo cOppositeBuildSlotInfo = GetBuildSlotInfo(eOriginBuildSlot, GridUtilities.GetOppositeBuildLayer(eOriginBuildLayer));
 
-					cDestinationGridInfo.SetOccupiedInternal(eDestinationBuildSlot, GridUtilities.GetOppositeBuildLayer(eDestinationBuildLayer), cOppositeBuildSlotInfo.m_cBlockSetEntry, cOppositeBuildSlotInfo.m_bIsOpposite);
+					cDestinationGridInfo.SetOccupiedInternal(eDestinationBuildSlot, GridUtilities.GetOppositeBuildLayer(eDestinationBuildLayer), cOppositeBuildSlotInfo.m_cBlockSetEntry, cOppositeBuildSlotInfo.m_bIsOpposite, false);
 
 					SetUnoccupied(eOriginBuildSlot, GridUtilities.GetOppositeBuildLayer(eOriginBuildLayer));
 				}
@@ -863,31 +855,26 @@ public class GridInfo : MonoBehaviour
 		SetUnoccupied(eOriginBuildSlot, eOriginBuildLayer);
 	}
 
-	bool m_bHighlighted = false;
-	BuildSlot m_eHighlightBuildSlot = BuildSlot.Undefined;
-	BuildLayer m_eHighlightBuildLayer = BuildLayer.Undefined;
-
-	BuildSlot m_eHighlightPreviousBuildSlot = BuildSlot.Undefined;
-	BuildLayer m_eHighlightPreviousBuildLayer = BuildLayer.Undefined;
-
-	BlockSetEntry m_cHighlightBlockSetEntry = null;
-	BlockInfo m_cHighlightBlockInfo = null;
-
-	public void SetHighlighted(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cHighlightBlockSetEntry)
+	public void ClearGhosts()
 	{
-		m_bHighlighted = true;
+		foreach (KeyValuePair<BuildLayer, BuildLayerInfo> cLayerPair in m_dictBuildLayers)
+		{
+			BuildLayer eBuildLayer = cLayerPair.Key;
 
-		// Store these so when we know it changes.
-		m_eHighlightPreviousBuildSlot = m_eHighlightBuildSlot;
-		m_eHighlightPreviousBuildLayer = m_eHighlightBuildLayer;
+			BuildLayerInfo cBuildLayerInfo = cLayerPair.Value;
 
-		m_eHighlightBuildSlot = eBuildSlot;
-		m_eHighlightBuildLayer = eBuildLayer;
-		m_cHighlightBlockSetEntry = cHighlightBlockSetEntry;
-	}
+			foreach (KeyValuePair<BuildSlot, BuildSlotInfo> cSlotPair in cBuildLayerInfo.m_dictBuildSlotOccupiers)
+			{
+				BuildSlot eBuildSlot = cSlotPair.Key;
 
-	public void SetUnhighlighted()
-	{
-		m_bHighlighted = false;
+				BuildSlotInfo cBuildSlotInfo = cSlotPair.Value;
+
+				if (cBuildSlotInfo.m_bOccupied && cBuildSlotInfo.m_bIsGhost)
+				{
+					cBuildSlotInfo.m_bOccupied = false;
+					cBuildSlotInfo.m_bIsGhost = false;
+				}
+			}
+		}
 	}
 }

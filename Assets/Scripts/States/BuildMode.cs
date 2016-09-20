@@ -304,7 +304,7 @@ public class BuildMode : BaseMode
 		// If there is a block set entry to be built.
 		if (cCurrentBlockSetEntry != null)
 		{
-			cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, cCurrentBlockSetEntry);
+			cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, cCurrentBlockSetEntry, false);
 		}
 
 		return null;
@@ -336,6 +336,8 @@ public class BuildMode : BaseMode
 		}
 	}
 
+	List<GridInfo> lstGridInfoWithGhost = new List<GridInfo>();
+
 	void UpdateMouseHighlightDragBuild()
 	{
 		// Get rid of existing highlights.
@@ -357,7 +359,14 @@ public class BuildMode : BaseMode
 
 			for (int nGridInfo = 0; nGridInfo < acGridLine.Length; nGridInfo++)
 			{
-				acGridLine[nGridInfo].SetHighlighted(eBuildSlot, m_eDragBuildLayer, cBlockSetEntry);
+				if (acGridLine[nGridInfo].CanBeOccupied(eBuildSlot, m_eDragBuildLayer, true))
+				{
+					acGridLine[nGridInfo].SetOccupied(eBuildSlot, m_eDragBuildLayer, cBlockSetEntry, true);
+
+					lstGridInfoWithGhost.Add(acGridLine[nGridInfo]);
+				}
+
+				//acGridLine[nGridInfo].SetHighlighted(eBuildSlot, m_eDragBuildLayer, cBlockSetEntry);
 
 				//BlockInfo cBlockInfo = CreateBlock(acGridLine[nGridInfo], eBuildSlot, m_eDragBuildLayer, true);
 
@@ -387,34 +396,15 @@ public class BuildMode : BaseMode
 				GridInfo.BuildSlot eBuildSlot = GetBuildDirection(cBlockSetEntry);
 				GridInfo.BuildLayer eBuildLayer = cGridLayer.Layer;
 
-				cGridInfo.SetHighlighted(eBuildSlot, eBuildLayer, cBlockSetEntry);
-			}
+				//cGridInfo.SetHighlighted(eBuildSlot, eBuildLayer, cBlockSetEntry);
 
-			// Always get rid of the block.
-			/*DestroyBlockBuildHighlight();
-			m_cBlockInfoBuildHighlight = null;
-
-			if (cBlockSetEntry != null && m_cBlockInfoBuildHighlight == null)
-			{
-				//GridInfo.BuildSlot eBuildSlot = GetBuildDirection(cBlockSetEntry);
-
-				//m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, eBuildSlot, cGridLayer.Layer, true);
-			}
-
-			if (m_cBlockInfoBuildHighlight != null)
-			{
-				m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildSlot, cGridLayer.Layer, true);
-
-				m_cBlockInfoBuildHighlight.transform.rotation = GetBlockRotation(m_eBuildSlot, cGridLayer.Layer);
-
-				if (m_cBlockInfoBuildHighlight.HasOppositeBlock())
+				if (cGridInfo.CanBeOccupied(eBuildSlot, eBuildLayer, true))
 				{
-					m_cBlockInfoBuildHighlight.m_cOppositeBlockInfo.transform.rotation = GetBlockRotation(m_eBuildSlot, GridUtilities.GetOppositeBuildLayer(cGridLayer.Layer));
-				}
+					cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, cBlockSetEntry, true);
 
-				// Only creating a single block, hence the 1.
-				SetHighlightColour(m_cBlockInfoBuildHighlight, CanAffordBlocks(cBlockSetEntry.BlockCost, 1));
-			}*/
+					lstGridInfoWithGhost.Add(cGridInfo);
+				}
+			}
 
 			GameGlobals.Instance.MouseHighlight.SetActive(true);
 			GameGlobals.Instance.MouseHighlight.transform.position = cRaycastHit.collider.transform.position + new Vector3(0.0f, (cGridInfo.Height * 0.5f) + (GameGlobals.Instance.MouseHighlight.transform.localScale.y * 0.5f), 0.0f);
@@ -463,15 +453,12 @@ public class BuildMode : BaseMode
 
 	void DestroyBuildHighlights()
 	{
-		GridInfo[,] acGrid = GridSettings.Instance.Grid;
-
-		for (int nGridX = 0; nGridX < acGrid.GetLength(0); nGridX++)
+		for (int nGhost = 0; nGhost < lstGridInfoWithGhost.Count; nGhost++)
 		{
-			for (int nGridY = 0; nGridY < acGrid.GetLength(1); nGridY++)
-			{
-				acGrid[nGridX, nGridY].SetUnhighlighted();
-			}
+			lstGridInfoWithGhost[nGhost].ClearGhosts();
 		}
+
+		lstGridInfoWithGhost.Clear();
 	}
 
 	GridInfo m_cDragBuildStartGridInfo = null;
