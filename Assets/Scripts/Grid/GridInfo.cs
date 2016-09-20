@@ -439,13 +439,6 @@ public class GridInfo : MonoBehaviour
 
 	public void RefreshHighlight()
 	{
-		if (IsOccupied(m_eHighlightBuildSlot, m_eHighlightBuildLayer))
-		{
-			// Cant highlight existing blocks!
-
-			return;
-		}
-
 		// Ensure the old slot isnt occupied and check if it the highlight direction has changed.
 		if (!IsOccupied(m_eHighlightPreviousBuildSlot, m_eHighlightPreviousBuildLayer) && (m_eHighlightPreviousBuildLayer != m_eHighlightBuildLayer || m_eHighlightPreviousBuildSlot != m_eHighlightBuildSlot))
 		{
@@ -463,6 +456,13 @@ public class GridInfo : MonoBehaviour
 				// Get rid of the reference to the ghost currently in the slot.
 				cBuildSlotInfo.m_cBlockInfo = null;
 			}
+		}
+
+		if (IsOccupied(m_eHighlightBuildSlot, m_eHighlightBuildLayer))
+		{
+			// Cant highlight existing blocks!
+
+			return;
 		}
 
 		// Create highlight.
