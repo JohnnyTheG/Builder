@@ -7,11 +7,6 @@ public class BlockInfo : MonoBehaviour
 	[Space(10)]
 	public string Name = "";
 	public BlockManager.Category Type;
-	public bool IsCorner = false;
-	[NonSerialized]
-	[HideInInspector]
-	// If this is a corner, when created this should be set to the corresponding corner piece.
-	public BlockInfo PairedCorner = null;
 
 	[Space(10)]
 	// Default to edging.
@@ -22,9 +17,6 @@ public class BlockInfo : MonoBehaviour
 	// This is set in editor to show the possible build layers for this block.
 	public GridInfo.BuildLayer[] BuildLayers = new GridInfo.BuildLayer[2] { GridInfo.BuildLayer.Top, GridInfo.BuildLayer.Bottom };
 
-	public float Height = 1.0f;
-	public float Width = 1.0f;
-
 	[NonSerialized]
 	[HideInInspector]
 	public GridInfo GridInfo;
@@ -34,11 +26,6 @@ public class BlockInfo : MonoBehaviour
 	[NonSerialized]
 	[HideInInspector]
 	public GridInfo.BuildLayer BuildLayer;
-
-	[NonSerialized]
-	[HideInInspector]
-	// The block set entry which owns the prefab which created this.
-	public BlockSetEntry BlockSetEntryCreatedFrom;
 
 	protected bool m_bIsGhost = false;
 

@@ -524,10 +524,4 @@ public class BuildMode : BaseMode
 	{
 		m_eState = State.Build;
 	}
-
-	void PairCorner(BlockInfo cBlockA, BlockInfo cBlockB)
-	{
-		cBlockA.PairedCorner = cBlockB;
-		cBlockB.PairedCorner = cBlockA;
-	}
 }

@@ -18,6 +18,7 @@ public class BlockSetEntry : MonoBehaviour
 	public bool AutomaticCorners = false;
 	public BlockSetEntry LeftCorner;
 	public BlockSetEntry RightCorner;
+	public BlockSetEntry TCorner;
 
 	[HideInInspector]
 	public GridInfo.BuildSlot[] BlockBuildSlots;
