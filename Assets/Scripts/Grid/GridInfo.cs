@@ -164,6 +164,8 @@ public class GridInfo : MonoBehaviour
 
 		public bool IsUCorner()
 		{
+			// Dont check B sides as U corner shouldnt be built 
+			// on a grid square because it has a U with the touching grid info.
 			return (OneAExists && OneBExists);// || (TwoAExists && TwoBExists);
 		}
 
