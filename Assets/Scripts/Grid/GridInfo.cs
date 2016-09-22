@@ -157,9 +157,14 @@ public class GridInfo : MonoBehaviour
 			return (OneAExists && TwoAExists) || (OneBExists && TwoBExists);		   
 		}
 
-		public bool ShouldFlipTCorner()
+		public bool IsRightTCorner()
 		{
 			return (OneAExists && TwoAExists);
+		}
+
+		public bool IsUCorner()
+		{
+			return (OneAExists && OneBExists);// || (TwoAExists && TwoBExists);
 		}
 
 		public bool IsZCorner()
@@ -720,15 +725,28 @@ public class GridInfo : MonoBehaviour
 
 						if (cCornerConnectionInfo.IsTCorner())
 						{
-							cBlockToCreate = cBlockSetEntry.TCorner.BlockInfo.gameObject;
-
-							if (cCornerConnectionInfo.ShouldFlipTCorner())
+							if (cCornerConnectionInfo.IsRightTCorner())
 							{
+								cBlockToCreate = cBlockSetEntry.TCornerRight.BlockInfo.gameObject;
 							}
+							else
+							{
+								cBlockToCreate = cBlockSetEntry.TCornerLeft.BlockInfo.gameObject;
+							}
+						}
+						else if (cCornerConnectionInfo.IsUCorner())
+						{
+							cBlockToCreate = cBlockSetEntry.UCorner.BlockInfo.gameObject;
+						}
+						else if (cCornerConnectionInfo.IsZCorner())
+						{
+							Debug.Log("GridInfo: Skipping build of Z Corner.");
+
+							return;
 						}
 						else
 						{
-							Debug.Log("GridInfo: Skipping build of U or Z Corner.");
+							Debug.Log("GridInfo: Skipping build of some other corner. Not T, U or Z.");
 
 							return;
 						}
