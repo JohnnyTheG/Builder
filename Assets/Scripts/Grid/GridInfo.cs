@@ -17,6 +17,13 @@ public class GridInfo : MonoBehaviour
 
 	bool Occupiable = true;
 
+	public bool Refresh
+	{
+		get;
+
+		private set;
+	}
+
 	// Order of this is important.
 	public enum BuildSlot
 	{
@@ -154,7 +161,7 @@ public class GridInfo : MonoBehaviour
 
 		public bool IsTCorner()
 		{
-			return (OneAExists && TwoAExists) || (OneBExists && TwoBExists);		   
+			return (OneAExists && TwoAExists) || (OneBExists && TwoBExists);
 		}
 
 		public bool IsRightTCorner()
@@ -244,7 +251,9 @@ public class GridInfo : MonoBehaviour
 
 	void SetOccupiedInternal(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry, bool bIsOpposite, bool bIsGhost)
 	{
-		GridSettings.Instance.RefreshGrid();
+		//GridSettings.Instance.RefreshGrid();
+
+		MarkGridAreaForRefresh();
 
 		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
 
@@ -261,7 +270,9 @@ public class GridInfo : MonoBehaviour
 
 	public void SetUnoccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
 	{
-		GridSettings.Instance.RefreshGrid();
+		//GridSettings.Instance.RefreshGrid();
+
+		MarkGridAreaForRefresh();
 
 		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
 
@@ -619,6 +630,9 @@ public class GridInfo : MonoBehaviour
 				RefreshBlockInfo(eBuildSlot, eBuildLayer, null);
 			}
 		}
+
+		// This gets reset here at the end of the refresh process.
+		Refresh = false;
 	}
 
 	void RefreshBlockInfo(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry)
@@ -850,8 +864,20 @@ public class GridInfo : MonoBehaviour
 				{
 					cBuildSlotInfo.m_bOccupied = false;
 					cBuildSlotInfo.m_bIsGhost = false;
-				}
+
+					MarkGridAreaForRefresh();
+                }
 			}
+		}
+	}
+
+	void MarkGridAreaForRefresh()
+	{
+		GridInfo[] acSurrounding = GridSettings.Instance.GetSurroundingGridInfo(this, 1, 1);
+
+		for (int nSurrounding = 0; nSurrounding < acSurrounding.Length; nSurrounding++)
+		{
+			acSurrounding[nSurrounding].Refresh = true;
 		}
 	}
 }

@@ -10,7 +10,7 @@ public class GridSettings : Singleton<GridSettings>
 
 	bool m_bGridFlipInProgress = false;
 
-	bool m_bGridRefresh = false;
+	//bool m_bGridRefresh = false;
 
 	[SerializeField]
 	float GridFlipDuration = 1.0f;
@@ -276,11 +276,15 @@ public class GridSettings : Singleton<GridSettings>
 			}
 		}
 
+		GridInfo cGridInfo = null;
+
 		for (int nGridX = 0; nGridX < Grid.GetLength(0); nGridX++)
 		{
 			for (int nGridY = 0; nGridY < Grid.GetLength(1); nGridY++)
 			{
-				if (m_bGridRefresh)
+				cGridInfo = Grid[nGridX, nGridY];
+
+				if (cGridInfo.Refresh)
 				{
 					Grid[nGridX, nGridY].RefreshStep1();
 				}
@@ -291,9 +295,11 @@ public class GridSettings : Singleton<GridSettings>
 		{
 			for (int nGridY = 0; nGridY < Grid.GetLength(1); nGridY++)
 			{
-				if (m_bGridRefresh)
+				cGridInfo = Grid[nGridX, nGridY];
+
+				if (cGridInfo.Refresh)
 				{
-					Grid[nGridX, nGridY].RefreshStep2();
+					cGridInfo.RefreshStep2();
 				}
 			}
 		}
@@ -302,18 +308,25 @@ public class GridSettings : Singleton<GridSettings>
 		{
 			for (int nGridY = 0; nGridY < Grid.GetLength(1); nGridY++)
 			{
-				if (m_bGridRefresh)
+				cGridInfo = Grid[nGridX, nGridY];
+
+				if (cGridInfo.Refresh)
 				{
 					Grid[nGridX, nGridY].RefreshStep3();
 				}
 			}
 		}
 
-		m_bGridRefresh = false;
+		//m_bGridRefresh = false;
 	}
 
-	public void RefreshGrid()
+	/*public void RefreshGrid()
 	{
 		m_bGridRefresh = true;
+	}*/
+
+	public GridInfo[] GetSurroundingGridInfo(GridInfo cOriginGridInfo, int nIncrementX, int nIncrementY)
+	{
+		return Utils.GetSurrounding2DArrayEntries<GridInfo>(Grid, cOriginGridInfo.GridX, cOriginGridInfo.GridY, nIncrementX, nIncrementY);
 	}
 }
