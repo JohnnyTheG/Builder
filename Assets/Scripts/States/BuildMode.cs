@@ -368,11 +368,7 @@ public class BuildMode : BaseMode
 
 				//acGridLine[nGridInfo].SetHighlighted(eBuildSlot, m_eDragBuildLayer, cBlockSetEntry);
 
-				//BlockInfo cBlockInfo = CreateBlock(acGridLine[nGridInfo], eBuildSlot, m_eDragBuildLayer, true);
-
 				//SetHighlightColour(cBlockInfo, bCanAffordBuild);
-
-				//m_lstDragBuildHighlights.Add(cBlockInfo);
 			}
 		}
 	}
@@ -395,8 +391,6 @@ public class BuildMode : BaseMode
 			{
 				GridInfo.BuildSlot eBuildSlot = GetBuildDirection(cBlockSetEntry);
 				GridInfo.BuildLayer eBuildLayer = cGridLayer.Layer;
-
-				//cGridInfo.SetHighlighted(eBuildSlot, eBuildLayer, cBlockSetEntry);
 
 				if (cGridInfo.CanBeOccupied(eBuildSlot, eBuildLayer, true))
 				{

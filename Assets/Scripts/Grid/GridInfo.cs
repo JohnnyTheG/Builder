@@ -78,8 +78,8 @@ public class GridInfo : MonoBehaviour
 	static readonly Dictionary<BuildSlot, List<BuildSlot>> m_dictCornerPairs = new Dictionary<BuildSlot, List<BuildSlot>>()
 	{
 		{BuildSlot.North, new List<BuildSlot>() { BuildSlot.East, BuildSlot.West } },
-		{BuildSlot.East, new List<BuildSlot>() { BuildSlot.North, BuildSlot.South } },
-		{BuildSlot.South, new List<BuildSlot>() { BuildSlot.East, BuildSlot.West } },
+		{BuildSlot.East, new List<BuildSlot>() { BuildSlot.South, BuildSlot.North } },
+		{BuildSlot.South, new List<BuildSlot>() { BuildSlot.West, BuildSlot.East } },
 		{BuildSlot.West, new List<BuildSlot>() { BuildSlot.North, BuildSlot.South } },
 		{BuildSlot.Centre, new List<BuildSlot>() { } },
 	};
@@ -762,9 +762,19 @@ public class GridInfo : MonoBehaviour
 						}
 						else
 						{
-							Debug.Log("GridInfo: Skipping build of some other corner. Not T, U or Z.");
+							if (cCornerConnectionInfo.TwoAExists && cCornerConnectionInfo.TwoBExists)
+							{
+								// This is a known case.
+								// This is a U but on B side.
+								// No need for message about this.
+								return;
+							}
+							else
+							{
+								Debug.Log("GridInfo: Skipping build of some other corner. Not T, U or Z.");
 
-							return;
+								return;
+							}
 						}
 					}
 					else if (nConnectionCount == 3)
