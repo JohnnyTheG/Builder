@@ -135,10 +135,12 @@ public class BuildMode : BaseMode
 								eBuildSlot = GridInfo.BuildSlot.Centre;
 							}
 
-							if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer, cBlockInfo.HasOppositeBlock()))
+							if (cGridInfo.CanBeOccupied(eBuildSlot, cGridLayer.Layer, cGridInfo.HasOpposite(eBuildSlot, cGridLayer.Layer)))
 							{
 								// Snap to grid.
-								GetSelectedBlock().Move(cGridInfo, eBuildSlot, cGridLayer.Layer, true);
+								BlockInfo cMovingBlockInfo = GetSelectedBlock();
+
+								cMovingBlockInfo.GridInfo.Move(cGridInfo, cMovingBlockInfo.BuildSlot, cMovingBlockInfo.BuildLayer, eBuildSlot, cGridLayer.Layer);
 							}
 
 							SetSelectedBlock(null);
@@ -211,26 +213,12 @@ public class BuildMode : BaseMode
 
 								if (cBlockInfo != null)
 								{
-									BlockInfo cPairedCorner = null;
+									cBlockInfo.GridInfo.SetUnoccupied(cBlockInfo.BuildSlot, cBlockInfo.BuildLayer);
 
-									// If this block is a corner.
-									if (cBlockInfo.IsCorner)
+									// If this block has an opposite, then clear its opposite too.
+									if(cBlockInfo.GridInfo.HasOpposite(cBlockInfo.BuildSlot, cBlockInfo.BuildLayer))
 									{
-										// Get the paired corner piece and revert it back to a normal wall piece.
-										cPairedCorner = cBlockInfo.PairedCorner;
-									}
-
-									// Destroy the clicked block.
-									cBlockInfo.DestroyBlockInfo(true);
-
-									// Must do this after deleting the block on the line above to ensure the grid is free to prevent another corner!
-									if (cPairedCorner != null)
-									{
-										CreateBlock(cPairedCorner.GridInfo, cPairedCorner.BuildSlot, cPairedCorner.BuildLayer, false, cPairedCorner.BlockSetEntryCreatedFrom);
-
-										// Get rid of the paired corner piece.
-										// Straight up destroy it so that the grid doesnt become unoccupied.
-										Destroy(cPairedCorner.gameObject);
+										cBlockInfo.GridInfo.SetUnoccupied(cBlockInfo.BuildSlot, GridUtilities.GetOppositeBuildLayer(cBlockInfo.BuildLayer));
 									}
 								}
 							}
@@ -276,7 +264,7 @@ public class BuildMode : BaseMode
 		GridSettings.Instance.OnGridFlipComplete -= OnGridFlipComplete;
 
 		// Exit.
-		DestroyBlockBuildHighlight();
+		DestroyBuildHighlights();
 	}
 
 	void ValidateAndCreateBlock(BlockSetEntry cBlockSetEntry, GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer)
@@ -313,151 +301,13 @@ public class BuildMode : BaseMode
 			cCurrentBlockSetEntry = GetCurrentBlockSetEntry();
 		}
 
+		// If there is a block set entry to be built.
 		if (cCurrentBlockSetEntry != null)
 		{
-			if (!bIsGhost)
-			{
-				cCurrentBlockSetEntry.Build();
-			}
-
-			BlockInfo cBlock = null;
-
-			// If this block generates automatic corners.
-			if (cCurrentBlockSetEntry.AutomaticCorners)
-			{
-				// Get any build slots which would form a corner if this build slot is built upon.
-				List<GridInfo.BuildSlot> lstCornerBuildSlots = cGridInfo.GetCornerBuildSlots(eBuildSlot, eBuildLayer);
-
-				// If there is a slot which would form a corner.
-				if (lstCornerBuildSlots.Count > 0)
-				{
-					// Get the slots of the left and right corner segments.
-					GridUtilities.CornerInfo cCornerInfo = GridUtilities.GetCornerInfo(eBuildSlot, lstCornerBuildSlots[0]);
-
-					GridInfo.BuildSlot eOtherCornerBuildSlot = GridInfo.BuildSlot.Undefined;
-					GameObject cOtherCornerBlock = null;
-
-					// Create the corner piece for the slot that the user has actually selected.
-					if (cCornerInfo.m_eLeftCornerBuildSlot == eBuildSlot)
-					{
-						cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.LeftCorner.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
-
-						eOtherCornerBuildSlot = cCornerInfo.m_eRightCornerBuildSlot;
-
-						cOtherCornerBlock = cCurrentBlockSetEntry.RightCorner.BlockInfo.gameObject;
-					}
-					else if (cCornerInfo.m_eRightCornerBuildSlot == eBuildSlot)
-					{
-						cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.RightCorner.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
-
-						eOtherCornerBuildSlot = cCornerInfo.m_eLeftCornerBuildSlot;
-
-						cOtherCornerBlock = cCurrentBlockSetEntry.LeftCorner.BlockInfo.gameObject;
-					}
-					else
-					{
-						Debug.Log("BuildMode: Automatic Corner Building Error");
-
-						return null;
-					}
-
-					// Only create the matching corner if this isnt a ghost (i.e. a highlight).
-					if (!bIsGhost)
-					{
-						// Get the block in the other corner slot.
-						BlockInfo cMatchingBuildSlotOccupier = cGridInfo.GetOccupier(eOtherCornerBuildSlot, eBuildLayer);
-
-						if (cMatchingBuildSlotOccupier != null)
-						{
-							// Delete the current block.
-							cMatchingBuildSlotOccupier.DestroyBlockInfo(true);
-
-							// Create the corner half which will complete the corner.
-							BlockInfo cPairedCorner = CreateBlockGameObject(cOtherCornerBlock, cGridInfo, eOtherCornerBuildSlot, eBuildLayer, bIsGhost);
-
-							// Set the block set entry which created this block so it has a reference to it for further operations.
-							cPairedCorner.BlockSetEntryCreatedFrom = cCurrentBlockSetEntry;
-
-							PairCorner(cBlock, cPairedCorner);
-						}
-					}
-				}
-				else
-				{
-					// Create the block itself.
-					cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
-				}
-			}
-			else
-			{
-				// Create the block itself.
-				cBlock = CreateBlockGameObject(cCurrentBlockSetEntry.BlockInfo.gameObject, cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
-			}
-
-			BlockInfo cOpposite = null;
-
-			if (cCurrentBlockSetEntry.HasOppositeBlock())
-			{
-				// Create any opposite it needs.
-				cOpposite = CreateBlockGameObject(cCurrentBlockSetEntry.OppositeBlockInfo.gameObject, cGridInfo, eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), bIsGhost);
-				cBlock.m_cOppositeBlockInfo = cOpposite;
-			}
-
-			// Set the block set entry which created this block so it has a reference to it for further operations.
-			cBlock.BlockSetEntryCreatedFrom = cCurrentBlockSetEntry;
-
-			cBlock.m_cOppositeBlockInfo = cOpposite;
-
-			return cBlock;
+			cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, cCurrentBlockSetEntry, false);
 		}
 
 		return null;
-	}
-
-	BlockInfo CreateBlockGameObject(GameObject cBlockToCreate, GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eGridLayer, bool bIsGhost)
-	{
-		GameObject cBlock = Instantiate(cBlockToCreate);
-
-		BlockInfo cBlockInfo = cBlock.GetComponent<BlockInfo>();
-
-		cBlockInfo.Initialise(bIsGhost);
-
-		cBlock.transform.rotation = GetBlockRotation(eBuildSlot, eGridLayer);
-
-		if (cBlockInfo != null)
-		{
-			cBlockInfo.Move(cGridInfo, eBuildSlot, eGridLayer, false);
-		}
-
-		return cBlockInfo;
-	}
-
-	Quaternion GetBlockRotation(GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer)
-	{
-		Vector3 vecRotation = Vector3.zero;
-
-		switch (eBuildSlot)
-		{
-			case GridInfo.BuildSlot.Centre:
-
-				// Just default centre blocks to north for now.
-				vecRotation = m_dictBuildDirections[GridInfo.BuildSlot.North].eulerAngles;
-
-				break;
-
-			default:
-
-				vecRotation = m_dictBuildDirections[eBuildSlot].eulerAngles;
-
-				break;
-		}
-
-		if (GridSettings.Instance.UpBuildLayer != eBuildLayer)
-		{
-			vecRotation += new Vector3(0.0f, 180.0f, 180.0f);
-		}
-
-		return Quaternion.Euler(vecRotation);
 	}
 
 	public void UpdateMouseHighlight()
@@ -486,40 +336,51 @@ public class BuildMode : BaseMode
 		}
 	}
 
+	List<GridInfo> lstGridInfoWithGhost = new List<GridInfo>();
+
 	void UpdateMouseHighlightDragBuild()
 	{
-		// Ensure there are no highlights from a normal build.
-		DestroyBlockBuildHighlight();
-
 		// Get rid of existing highlights.
-		DestroyDragBuildHighlights();
+		DestroyBuildHighlights();
 
 		// Hide the ground square icon.
 		GameGlobals.Instance.MouseHighlight.SetActive(false);
 
 		BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
-		GridInfo[] acGridLine = GridSettings.Instance.GetGridLine(m_cDragBuildStartGridInfo, m_cDragBuildFinishGridInfo);
-
-		// Block cost times number of blocks in line.
-		bool bCanAffordBuild = CanAffordBlocks(GetCurrentBlockSetEntry().BlockCost, acGridLine.Length);
-
-		GridInfo.BuildSlot eBuildSlot = GetBuildDirection(cBlockSetEntry);
-
-		for (int nGridInfo = 0; nGridInfo < acGridLine.Length; nGridInfo++)
+		if (cBlockSetEntry != null)
 		{
-			BlockInfo cBlockInfo = CreateBlock(acGridLine[nGridInfo], eBuildSlot, m_eDragBuildLayer, true);
+			GridInfo[] acGridLine = GridSettings.Instance.GetGridLine(m_cDragBuildStartGridInfo, m_cDragBuildFinishGridInfo);
 
-			SetHighlightColour(cBlockInfo, bCanAffordBuild);
+			// Block cost times number of blocks in line.
+			bool bCanAffordBuild = CanAffordBlocks(cBlockSetEntry.BlockCost, acGridLine.Length);
 
-			m_lstDragBuildHighlights.Add(cBlockInfo);
+			GridInfo.BuildSlot eBuildSlot = GetBuildDirection(cBlockSetEntry);
+
+			for (int nGridInfo = 0; nGridInfo < acGridLine.Length; nGridInfo++)
+			{
+				if (acGridLine[nGridInfo].CanBeOccupied(eBuildSlot, m_eDragBuildLayer, true))
+				{
+					acGridLine[nGridInfo].SetOccupied(eBuildSlot, m_eDragBuildLayer, cBlockSetEntry, true);
+
+					lstGridInfoWithGhost.Add(acGridLine[nGridInfo]);
+				}
+
+				//acGridLine[nGridInfo].SetHighlighted(eBuildSlot, m_eDragBuildLayer, cBlockSetEntry);
+
+				//BlockInfo cBlockInfo = CreateBlock(acGridLine[nGridInfo], eBuildSlot, m_eDragBuildLayer, true);
+
+				//SetHighlightColour(cBlockInfo, bCanAffordBuild);
+
+				//m_lstDragBuildHighlights.Add(cBlockInfo);
+			}
 		}
 	}
 
 	void UpdateMouseHighlightBuild()
 	{
 		// Ensure there are no highlights from a drag build.
-		DestroyDragBuildHighlights();
+		DestroyBuildHighlights();
 
 		RaycastHit cRaycastHit;
 
@@ -530,30 +391,19 @@ public class BuildMode : BaseMode
 
 			BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
-			// Always get rid of the block.
-			DestroyBlockBuildHighlight();
-			m_cBlockInfoBuildHighlight = null;
-
-			if (cBlockSetEntry != null && m_cBlockInfoBuildHighlight == null)
+			if (cBlockSetEntry != null)
 			{
 				GridInfo.BuildSlot eBuildSlot = GetBuildDirection(cBlockSetEntry);
+				GridInfo.BuildLayer eBuildLayer = cGridLayer.Layer;
 
-				m_cBlockInfoBuildHighlight = CreateBlock(cGridInfo, eBuildSlot, cGridLayer.Layer, true);
-			}
+				//cGridInfo.SetHighlighted(eBuildSlot, eBuildLayer, cBlockSetEntry);
 
-			if (m_cBlockInfoBuildHighlight != null)
-			{
-				m_cBlockInfoBuildHighlight.Move(cGridInfo, m_eBuildSlot, cGridLayer.Layer, true);
-
-				m_cBlockInfoBuildHighlight.transform.rotation = GetBlockRotation(m_eBuildSlot, cGridLayer.Layer);
-
-				if (m_cBlockInfoBuildHighlight.HasOppositeBlock())
+				if (cGridInfo.CanBeOccupied(eBuildSlot, eBuildLayer, true))
 				{
-					m_cBlockInfoBuildHighlight.m_cOppositeBlockInfo.transform.rotation = GetBlockRotation(m_eBuildSlot, GridUtilities.GetOppositeBuildLayer(cGridLayer.Layer));
-				}
+					cGridInfo.SetOccupied(eBuildSlot, eBuildLayer, cBlockSetEntry, true);
 
-				// Only creating a single block, hence the 1.
-				SetHighlightColour(m_cBlockInfoBuildHighlight, CanAffordBlocks(cBlockSetEntry.BlockCost, 1));
+					lstGridInfoWithGhost.Add(cGridInfo);
+				}
 			}
 
 			GameGlobals.Instance.MouseHighlight.SetActive(true);
@@ -596,29 +446,19 @@ public class BuildMode : BaseMode
 
 	void DisableHighlights()
 	{
-		DestroyBlockBuildHighlight();
-
-		DestroyDragBuildHighlights();
+		DestroyBuildHighlights();
 
 		GameGlobals.Instance.MouseHighlight.SetActive(false);
 	}
 
-	void DestroyBlockBuildHighlight()
+	void DestroyBuildHighlights()
 	{
-		if (m_cBlockInfoBuildHighlight != null)
+		for (int nGhost = 0; nGhost < lstGridInfoWithGhost.Count; nGhost++)
 		{
-			m_cBlockInfoBuildHighlight.DestroyBlockInfo(true);
+			lstGridInfoWithGhost[nGhost].ClearGhosts();
 		}
-	}
 
-	void DestroyDragBuildHighlights()
-	{
-		for (int nHighlight = m_lstDragBuildHighlights.Count - 1; nHighlight >= 0; nHighlight--)
-		{
-			m_lstDragBuildHighlights[nHighlight].DestroyBlockInfo(true);
-
-			m_lstDragBuildHighlights.RemoveAt(nHighlight);
-		}
+		lstGridInfoWithGhost.Clear();
 	}
 
 	GridInfo m_cDragBuildStartGridInfo = null;
@@ -640,23 +480,26 @@ public class BuildMode : BaseMode
 	{
 		BlockSetEntry cBlockSetEntry = GetCurrentBlockSetEntry();
 
-		// If the block can be drag built.
-		if (cBlockSetEntry.CanDragBuild)
+		if (cBlockSetEntry != null)
 		{
-			RaycastHit cRaycastHit;
-
-			// Find the grid and then set that as the finish position.
-			if (GridUtilities.RaycastForGridFromMouse(out cRaycastHit))
+			// If the block can be drag built.
+			if (cBlockSetEntry.CanDragBuild)
 			{
-				GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+				RaycastHit cRaycastHit;
 
-				m_cDragBuildFinishGridInfo = cGridInfo;
+				// Find the grid and then set that as the finish position.
+				if (GridUtilities.RaycastForGridFromMouse(out cRaycastHit))
+				{
+					GridInfo cGridInfo = GridUtilities.GetGridInfoFromCollider(cRaycastHit.collider);
+
+					m_cDragBuildFinishGridInfo = cGridInfo;
+				}
 			}
-		}
-		else
-		{
-			// Cant drag build this block. It should be spawned on the start position only when key is released.
-			m_cDragBuildFinishGridInfo = m_cDragBuildStartGridInfo;
+			else
+			{
+				// Cant drag build this block. It should be spawned on the start position only when key is released.
+				m_cDragBuildFinishGridInfo = m_cDragBuildStartGridInfo;
+			}
 		}
 	}
 

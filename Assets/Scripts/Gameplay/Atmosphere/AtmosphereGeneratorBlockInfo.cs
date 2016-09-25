@@ -3,9 +3,9 @@ using System.Collections;
 
 public class AtmosphereGeneratorBlockInfo : BlockInfo
 {
-	public override void Initialise(bool bIsGhost)
+	public override void Initialise(GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer, bool bIsGhost)
 	{
-		base.Initialise(bIsGhost);
+		base.Initialise(cGridInfo, eBuildSlot, eBuildLayer, bIsGhost);
 
 		if (!m_bIsGhost)
 		{

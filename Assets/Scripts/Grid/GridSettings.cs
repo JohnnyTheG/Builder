@@ -10,6 +10,8 @@ public class GridSettings : Singleton<GridSettings>
 
 	bool m_bGridFlipInProgress = false;
 
+	bool m_bGridRefresh = false;
+
 	[SerializeField]
 	float GridFlipDuration = 1.0f;
 
@@ -43,13 +45,58 @@ public class GridSettings : Singleton<GridSettings>
 
 		Grid = new GridInfo[XSize, YSize];
 
+		// Get all the grid infos in the scene.
 		GridInfo[] acGridInfo = FindObjectsOfType<GridInfo>();
 
+		// All grid info in the scene have their coordinates pre-set.
+		// Fill the grid array with the correct block for the correct grid entry.
 		for (int nGridInfo = 0; nGridInfo < acGridInfo.Length; nGridInfo++)
 		{
 			GridInfo cGridInfo = acGridInfo[nGridInfo];
 
 			Grid[cGridInfo.GridX, cGridInfo.GridY] = cGridInfo;
+		}
+
+		// We now have a populated grid.
+		// Iterate the grid and set the build slot infos in touching pairs.
+
+		for (int nGridX = 0; nGridX < Grid.GetLength(0); nGridX++)
+		{
+			for (int nGridY = 0; nGridY < Grid.GetLength(1); nGridY++)
+			{
+				//GridInfo.BuildSlotInfo cBuildSlotInfo = new GridInfo.BuildSlotInfo();
+
+				GridInfo cGridInfo = Grid[nGridX, nGridY];
+
+				if (cGridInfo != null)
+				{
+					foreach (KeyValuePair<GridInfo.BuildLayer, GridInfo.BuildLayerInfo> cLayerPair in cGridInfo.m_dictBuildLayers)
+					{
+						GridInfo.BuildLayer eBuildLayer = cLayerPair.Key;
+
+						List<GridInfo.BuildSlot> lstBuildSlots = new List<GridInfo.BuildSlot>(cLayerPair.Value.m_dictBuildSlotOccupiers.Keys);
+
+						for(int nBuildSlot = 0; nBuildSlot < lstBuildSlots.Count; nBuildSlot++)
+						{
+							GridInfo.BuildSlot eBuildSlot = lstBuildSlots[nBuildSlot];
+
+							GridInfo.BuildSlotInfo cBuildSlotInfo = new GridInfo.BuildSlotInfo();
+
+							// Set the slot info for the current grid info.
+							cGridInfo.SetBuildSlotInfo(cBuildSlotInfo, eBuildSlot, eBuildLayer);
+
+							// See if there is a touching grid info on the side being set.
+                            GridInfo cTouchingGridInfo = GetTouchingGridInfo(cGridInfo, eBuildSlot, eBuildLayer);
+
+							if (cTouchingGridInfo != null)
+							{
+								// If there is a touching info, then set the opposite slot on that one so they share the same reference.
+								cTouchingGridInfo.SetBuildSlotInfo(cBuildSlotInfo, GridUtilities.GetOppositeBuildSlot(eBuildSlot), eBuildLayer);
+                            }
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -228,5 +275,45 @@ public class GridSettings : Singleton<GridSettings>
 				transform.rotation = Quaternion.Lerp(m_quatStart, m_quatFinish, Easing.EaseInOut(m_fFlipTime / GridFlipDuration, EasingType.Cubic, EasingType.Cubic));
 			}
 		}
+
+		for (int nGridX = 0; nGridX < Grid.GetLength(0); nGridX++)
+		{
+			for (int nGridY = 0; nGridY < Grid.GetLength(1); nGridY++)
+			{
+				if (m_bGridRefresh)
+				{
+					Grid[nGridX, nGridY].RefreshStep1();
+				}
+			}
+		}
+
+		for (int nGridX = 0; nGridX < Grid.GetLength(0); nGridX++)
+		{
+			for (int nGridY = 0; nGridY < Grid.GetLength(1); nGridY++)
+			{
+				if (m_bGridRefresh)
+				{
+					Grid[nGridX, nGridY].RefreshStep2();
+				}
+			}
+		}
+
+		for (int nGridX = 0; nGridX < Grid.GetLength(0); nGridX++)
+		{
+			for (int nGridY = 0; nGridY < Grid.GetLength(1); nGridY++)
+			{
+				if (m_bGridRefresh)
+				{
+					Grid[nGridX, nGridY].RefreshStep3();
+				}
+			}
+		}
+
+		m_bGridRefresh = false;
+	}
+
+	public void RefreshGrid()
+	{
+		m_bGridRefresh = true;
 	}
 }

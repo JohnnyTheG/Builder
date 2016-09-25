@@ -25,12 +25,11 @@ public class BlockInfo : MonoBehaviour
 	public float Height = 1.0f;
 	public float Width = 1.0f;
 
-	[HideInInspector]
-	public BlockInfo m_cOppositeBlockInfo = null;
-
 	[NonSerialized]
 	[HideInInspector]
 	public GridInfo GridInfo;
+	[NonSerialized]
+	[HideInInspector]
 	public GridInfo.BuildSlot BuildSlot;
 	[NonSerialized]
 	[HideInInspector]
@@ -53,8 +52,14 @@ public class BlockInfo : MonoBehaviour
 		m_cOriginalColor = m_cMeshRenderer.material.color;
 	}
 
-	public virtual void Initialise(bool bIsGhost)
+	public virtual void Initialise(GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer, bool bIsGhost)
 	{
+		GridInfo = cGridInfo;
+
+		BuildSlot = eBuildSlot;
+
+		BuildLayer = eBuildLayer;
+
 		m_bIsGhost = bIsGhost;
 
 		if (m_bIsGhost)
@@ -75,109 +80,11 @@ public class BlockInfo : MonoBehaviour
 		}
 	}
 
-	public void Move(GridInfo cGridInfo, GridInfo.BuildSlot eBuildSlot, GridInfo.BuildLayer eBuildLayer, bool bMoveOppositeBlock)
-	{
-		// Clear the previous occupation.
-		SetUnoccupation();
-
-		GridInfo = cGridInfo;
-		BuildSlot = eBuildSlot;
-		BuildLayer = eBuildLayer;
-
-		SetOccupation();
-
-		Vector3 vecPosition = Vector3.zero;
-
-		switch (eBuildLayer)
-		{
-			case GridInfo.BuildLayer.Top:
-
-				vecPosition = cGridInfo.TopBuildTarget.transform.position;
-
-				break;
-
-			case GridInfo.BuildLayer.Bottom:
-
-				vecPosition = cGridInfo.BottomBuildTarget.transform.position;
-
-				break;
-		}
-
-		transform.position = vecPosition;
-
-		// Attach to the grid info holding it.
-		transform.parent = cGridInfo.transform;
-
-		if (bMoveOppositeBlock)
-		{
-			if (m_cOppositeBlockInfo != null)
-			{
-				m_cOppositeBlockInfo.Move(cGridInfo, eBuildSlot, GridUtilities.GetOppositeBuildLayer(eBuildLayer), false);
-			}
-		}
-	}
-
-	void SetUnoccupation()
-	{
-		if (!m_bIsGhost)
-		{
-			if (GridInfo != null)
-			{
-				GridInfo.SetUnoccupied(BuildSlot, BuildLayer);
-
-				GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(GridInfo, BuildSlot, BuildLayer);
-
-				if (cTouchingGridInfo != null)
-				{
-					GridInfo.BuildSlot eTouchingBuildSlot = GridUtilities.GetOppositeBuildSlot(BuildSlot);
-
-					cTouchingGridInfo.SetUnoccupied(eTouchingBuildSlot, BuildLayer);
-				}
-			}
-		}
-	}
-
-	void SetOccupation()
-	{
-		if (!m_bIsGhost)
-		{
-			GridInfo.SetOccupied(BuildSlot, BuildLayer, this);
-
-			GridInfo cTouchingGridInfo = GridSettings.Instance.GetTouchingGridInfo(GridInfo, BuildSlot, BuildLayer);
-
-			if (cTouchingGridInfo != null)
-			{
-				GridInfo.BuildSlot eTouchingBuildSlot = GridUtilities.GetOppositeBuildSlot(BuildSlot);
-
-				cTouchingGridInfo.SetOccupied(eTouchingBuildSlot, BuildLayer, this);
-			}
-		}
-	}
-
-	public void Rotate(Vector3 vecAngle)
-	{
-		Vector3 vecRotation = transform.rotation.eulerAngles;
-
-		vecRotation += vecAngle;
-
-		transform.rotation = Quaternion.Euler(vecRotation);
-	}
-
 	public virtual void DestroyBlockInfo(bool bDestroyOpposite)
 	{
 		if (!m_bIsGhost)
 		{
-			SetUnoccupation();
-
 			BlockManager.Instance.DeregisterBlock(this);
-		}
-
-		if (bDestroyOpposite)
-		{
-			if (m_cOppositeBlockInfo != null)
-			{
-				m_cOppositeBlockInfo.DestroyBlockInfo(false);
-			}
 		}
 
 		Destroy(gameObject);
@@ -203,10 +110,5 @@ public class BlockInfo : MonoBehaviour
 		}
 
 		return false;
-	}
-
-	public bool HasOppositeBlock()
-	{
-		return m_cOppositeBlockInfo != null;
 	}
 }
