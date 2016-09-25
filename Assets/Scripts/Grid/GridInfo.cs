@@ -17,6 +17,13 @@ public class GridInfo : MonoBehaviour
 
 	bool Occupiable = true;
 
+	public bool Refresh
+	{
+		get;
+
+		private set;
+	}
+
 	// Order of this is important.
 	public enum BuildSlot
 	{
@@ -68,11 +75,11 @@ public class GridInfo : MonoBehaviour
 	};
 
 	// Dictionary of slots which make up corners.
-	readonly Dictionary<BuildSlot, List<BuildSlot>> m_dictCornerPairs = new Dictionary<BuildSlot, List<BuildSlot>>()
+	static readonly Dictionary<BuildSlot, List<BuildSlot>> m_dictCornerPairs = new Dictionary<BuildSlot, List<BuildSlot>>()
 	{
 		{BuildSlot.North, new List<BuildSlot>() { BuildSlot.East, BuildSlot.West } },
-		{BuildSlot.East, new List<BuildSlot>() { BuildSlot.North, BuildSlot.South } },
-		{BuildSlot.South, new List<BuildSlot>() { BuildSlot.East, BuildSlot.West } },
+		{BuildSlot.East, new List<BuildSlot>() { BuildSlot.South, BuildSlot.North } },
+		{BuildSlot.South, new List<BuildSlot>() { BuildSlot.West, BuildSlot.East } },
 		{BuildSlot.West, new List<BuildSlot>() { BuildSlot.North, BuildSlot.South } },
 		{BuildSlot.Centre, new List<BuildSlot>() { } },
 	};
@@ -151,6 +158,28 @@ public class GridInfo : MonoBehaviour
 
 			return nConnection;
 		}
+
+		public bool IsTCorner()
+		{
+			return (OneAExists && TwoAExists) || (OneBExists && TwoBExists);
+		}
+
+		public bool IsRightTCorner()
+		{
+			return (OneAExists && TwoAExists);
+		}
+
+		public bool IsUCorner()
+		{
+			// Dont check B sides as U corner shouldnt be built 
+			// on a grid square because it has a U with the touching grid info.
+			return (OneAExists && OneBExists);// || (TwoAExists && TwoBExists);
+		}
+
+		public bool IsZCorner()
+		{
+			return (OneAExists && TwoBExists) || (OneBExists && TwoAExists);
+		}
 	}
 
 	class Corners
@@ -222,7 +251,9 @@ public class GridInfo : MonoBehaviour
 
 	void SetOccupiedInternal(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry, bool bIsOpposite, bool bIsGhost)
 	{
-		GridSettings.Instance.RefreshGrid();
+		//GridSettings.Instance.RefreshGrid();
+
+		MarkGridAreaForRefresh();
 
 		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
 
@@ -239,7 +270,9 @@ public class GridInfo : MonoBehaviour
 
 	public void SetUnoccupied(BuildSlot eBuildSlot, BuildLayer eBuildLayer)
 	{
-		GridSettings.Instance.RefreshGrid();
+		//GridSettings.Instance.RefreshGrid();
+
+		MarkGridAreaForRefresh();
 
 		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(eBuildSlot, eBuildLayer);
 
@@ -364,9 +397,6 @@ public class GridInfo : MonoBehaviour
 		return lstCornerBuildSlots;
 	}
 
-
-	// NICKED FROM BUILDMODE.CS START
-
 	BlockInfo CreateBlockInfo(GameObject cBlockToCreate, BuildSlot eBuildSlot, BuildLayer eBuildLayer, bool bIsGhost)
 	{
 		GameObject cBlock = Instantiate(cBlockToCreate);
@@ -402,7 +432,7 @@ public class GridInfo : MonoBehaviour
 		return cBlockInfo;
 	}
 
-	Dictionary<BuildSlot, Quaternion> m_dictBuildRotations = new Dictionary<GridInfo.BuildSlot, Quaternion>()
+	static readonly Dictionary<BuildSlot, Quaternion> m_dictBuildRotations = new Dictionary<GridInfo.BuildSlot, Quaternion>()
 	{
 		{GridInfo.BuildSlot.North,     Quaternion.Euler(new Vector3(0.0f, 0.0f, 0.0f))},
 		{GridInfo.BuildSlot.East,      Quaternion.Euler(new Vector3(0.0f, 90.0f, 0.0f))},
@@ -437,8 +467,6 @@ public class GridInfo : MonoBehaviour
 
 		return Quaternion.Euler(vecRotation);
 	}
-
-	// NICKED FROM BUILDMODE.CS END
 
 	public void RefreshStep1()
 	{
@@ -602,70 +630,10 @@ public class GridInfo : MonoBehaviour
 				RefreshBlockInfo(eBuildSlot, eBuildLayer, null);
 			}
 		}
+
+		// This gets reset here at the end of the refresh process.
+		Refresh = false;
 	}
-
-	//public void RefreshHighlight()
-	//{
-	//	// Ensure the old slot isnt occupied and check if it the highlight direction has changed.
-	//	if (!IsOccupied(m_eHighlightPreviousBuildSlot, m_eHighlightPreviousBuildLayer) && (m_eHighlightPreviousBuildLayer != m_eHighlightBuildLayer || m_eHighlightPreviousBuildSlot != m_eHighlightBuildSlot))
-	//	{
-	//		// Destroy any old highlight.
-	//		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(m_eHighlightPreviousBuildSlot, m_eHighlightPreviousBuildLayer);
-
-	//		if (cBuildSlotInfo != null)
-	//		{
-	//			if (cBuildSlotInfo.m_cBlockInfo != null)
-	//			{
-	//				// Get rid of highlight.
-	//				Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
-	//			}
-
-	//			// Get rid of the reference to the ghost currently in the slot.
-	//			cBuildSlotInfo.m_cBlockInfo = null;
-	//		}
-	//	}
-
-	//	if (IsOccupied(m_eHighlightBuildSlot, m_eHighlightBuildLayer))
-	//	{
-	//		// Cant highlight existing blocks!
-
-	//		return;
-	//	}
-
-	//	// Create highlight.
-	//	if (m_bHighlighted)
-	//	{
-	//		Dictionary<BuildSlot, List<CornerInfo>> dictActualCorners = new Dictionary<BuildSlot, List<CornerInfo>>()
-	//		{
-	//			{BuildSlot.North, new List<CornerInfo>() },
-	//			{BuildSlot.East, new List<CornerInfo>() },
-	//			{BuildSlot.South, new List<CornerInfo>() },
-	//			{BuildSlot.West, new List<CornerInfo>() },
-	//			{BuildSlot.Centre, new List<CornerInfo>() },
-	//		};
-
-	//		RefreshBlockInfo(m_eHighlightBuildSlot, m_eHighlightBuildLayer, m_cHighlightBlockSetEntry);
-	//	}
-	//	else
-	//	{
-	//		BuildSlotInfo cBuildSlotInfo = GetBuildSlotInfo(m_eHighlightBuildSlot, m_eHighlightBuildLayer);
-
-	//		if (cBuildSlotInfo != null)
-	//		{
-	//			if (cBuildSlotInfo.m_cBlockInfo != null)
-	//			{
-	//				// Get rid of highlight.
-	//				Destroy(cBuildSlotInfo.m_cBlockInfo.gameObject);
-	//			}
-
-	//			// Get rid of the reference to the ghost currently in the slot.
-	//			cBuildSlotInfo.m_cBlockInfo = null;
-	//		}
-
-	//		m_eHighlightBuildSlot = BuildSlot.Undefined;
-	//		m_eHighlightBuildLayer = BuildLayer.Undefined;
-	//	}
-	//}
 
 	void RefreshBlockInfo(BuildSlot eBuildSlot, BuildLayer eBuildLayer, BlockSetEntry cBlockSetEntry)
 	{
@@ -684,6 +652,8 @@ public class GridInfo : MonoBehaviour
 			{
 				cBlockSetEntry = cBuildSlotInfo.m_cBlockSetEntry;
 			}
+
+			BuildSlot eRotationBuildSlot = eBuildSlot;
 
 			// If the block is in the centre slot, its easy as there are no corners or anything.
 			if (eBuildSlot == BuildSlot.Centre)
@@ -769,9 +739,43 @@ public class GridInfo : MonoBehaviour
 					{
 						// U or T corner.
 
-						Debug.Log("GridInfo: Skipping build of U, T or Z Corner.");
+						if (cCornerConnectionInfo.IsTCorner())
+						{
+							if (cCornerConnectionInfo.IsRightTCorner())
+							{
+								cBlockToCreate = cBlockSetEntry.TCornerRight.BlockInfo.gameObject;
+							}
+							else
+							{
+								cBlockToCreate = cBlockSetEntry.TCornerLeft.BlockInfo.gameObject;
+							}
+						}
+						else if (cCornerConnectionInfo.IsUCorner())
+						{
+							cBlockToCreate = cBlockSetEntry.UCorner.BlockInfo.gameObject;
+						}
+						else if (cCornerConnectionInfo.IsZCorner())
+						{
+							Debug.Log("GridInfo: Skipping build of Z Corner.");
 
-						return;
+							return;
+						}
+						else
+						{
+							if (cCornerConnectionInfo.TwoAExists && cCornerConnectionInfo.TwoBExists)
+							{
+								// This is a known case.
+								// This is a U but on B side.
+								// No need for message about this.
+								return;
+							}
+							else
+							{
+								Debug.Log("GridInfo: Skipping build of some other corner. Not T, U or Z.");
+
+								return;
+							}
+						}
 					}
 					else if (nConnectionCount == 3)
 					{
@@ -805,9 +809,6 @@ public class GridInfo : MonoBehaviour
 
 				// Create new block info of the correct type.
 				cBuildSlotInfo.m_cBlockInfo = CreateBlockInfo(cBlockToCreate, eBuildSlot, eBuildLayer, cBuildSlotInfo.m_bIsGhost);
-
-				// Set the block set on the block itself. So that when it moves, it knows what to assign to the new GridInfo!
-				cBuildSlotInfo.m_cBlockInfo.BlockSetEntryCreatedFrom = cBlockSetEntry;
 			}
 		}
 		else
@@ -873,8 +874,20 @@ public class GridInfo : MonoBehaviour
 				{
 					cBuildSlotInfo.m_bOccupied = false;
 					cBuildSlotInfo.m_bIsGhost = false;
-				}
+
+					MarkGridAreaForRefresh();
+                }
 			}
+		}
+	}
+
+	void MarkGridAreaForRefresh()
+	{
+		GridInfo[] acSurrounding = GridSettings.Instance.GetSurroundingGridInfo(this, 1, 1);
+
+		for (int nSurrounding = 0; nSurrounding < acSurrounding.Length; nSurrounding++)
+		{
+			acSurrounding[nSurrounding].Refresh = true;
 		}
 	}
 }
