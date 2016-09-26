@@ -112,6 +112,7 @@
   <ItemGroup>
     <Compile Include="Assets\Editor\EditorCoroutine.cs" />
     <Compile Include="Assets\Editor\GridEditor.cs" />
+    <Compile Include="Assets\Terrain\Editor\TerrainGeneratorEditor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Art\Exports\Mobile\Temp.txt" />
