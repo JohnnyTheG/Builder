@@ -21,6 +21,11 @@ public class BlockSetEntry : MonoBehaviour
 	public BlockSetEntry TCornerLeft;
 	public BlockSetEntry TCornerRight;
 	public BlockSetEntry UCorner;
+	public BlockSetEntry ICorner;
+	public BlockSetEntry JCornerLeft;
+	public BlockSetEntry JCornerRight;
+	public BlockSetEntry ZCornerLeft;
+	public BlockSetEntry ZCornerRight;
 
 	[HideInInspector]
 	public GridInfo.BuildSlot[] BlockBuildSlots;

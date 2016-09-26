@@ -180,7 +180,27 @@ public class GridInfo : MonoBehaviour
 		{
 			return (OneAExists && TwoBExists) || (OneBExists && TwoAExists);
 		}
-	}
+
+		public bool IsRightZCorner()
+		{
+			return OneBExists;
+		}
+
+		public bool IsJCorner()
+		{
+			return (OneAExists && OneBExists && (TwoAExists || TwoBExists));
+		}
+
+		public bool IsRightJCorner()
+		{
+			return TwoAExists;
+        }
+
+		public bool IsICorner()
+		{
+			return OneAExists && OneBExists && TwoAExists && TwoBExists;
+		}
+    }
 
 	class Corners
 	{
@@ -756,9 +776,14 @@ public class GridInfo : MonoBehaviour
 						}
 						else if (cCornerConnectionInfo.IsZCorner())
 						{
-							Debug.Log("GridInfo: Skipping build of Z Corner.");
-
-							return;
+							if (cCornerConnectionInfo.IsRightZCorner())
+							{
+								cBlockToCreate = cBlockSetEntry.ZCornerRight.BlockInfo.gameObject;
+							}
+							else
+							{
+								cBlockToCreate = cBlockSetEntry.ZCornerLeft.BlockInfo.gameObject;
+							}
 						}
 						else
 						{
@@ -781,7 +806,23 @@ public class GridInfo : MonoBehaviour
 					{
 						Debug.Log("GridInfo: Skipping build of J corner.");
 
-						return;
+						if (cCornerConnectionInfo.IsJCorner())
+						{
+							if (cCornerConnectionInfo.IsRightJCorner())
+							{
+								cBlockToCreate = cBlockSetEntry.JCornerRight.BlockInfo.gameObject;
+							}
+							else
+							{
+								cBlockToCreate = cBlockSetEntry.JCornerLeft.BlockInfo.gameObject;
+							}
+						}
+						else
+						{
+							Debug.Log("GridInfo: Skipping 3 connection corner.");
+
+							return;
+						}
 					}
 					else
 					{
@@ -789,7 +830,16 @@ public class GridInfo : MonoBehaviour
 
 						Debug.Log("GridInfo: Skipping build of I corner.");
 
-						return;
+						if (cCornerConnectionInfo.IsICorner())
+						{
+							cBlockToCreate = cBlockSetEntry.ICorner.BlockInfo.gameObject;
+						}
+						else
+						{
+							Debug.Log("GridInfo: Skipping 4 connection corner.");
+
+							return;
+						}
 					}
 				}
 				else
