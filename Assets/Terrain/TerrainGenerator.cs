@@ -34,6 +34,11 @@ public class TerrainGenerator : MonoBehaviour
 	[SerializeField]
 	Vector2 Offset;
 
+	[SerializeField]
+	float MeshHeightMultiplier;
+	[SerializeField]
+	AnimationCurve MeshHeightCurve;
+
 	// This defines the height regions in layers.
 	public TerrainType[] Regions;
 
@@ -90,7 +95,7 @@ public class TerrainGenerator : MonoBehaviour
 
 			case DrawModes.Mesh:
 
-				cTerrainDisplay.DrawMesh(MeshGenerator.GenerateTerrainMesh(afNoiseMap), TextureGenerator.TextureFromColorMap(acColorMap, MapXSize, MapYSize));
+				cTerrainDisplay.DrawMesh(MeshGenerator.GenerateTerrainMesh(afNoiseMap, MeshHeightMultiplier, MeshHeightCurve), TextureGenerator.TextureFromColorMap(acColorMap, MapXSize, MapYSize));
 
 				break;
 		}
