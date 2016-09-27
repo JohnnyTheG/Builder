@@ -113,6 +113,7 @@
     <Compile Include="Assets\TemporalAA\Scripts\TemporalReprojection.cs" />
     <Compile Include="Assets\TemporalAA\Scripts\VelocityBuffer.cs" />
     <Compile Include="Assets\TemporalAA\Scripts\VelocityBufferTag.cs" />
+    <Compile Include="Assets\Terrain\EndlessTerrain.cs" />
     <Compile Include="Assets\Terrain\MeshGenerator.cs" />
     <Compile Include="Assets\Terrain\Noise.cs" />
     <Compile Include="Assets\Terrain\TerrainDisplay.cs" />

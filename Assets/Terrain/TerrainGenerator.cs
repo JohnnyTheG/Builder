@@ -14,7 +14,7 @@ public class TerrainGenerator : MonoBehaviour
 
 	public DrawModes DrawMode;
 
-	const int MapChunkSize = 241;
+	public const int MapChunkSize = 241;
 
 	[SerializeField]
 	// Range 0 to 6 gives 0, 1, 2, 4, 8, 10, 12 when doubled.
