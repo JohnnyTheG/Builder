@@ -3,7 +3,7 @@ using System.Collections;
 
 public static class MeshGenerator
 {
-	public static MeshData GenerateTerrainMesh(float[,] afHeightMap, float fHeightMultiplier, AnimationCurve cHeightCurve)
+	public static MeshData GenerateTerrainMesh(float[,] afHeightMap, float fHeightMultiplier, AnimationCurve cHeightCurve, int nLevelOfDetail)
 	{
 		int nWidth = afHeightMap.GetLength(0);
 		int nHeight = afHeightMap.GetLength(1);
@@ -12,12 +12,17 @@ public static class MeshGenerator
 		float fTopLeftX = (nWidth - 1) / -2.0f;
 		float fTopLeftY = (nHeight - 1) / 2.0f;
 
-		MeshData cMeshData = new MeshData(nWidth, nHeight);
+		// We dont want a simplification factor of zero as this will lock the for loops below as it is used for incrementation.
+		int nMeshSimplificationIncrement = (nLevelOfDetail == 0) ? 1 : nLevelOfDetail * 2;
+
+		int nVerticesPerLine = (nWidth - 1) / nMeshSimplificationIncrement + 1;
+
+		MeshData cMeshData = new MeshData(nVerticesPerLine, nVerticesPerLine);
 		int nVertexIndex = 0;
 
-		for (int nY = 0; nY < nHeight; nY++)
+		for (int nY = 0; nY < nHeight; nY += nMeshSimplificationIncrement)
 		{
-			for (int nX = 0; nX < nWidth; nX++)
+			for (int nX = 0; nX < nWidth; nX += nMeshSimplificationIncrement)
 			{
 				// Position the vertice in the world at nX, nY with height based on the height map at that point.
 				cMeshData.Vertices[nVertexIndex] = new Vector3(fTopLeftX + nX, cHeightCurve.Evaluate(afHeightMap[nX, nY]) * fHeightMultiplier, fTopLeftY - nY);
@@ -26,8 +31,8 @@ public static class MeshGenerator
 				// Ignore the right and bottom vertices of the map as these have no triangles to map.
 				if (nX < nWidth - 1 && nY < nHeight - 1)
 				{
-					cMeshData.AddTriangle(nVertexIndex, nVertexIndex + nWidth + 1, nVertexIndex + nWidth);
-					cMeshData.AddTriangle(nVertexIndex + nWidth + 1, nVertexIndex, nVertexIndex + 1);
+					cMeshData.AddTriangle(nVertexIndex, nVertexIndex + nVerticesPerLine + 1, nVertexIndex + nVerticesPerLine);
+					cMeshData.AddTriangle(nVertexIndex + nVerticesPerLine + 1, nVertexIndex, nVertexIndex + 1);
 				}
 
 				nVertexIndex++;

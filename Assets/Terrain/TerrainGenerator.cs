@@ -14,10 +14,13 @@ public class TerrainGenerator : MonoBehaviour
 
 	public DrawModes DrawMode;
 
+	const int MapChunkSize = 241;
+
 	[SerializeField]
-	int MapXSize;
-	[SerializeField]
-	int MapYSize;
+	// Range 0 to 6 gives 0, 1, 2, 4, 8, 10, 12 when doubled.
+	[Range(0, 6)]
+	int LevelOfDetail = 1;
+
 	[SerializeField]
 	float MapScale;
 
@@ -52,13 +55,13 @@ public class TerrainGenerator : MonoBehaviour
 
 	public void GenerateTerrain()
 	{
-		float[,] afNoiseMap = Noise.GenerateNoiseMap(MapXSize, MapYSize, Seed, MapScale, Octaves, Persistence, Lacunarity, Offset);
+		float[,] afNoiseMap = Noise.GenerateNoiseMap(MapChunkSize, MapChunkSize, Seed, MapScale, Octaves, Persistence, Lacunarity, Offset);
 
-		Color[] acColorMap = new Color[MapXSize * MapYSize];
+		Color[] acColorMap = new Color[MapChunkSize * MapChunkSize];
 
-		for (int nY = 0; nY < MapYSize; nY++)
+		for (int nY = 0; nY < MapChunkSize; nY++)
 		{
-			for (int nX = 0; nX < MapXSize; nX++)
+			for (int nX = 0; nX < MapChunkSize; nX++)
 			{
 				// Get the current height value for the noise map value being examined.
 				float fCurrentHeight = afNoiseMap[nX, nY];
@@ -69,7 +72,7 @@ public class TerrainGenerator : MonoBehaviour
 					// If the 
 					if (fCurrentHeight <= Regions[nRegion].Height)
 					{
-						acColorMap[nY * MapXSize + nX] = Regions[nRegion].Color;
+						acColorMap[nY * MapChunkSize + nX] = Regions[nRegion].Color;
 
 						break;
 					}
@@ -89,13 +92,13 @@ public class TerrainGenerator : MonoBehaviour
 
 			case DrawModes.ColorMap:
 
-				cTerrainDisplay.DrawTexture(TextureGenerator.TextureFromColorMap(acColorMap, MapXSize, MapYSize));
+				cTerrainDisplay.DrawTexture(TextureGenerator.TextureFromColorMap(acColorMap, MapChunkSize, MapChunkSize));
 
 				break;
 
 			case DrawModes.Mesh:
 
-				cTerrainDisplay.DrawMesh(MeshGenerator.GenerateTerrainMesh(afNoiseMap, MeshHeightMultiplier, MeshHeightCurve), TextureGenerator.TextureFromColorMap(acColorMap, MapXSize, MapYSize));
+				cTerrainDisplay.DrawMesh(MeshGenerator.GenerateTerrainMesh(afNoiseMap, MeshHeightMultiplier, MeshHeightCurve, LevelOfDetail), TextureGenerator.TextureFromColorMap(acColorMap, MapChunkSize, MapChunkSize));
 
 				break;
 		}
@@ -103,16 +106,6 @@ public class TerrainGenerator : MonoBehaviour
 
 	void OnValidate()
 	{
-		if (MapXSize < 1)
-		{
-			MapXSize = 1;
-		}
-
-		if (MapYSize < 1)
-		{
-			MapYSize = 1;
-		}
-
 		if (Lacunarity < 1)
 		{
 			Lacunarity = 1;
