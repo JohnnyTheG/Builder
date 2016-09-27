@@ -25,9 +25,9 @@ public static class TextureGenerator
 
 		Color[] acColorMap = new Color[nWidth * nHeight];
 
-		for (int nX = 0; nX < nWidth; nX++)
+		for (int nY = 0; nY < nHeight; nY++)
 		{
-			for (int nY = 0; nY < nHeight; nY++)
+			for (int nX = 0; nX < nWidth; nX++)
 			{
 				acColorMap[nY * nWidth + nX] = Color.Lerp(Color.black, Color.white, afHeightMap[nX, nY]);
 			}

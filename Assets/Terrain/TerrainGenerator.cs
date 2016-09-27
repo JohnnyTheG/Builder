@@ -9,6 +9,7 @@ public class TerrainGenerator : MonoBehaviour
 	{
 		NoiseMap,
 		ColorMap,
+		Mesh,
 	}
 
 	public DrawModes DrawMode;
@@ -50,9 +51,9 @@ public class TerrainGenerator : MonoBehaviour
 
 		Color[] acColorMap = new Color[MapXSize * MapYSize];
 
-		for (int nX = 0; nX < MapXSize; nX++)
+		for (int nY = 0; nY < MapYSize; nY++)
 		{
-			for (int nY = 0; nY < MapYSize; nY++)
+			for (int nX = 0; nX < MapXSize; nX++)
 			{
 				// Get the current height value for the noise map value being examined.
 				float fCurrentHeight = afNoiseMap[nX, nY];
@@ -84,6 +85,12 @@ public class TerrainGenerator : MonoBehaviour
 			case DrawModes.ColorMap:
 
 				cTerrainDisplay.DrawTexture(TextureGenerator.TextureFromColorMap(acColorMap, MapXSize, MapYSize));
+
+				break;
+
+			case DrawModes.Mesh:
+
+				cTerrainDisplay.DrawMesh(MeshGenerator.GenerateTerrainMesh(afNoiseMap), TextureGenerator.TextureFromColorMap(acColorMap, MapXSize, MapYSize));
 
 				break;
 		}

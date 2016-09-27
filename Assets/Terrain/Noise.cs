@@ -32,9 +32,9 @@ public static class Noise
 		float fHalfWidth = nMapXSize / 2.0f;
 		float fHalfHeight = nMapYSize / 2.0f;
 
-		for (int nX = 0; nX < afNoiseMap.GetLength(0); nX++)
+		for (int nY = 0; nY < afNoiseMap.GetLength(1); nY++)
 		{
-			for (int nY = 0; nY < afNoiseMap.GetLength(1); nY++)
+			for (int nX = 0; nX < afNoiseMap.GetLength(0); nX++)
 			{
 				float fAmplitude = 1;
 				float fFrequency = 1;
@@ -67,9 +67,9 @@ public static class Noise
 			}
 		}
 
-		for (int nX = 0; nX < afNoiseMap.GetLength(0); nX++)
+		for (int nY = 0; nY < afNoiseMap.GetLength(1); nY++)
 		{
-			for (int nY = 0; nY < afNoiseMap.GetLength(1); nY++)
+			for (int nX = 0; nX < afNoiseMap.GetLength(0); nX++)
 			{
 				// Normalise the noise map to get it into the range of 0 to 1.
 				afNoiseMap[nX, nY] = Mathf.InverseLerp(fMinNoiseHeight, fMaxNoiseHeight, afNoiseMap[nX, nY]);
