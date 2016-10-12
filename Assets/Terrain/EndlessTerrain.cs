@@ -6,10 +6,12 @@ public class EndlessTerrain : MonoBehaviour
 	// https://www.youtube.com/watch?v=xlSkYjiE-Ck&index=7&list=PLFt_AvWsXl0eBW2EiBtl_sxmDtSgZBxB3&spfreload=1
 	// 7:18
 
-	public const float MaxViewDist = 300;
+	public const float MaxViewDist = 450;
 
 	[SerializeField]
 	Transform Viewer;
+
+	public static Vector2 ViewerPosition;
 
 	// The width and height of a chunk.
 	// In this case, this is the value of the generated terrain minus 1.
@@ -22,6 +24,8 @@ public class EndlessTerrain : MonoBehaviour
 	// Prevents duplication of chunks.
 	Dictionary<Vector2, TerrainChunk> TerrainChunks = new Dictionary<Vector2, TerrainChunk>();
 
+	List<TerrainChunk> m_lstTerrainChunksVisibleLastUpdate = new List<TerrainChunk>();
+
 	void Start()
 	{
 		// Set the chunk size.
@@ -30,10 +34,24 @@ public class EndlessTerrain : MonoBehaviour
 		ChunksVisibleInViewDist = Mathf.RoundToInt(MaxViewDist / ChunkSize);
 	}
 
+	void Update()
+	{
+		ViewerPosition = new Vector2(Viewer.position.x, Viewer.position.z);
+
+		UpdateVisibleChunks();
+	}
+
 	void UpdateVisibleChunks()
 	{
-		int nCurrentChunkX = Mathf.RoundToInt(Viewer.position.x / ChunkSize);
-		int nCurrentChunkY = Mathf.RoundToInt(Viewer.position.y / ChunkSize);
+		for (int nChunk = 0; nChunk < m_lstTerrainChunksVisibleLastUpdate.Count; nChunk++)
+		{
+			m_lstTerrainChunksVisibleLastUpdate[nChunk].SetVisible(false);
+		}
+
+		m_lstTerrainChunksVisibleLastUpdate.Clear();
+
+		int nCurrentChunkX = Mathf.RoundToInt(ViewerPosition.x / ChunkSize);
+		int nCurrentChunkY = Mathf.RoundToInt(ViewerPosition.y / ChunkSize);
 
 		for (int nYOffset = -ChunksVisibleInViewDist; nYOffset <= ChunksVisibleInViewDist; nYOffset++)
 		{
@@ -43,12 +61,18 @@ public class EndlessTerrain : MonoBehaviour
 
 				if (TerrainChunks.ContainsKey(ViewedChunkCoordinates))
 				{
+					// Chunk exists so update it.
+					TerrainChunks[ViewedChunkCoordinates].UpdateTerrainChunk();
 
+					if (TerrainChunks[ViewedChunkCoordinates].IsVisible())
+					{
+						m_lstTerrainChunksVisibleLastUpdate.Add(TerrainChunks[ViewedChunkCoordinates]);
+					}
 				}
 				else
 				{
 					// Chunk doesnt exist so add a new chunk to the dictionary for this coordinate.
-					TerrainChunks.Add(ViewedChunkCoordinates, new TerrainChunk());
+					TerrainChunks.Add(ViewedChunkCoordinates, new TerrainChunk(ViewedChunkCoordinates, ChunkSize, transform));
 				}
 			}
 		}
@@ -56,5 +80,46 @@ public class EndlessTerrain : MonoBehaviour
 
 	public class TerrainChunk
 	{
+		Vector2 m_vec2Position;
+
+		GameObject m_cMeshObject;
+
+		Bounds m_cBounds;
+
+		public TerrainChunk(Vector2 vec2Coord, int nSize, Transform cParent)
+		{
+			m_vec2Position = vec2Coord * nSize;
+
+			m_cBounds = new Bounds(m_vec2Position, Vector2.one * nSize);
+
+			Vector3 vecPosition = new Vector3(m_vec2Position.x, 0.0f, m_vec2Position.y);
+
+			m_cMeshObject = GameObject.CreatePrimitive(PrimitiveType.Plane);
+			m_cMeshObject.transform.position = vecPosition;
+			m_cMeshObject.transform.localScale = Vector3.one * nSize / 10.0f;
+			m_cMeshObject.transform.parent = cParent;
+
+			// Hide by default.
+			SetVisible(false);
+		}
+
+		public void UpdateTerrainChunk()
+		{
+			float fViewerDistanceFromNearestEdge = Mathf.Sqrt(m_cBounds.SqrDistance(ViewerPosition));
+
+			bool bVisible = fViewerDistanceFromNearestEdge <= MaxViewDist;
+
+			SetVisible(bVisible);
+		}
+
+		public void SetVisible(bool bVisible)
+		{
+			m_cMeshObject.SetActive(bVisible);
+		}
+
+		public bool IsVisible()
+		{
+			return m_cMeshObject.activeSelf;
+		}
 	}
 }

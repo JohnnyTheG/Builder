@@ -191,9 +191,14 @@ public class GridInfo : MonoBehaviour
 			return (OneAExists && OneBExists && (TwoAExists || TwoBExists));
 		}
 
+		public bool IsTopJCorner()
+		{
+			return (OneAExists && OneBExists);
+		}
+
 		public bool IsRightJCorner()
 		{
-			return TwoAExists;
+			return OneAExists || TwoAExists;
         }
 
 		public bool IsICorner()
@@ -804,17 +809,35 @@ public class GridInfo : MonoBehaviour
 					}
 					else if (nConnectionCount == 3)
 					{
-						Debug.Log("GridInfo: Skipping build of J corner.");
-
 						if (cCornerConnectionInfo.IsJCorner())
 						{
-							if (cCornerConnectionInfo.IsRightJCorner())
+							if (cCornerConnectionInfo.IsTopJCorner())
 							{
-								cBlockToCreate = cBlockSetEntry.JCornerRight.BlockInfo.gameObject;
+								if (cCornerConnectionInfo.IsRightJCorner())
+								{
+									Debug.Log("J Top Right");
+									cBlockToCreate = cBlockSetEntry.JCornerTopRight.BlockInfo.gameObject;
+								}
+								else
+								{
+									Debug.Log("J Top Left");
+									cBlockToCreate = cBlockSetEntry.JCornerTopLeft.BlockInfo.gameObject;
+								}
 							}
 							else
 							{
-								cBlockToCreate = cBlockSetEntry.JCornerLeft.BlockInfo.gameObject;
+								if (cCornerConnectionInfo.IsRightJCorner())
+								{
+									Debug.Log("J Bottom Right");
+
+									cBlockToCreate = cBlockSetEntry.JCornerBottomRight.BlockInfo.gameObject;
+								}
+								else
+								{
+									Debug.Log("J Bottom Left");
+
+									cBlockToCreate = cBlockSetEntry.JCornerBottomLeft.BlockInfo.gameObject;
+								}
 							}
 						}
 						else

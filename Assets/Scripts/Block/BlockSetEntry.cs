@@ -22,8 +22,10 @@ public class BlockSetEntry : MonoBehaviour
 	public BlockSetEntry TCornerRight;
 	public BlockSetEntry UCorner;
 	public BlockSetEntry ICorner;
-	public BlockSetEntry JCornerLeft;
-	public BlockSetEntry JCornerRight;
+	public BlockSetEntry JCornerTopLeft;
+	public BlockSetEntry JCornerTopRight;
+	public BlockSetEntry JCornerBottomLeft;
+	public BlockSetEntry JCornerBottomRight;
 	public BlockSetEntry ZCornerLeft;
 	public BlockSetEntry ZCornerRight;
 
