@@ -11,7 +11,12 @@ public class EndlessTerrain : MonoBehaviour
 	[SerializeField]
 	Transform Viewer;
 
+	[SerializeField]
+	Material TerrainMaterial;
+
 	public static Vector2 ViewerPosition;
+
+	static TerrainGenerator m_cTerrainGenerator;
 
 	// The width and height of a chunk.
 	// In this case, this is the value of the generated terrain minus 1.
@@ -28,6 +33,7 @@ public class EndlessTerrain : MonoBehaviour
 
 	void Start()
 	{
+		m_cTerrainGenerator = FindObjectOfType<TerrainGenerator>();
 		// Set the chunk size.
 		ChunkSize = TerrainGenerator.MapChunkSize - 1;
 		// We know we can see MaxViewDist units in the world, so divide that by the size of a chunk to tell you how many chunks are needed!
@@ -72,7 +78,7 @@ public class EndlessTerrain : MonoBehaviour
 				else
 				{
 					// Chunk doesnt exist so add a new chunk to the dictionary for this coordinate.
-					TerrainChunks.Add(ViewedChunkCoordinates, new TerrainChunk(ViewedChunkCoordinates, ChunkSize, transform));
+					TerrainChunks.Add(ViewedChunkCoordinates, new TerrainChunk(ViewedChunkCoordinates, ChunkSize, transform, TerrainMaterial));
 				}
 			}
 		}
@@ -84,9 +90,12 @@ public class EndlessTerrain : MonoBehaviour
 
 		GameObject m_cMeshObject;
 
+		MeshRenderer m_cMeshRenderer;
+		MeshFilter m_cMeshFilter;
+
 		Bounds m_cBounds;
 
-		public TerrainChunk(Vector2 vec2Coord, int nSize, Transform cParent)
+		public TerrainChunk(Vector2 vec2Coord, int nSize, Transform cParent, Material cMaterial)
 		{
 			m_vec2Position = vec2Coord * nSize;
 
@@ -94,13 +103,27 @@ public class EndlessTerrain : MonoBehaviour
 
 			Vector3 vecPosition = new Vector3(m_vec2Position.x, 0.0f, m_vec2Position.y);
 
-			m_cMeshObject = GameObject.CreatePrimitive(PrimitiveType.Plane);
+			m_cMeshObject = new GameObject("TerrainChunk");
+			m_cMeshRenderer = m_cMeshObject.AddComponent<MeshRenderer>();
+			m_cMeshFilter = m_cMeshObject.AddComponent<MeshFilter>();
 			m_cMeshObject.transform.position = vecPosition;
-			m_cMeshObject.transform.localScale = Vector3.one * nSize / 10.0f;
 			m_cMeshObject.transform.parent = cParent;
+			m_cMeshRenderer.material = cMaterial;
 
 			// Hide by default.
 			SetVisible(false);
+
+			m_cTerrainGenerator.RequestTerrainData(OnTerrainDataReceived);
+		}
+
+		void OnTerrainDataReceived(TerrainGenerator.TerrainData cTerrainData)
+		{
+			m_cTerrainGenerator.RequestMeshData(cTerrainData, OnMeshDataReceived);
+		}
+
+		void OnMeshDataReceived(MeshData cMeshData)
+		{
+			m_cMeshFilter.mesh = cMeshData.CreateMesh();
 		}
 
 		public void UpdateTerrainChunk()

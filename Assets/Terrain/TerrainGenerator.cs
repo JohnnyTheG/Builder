@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.Threading;
+using System.Collections.Generic;
 
 public class TerrainGenerator : MonoBehaviour
 {
@@ -46,6 +47,9 @@ public class TerrainGenerator : MonoBehaviour
 	// This defines the height regions in layers.
 	public TerrainType[] Regions;
 
+	Queue<TerrainThreadInfo<TerrainData>> m_qTerrainDataThreadInfo = new Queue<TerrainThreadInfo<TerrainData>>();
+	Queue<TerrainThreadInfo<MeshData>> m_qMeshDataThreadInfo = new Queue<TerrainThreadInfo<MeshData>>();
+
 	[System.Serializable]
 	public struct TerrainType
 	{
@@ -56,13 +60,25 @@ public class TerrainGenerator : MonoBehaviour
 
 	public struct TerrainData
 	{
-		public float[,] m_afHeightMap;
-		public Color[] m_acColorMap;
+		public readonly float[,] m_afHeightMap;
+		public readonly Color[] m_acColorMap;
 
 		public TerrainData(float[,] afHeightMap, Color[] acColorMap)
 		{
 			m_afHeightMap = afHeightMap;
 			m_acColorMap = acColorMap;
+		}
+	}
+
+	public struct TerrainThreadInfo<T>
+	{
+		public readonly Action<T> m_cCallback;
+		public readonly T m_cParameter;
+
+		public TerrainThreadInfo(Action<T> cCallback, T cParameter)
+		{
+			m_cCallback = cCallback;
+			m_cParameter = cParameter;
 		}
 	}
 
@@ -78,9 +94,64 @@ public class TerrainGenerator : MonoBehaviour
 
 	void TerrainDataThread(Action<TerrainData> cCallback)
 	{
+		// This generates terrain data.
 		TerrainData cTerrainData = GenerateTerrainData();
 
+		// This locks the queue so that it is not edited on multiple threads at the same time.
+		// Lock is almost like a coroutine which says to all other threads, while excuting code within
+		// the braces, this code cannot run on other threads.
+		lock(m_qTerrainDataThreadInfo)
+		{
+			// Once terrain data has been completed, we need to call the callback but this cannot
+			// be called from the thread as Unity does not allow certain things to be modified outside
+			// of the main thread. So we enqueue a thread info struct to call the callback from the update loop.
+			m_qTerrainDataThreadInfo.Enqueue(new TerrainThreadInfo<TerrainData>(cCallback, cTerrainData));
+		}
+	}
 
+	public void RequestMeshData(TerrainData cTerrainData, Action<MeshData> cCallback)
+	{
+		ThreadStart cThreadStart = delegate
+		{
+			MeshDataThread(cTerrainData, cCallback);
+		};
+
+		new Thread(cThreadStart).Start();
+	}
+
+	void MeshDataThread(TerrainData cTerrainData, Action<MeshData> cCallback)
+	{
+		MeshData cMeshData = MeshGenerator.GenerateTerrainMesh(cTerrainData.m_afHeightMap, MeshHeightMultiplier, MeshHeightCurve, LevelOfDetail);
+
+		lock(m_qMeshDataThreadInfo)
+		{
+			m_qMeshDataThreadInfo.Enqueue(new TerrainThreadInfo<MeshData>(cCallback, cMeshData));
+		}
+	}
+
+	void Update()
+	{
+		// If anything is in this queue, it means that the thread has completed its work, so do the callback.
+		if (m_qTerrainDataThreadInfo.Count > 0)
+		{
+			for (int nThreadInfo = 0; nThreadInfo < m_qTerrainDataThreadInfo.Count; nThreadInfo++)
+			{
+				TerrainThreadInfo<TerrainData> cThreadInfo = m_qTerrainDataThreadInfo.Dequeue();
+
+				// Call the callback for the thread info with the generated data from the thread.
+				cThreadInfo.m_cCallback(cThreadInfo.m_cParameter);
+			}
+		}
+
+		if (m_qMeshDataThreadInfo.Count > 0)
+		{
+			for (int nThreadInfo = 0; nThreadInfo < m_qMeshDataThreadInfo.Count; nThreadInfo++)
+			{
+				TerrainThreadInfo<MeshData> cThreadInfo = m_qMeshDataThreadInfo.Dequeue();
+
+				cThreadInfo.m_cCallback(cThreadInfo.m_cParameter);
+			}
+		}
 	}
 
 	TerrainData GenerateTerrainData()

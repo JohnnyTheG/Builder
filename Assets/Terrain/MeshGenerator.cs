@@ -5,6 +5,7 @@ public static class MeshGenerator
 {
 	public static MeshData GenerateTerrainMesh(float[,] afHeightMap, float fHeightMultiplier, AnimationCurve cHeightCurve, int nLevelOfDetail)
 	{
+		AnimationCurve cThreadingHeightCurve = new AnimationCurve(cHeightCurve.keys);
 		int nWidth = afHeightMap.GetLength(0);
 		int nHeight = afHeightMap.GetLength(1);
 
@@ -25,7 +26,7 @@ public static class MeshGenerator
 			for (int nX = 0; nX < nWidth; nX += nMeshSimplificationIncrement)
 			{
 				// Position the vertice in the world at nX, nY with height based on the height map at that point.
-				cMeshData.Vertices[nVertexIndex] = new Vector3(fTopLeftX + nX, cHeightCurve.Evaluate(afHeightMap[nX, nY]) * fHeightMultiplier, fTopLeftY - nY);
+				cMeshData.Vertices[nVertexIndex] = new Vector3(fTopLeftX + nX, cThreadingHeightCurve.Evaluate(afHeightMap[nX, nY]) * fHeightMultiplier, fTopLeftY - nY);
 				cMeshData.UVs[nVertexIndex] = new Vector2(nX / (float)nWidth, nY / (float)nHeight);
 
 				// Ignore the right and bottom vertices of the map as these have no triangles to map.
