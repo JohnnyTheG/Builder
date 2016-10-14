@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System;
+using System.Threading;
 
 public class TerrainGenerator : MonoBehaviour
 {
@@ -53,7 +54,36 @@ public class TerrainGenerator : MonoBehaviour
 		public Color Color;
 	}
 
-	public void GenerateTerrain()
+	public struct TerrainData
+	{
+		public float[,] m_afHeightMap;
+		public Color[] m_acColorMap;
+
+		public TerrainData(float[,] afHeightMap, Color[] acColorMap)
+		{
+			m_afHeightMap = afHeightMap;
+			m_acColorMap = acColorMap;
+		}
+	}
+
+	public void RequestTerrainData(Action<TerrainData> cCallback)
+	{
+		ThreadStart cThreadStart = delegate
+		{
+			TerrainDataThread(cCallback);
+		};
+
+		new Thread(cThreadStart).Start();
+	}
+
+	void TerrainDataThread(Action<TerrainData> cCallback)
+	{
+		TerrainData cTerrainData = GenerateTerrainData();
+
+
+	}
+
+	TerrainData GenerateTerrainData()
 	{
 		float[,] afNoiseMap = Noise.GenerateNoiseMap(MapChunkSize, MapChunkSize, Seed, MapScale, Octaves, Persistence, Lacunarity, Offset);
 
@@ -80,25 +110,32 @@ public class TerrainGenerator : MonoBehaviour
 			}
 		}
 
+		return new TerrainData(afNoiseMap, acColorMap);
+	}
+
+	public void DrawTerrainInEditor()
+	{
+		TerrainData cTerrainData = GenerateTerrainData();
+
 		TerrainDisplay cTerrainDisplay = FindObjectOfType<TerrainDisplay>();
 
 		switch (DrawMode)
 		{
 			case DrawModes.NoiseMap:
 
-				cTerrainDisplay.DrawTexture(TextureGenerator.TextureFromHeightMap(afNoiseMap));
+				cTerrainDisplay.DrawTexture(TextureGenerator.TextureFromHeightMap(cTerrainData.m_afHeightMap));
 
 				break;
 
 			case DrawModes.ColorMap:
 
-				cTerrainDisplay.DrawTexture(TextureGenerator.TextureFromColorMap(acColorMap, MapChunkSize, MapChunkSize));
+				cTerrainDisplay.DrawTexture(TextureGenerator.TextureFromColorMap(cTerrainData.m_acColorMap, MapChunkSize, MapChunkSize));
 
 				break;
 
 			case DrawModes.Mesh:
 
-				cTerrainDisplay.DrawMesh(MeshGenerator.GenerateTerrainMesh(afNoiseMap, MeshHeightMultiplier, MeshHeightCurve, LevelOfDetail), TextureGenerator.TextureFromColorMap(acColorMap, MapChunkSize, MapChunkSize));
+				cTerrainDisplay.DrawMesh(MeshGenerator.GenerateTerrainMesh(cTerrainData.m_afHeightMap, MeshHeightMultiplier, MeshHeightCurve, LevelOfDetail), TextureGenerator.TextureFromColorMap(cTerrainData.m_acColorMap, MapChunkSize, MapChunkSize));
 
 				break;
 		}

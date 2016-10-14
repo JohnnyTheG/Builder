@@ -11,12 +11,12 @@ public class TerrainGeneratorEditor : Editor
 
 		if (DrawDefaultInspector())
 		{
-			cTerrainGenerator.GenerateTerrain();
+			cTerrainGenerator.DrawTerrainInEditor();
 		}
 
 		if (GUILayout.Button("Generate"))
 		{
-			cTerrainGenerator.GenerateTerrain();
+			cTerrainGenerator.DrawTerrainInEditor();
 		}
 	}
 }
